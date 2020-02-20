@@ -663,10 +663,6 @@ kmodules.xyz/crd-schema-fuzz v0.0.0-20191129174258-81f984340891 h1:2W/fqLbAurvup
 kmodules.xyz/crd-schema-fuzz v0.0.0-20191129174258-81f984340891/go.mod h1:9NXNZ4xhqof0WngtIuo4vl+WoCQpLJEJcyuEo3mPpiM=
 kmodules.xyz/custom-resources v0.0.0-20191130062942-f41b54f62419 h1:o6KD8XMxdyRR3rqScTsWvcufFDT7vQBnYXpHUp6UtRg=
 kmodules.xyz/custom-resources v0.0.0-20191130062942-f41b54f62419/go.mod h1:EksiAQK3p3bVU5cNBjLT0z5V7er1tvWLBWILTuf6G/0=
-kmodules.xyz/monitoring-agent-api v0.0.0-20200125202117-d3b3e33ce41f h1:BcVQqfRGPGZATwMLabMR6cFytqssE/wh+ZnfYSHIPwQ=
-kmodules.xyz/monitoring-agent-api v0.0.0-20200125202117-d3b3e33ce41f/go.mod h1:q5Adit2fxEoY1jSkYiK1t856Ombl8cunYJBmgL43wwc=
-kmodules.xyz/offshoot-api v0.0.0-20200216080509-45ee6418d1c1 h1:4ZXeBIppt2MlDPrFayUx1KIgBHJT+bHTP2FJrUhLEWI=
-kmodules.xyz/offshoot-api v0.0.0-20200216080509-45ee6418d1c1/go.mod h1:k1M+OOFHbMeS6N6OB2j9smKfMCyQOEQjZ3SLZ/KSe+w=
 kmodules.xyz/openshift v0.0.0-20191127054841-113eeb13704f/go.mod h1:de9+Zk2+wtGhRmGFBZ9T4+0lJZr4rHXW0dHffCaeO+g=
 kmodules.xyz/webhook-runtime v0.0.0-20191127075323-d4bfdee6974d h1:qLWf0Xk2sAWT9qWBcodkinrzt0jkYTKhuHCsbwpXutE=
 kmodules.xyz/webhook-runtime v0.0.0-20191127075323-d4bfdee6974d/go.mod h1:aaaxyAmKOpw0ey3LrpBkqWq0LTl35f9PW6mhwVDBMow=
