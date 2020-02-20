@@ -70,32 +70,25 @@ message DashboardReference {
 
   optional string uid = 2;
 
-  optional string title = 3;
+  optional int64 orgID = 3;
 
-  repeated string tags = 4;
+  optional string title = 4;
 
-  optional string timezone = 5;
+  optional string url = 5;
 
-  optional int64 schemaVersion = 6;
-
-  optional int64 version = 7;
+  optional int64 version = 6;
 }
 
 message DashboardSpec {
   optional TargetRef grafana = 1;
 
   // +optional
-  // +kubebuilder:validation:EmbeddedResource
   // +kubebuilder:pruning:PreserveUnknownFields
   optional k8s.io.apimachinery.pkg.runtime.RawExtension model = 2;
 
-  optional int64 hostedDashboardID = 3;
+  optional int64 folderId = 3;
 
-  optional DashboardReference dashboard = 4;
-
-  optional int64 folderId = 5;
-
-  optional bool overwrite = 6;
+  optional bool overwrite = 4;
 }
 
 message DashboardStatus {
@@ -108,9 +101,17 @@ message DashboardStatus {
   // +optional
   optional string phase = 2;
 
+  // The reason for the current phase
+  // +optional
+  optional string reason = 3;
+
+  // Dashboard indicates the updated dashboard database
+  // +optional
+  optional DashboardReference dashboard = 4;
+
   // Represents the latest available observations of a Dashboard current state.
   // +optional
-  repeated DashboardCondition conditions = 8;
+  repeated DashboardCondition conditions = 5;
 }
 
 // +kubebuilder:object:root=true

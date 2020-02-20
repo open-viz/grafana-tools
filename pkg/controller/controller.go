@@ -21,11 +21,15 @@ import (
 
 	api "go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1"
 	cs "go.searchlight.dev/grafana-operator/client/clientset/versioned"
+	"go.searchlight.dev/grafana-operator/client/clientset/versioned/typed/grafana/v1alpha1/util"
 	grafanainformers "go.searchlight.dev/grafana-operator/client/informers/externalversions"
 	grafana_listers "go.searchlight.dev/grafana-operator/client/listers/grafana/v1alpha1"
+	"go.searchlight.dev/grafana-operator/pkg/eventer"
 
 	pcm "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	"github.com/golang/glog"
+	"github.com/grafana-tools/sdk"
+	core "k8s.io/api/core/v1"
 	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/util/runtime"
@@ -60,6 +64,9 @@ type GrafanaController struct {
 	dashboardQueue    *queue.Worker
 	dashboardInformer cache.SharedIndexInformer
 	dashboardLister   grafana_listers.DashboardLister
+
+	// Grafana client
+	grafanaClient *sdk.Client
 }
 
 func (c *GrafanaController) ensureCustomResourceDefinitions() error {
@@ -88,7 +95,7 @@ func (c *GrafanaController) Run(stopCh <-chan struct{}) {
 func (c *GrafanaController) RunInformers(stopCh <-chan struct{}) {
 	defer runtime.HandleCrash()
 
-	glog.Info("Starting Vault controller")
+	glog.Info("Starting Grafana controller")
 
 	c.extInformerFactory.Start(stopCh)
 	for _, v := range c.extInformerFactory.WaitForCacheSync(stopCh) {
@@ -103,4 +110,35 @@ func (c *GrafanaController) RunInformers(stopCh <-chan struct{}) {
 
 	<-stopCh
 	glog.Info("Stopping Vault operator")
+}
+
+func (c *GrafanaController) pushFailureEvent(dashboard *api.Dashboard, reason string) {
+	c.recorder.Eventf(
+		dashboard,
+		core.EventTypeWarning,
+		eventer.EventReasonFailedToStart,
+		`Failed to complete operation for Dashboard: "%v". Reason: %v`,
+		dashboard.Name,
+		reason,
+	)
+	dashboard, err := util.UpdateDashboardStatus(c.extClient.GrafanaV1alpha1(), dashboard, func(in *api.DashboardStatus) *api.DashboardStatus {
+		in.Phase = api.DashboardPhaseFailed
+		in.Reason = reason
+		in.Conditions = append(in.Conditions, api.DashboardCondition{
+			Type:    api.DashboardConditionFailure,
+			Status:  core.ConditionTrue,
+			Reason:  reason,
+			Message: reason,
+		})
+		in.ObservedGeneration = dashboard.Generation
+		return in
+	})
+	if err != nil {
+		c.recorder.Eventf(
+			dashboard,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToUpdate,
+			err.Error(),
+		)
+	}
 }

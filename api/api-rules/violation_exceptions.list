@@ -1,5 +1,4 @@
 API rule violation: list_type_missing,go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1,DashboardList,Items
-API rule violation: list_type_missing,go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1,DashboardReference,Tags
 API rule violation: list_type_missing,go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1,DashboardStatus,Conditions
 API rule violation: list_type_missing,go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1,DashboardTemplateList,Items
 API rule violation: list_type_missing,go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1,DashboardTemplateReference,Tags

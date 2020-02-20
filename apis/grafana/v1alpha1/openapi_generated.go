@@ -483,35 +483,22 @@ func schema_grafana_operator_apis_grafana_v1alpha1_DashboardReference(ref common
 							Format: "",
 						},
 					},
-					"title": {
-						SchemaProps: spec.SchemaProps{
-							Type:   []string{"string"},
-							Format: "",
-						},
-					},
-					"tags": {
-						SchemaProps: spec.SchemaProps{
-							Type: []string{"array"},
-							Items: &spec.SchemaOrArray{
-								Schema: &spec.Schema{
-									SchemaProps: spec.SchemaProps{
-										Type:   []string{"string"},
-										Format: "",
-									},
-								},
-							},
-						},
-					},
-					"timezone": {
-						SchemaProps: spec.SchemaProps{
-							Type:   []string{"string"},
-							Format: "",
-						},
-					},
-					"schemaVersion": {
+					"orgID": {
 						SchemaProps: spec.SchemaProps{
 							Type:   []string{"integer"},
 							Format: "int64",
+						},
+					},
+					"slug": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"url": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
 						},
 					},
 					"version": {
@@ -521,7 +508,6 @@ func schema_grafana_operator_apis_grafana_v1alpha1_DashboardReference(ref common
 						},
 					},
 				},
-				Required: []string{"id", "uid", "title", "tags", "timezone", "schemaVersion", "version"},
 			},
 		},
 	}
@@ -543,17 +529,6 @@ func schema_grafana_operator_apis_grafana_v1alpha1_DashboardSpec(ref common.Refe
 							Ref: ref("k8s.io/apimachinery/pkg/runtime.RawExtension"),
 						},
 					},
-					"hostedDashboardID": {
-						SchemaProps: spec.SchemaProps{
-							Type:   []string{"integer"},
-							Format: "int64",
-						},
-					},
-					"dashboard": {
-						SchemaProps: spec.SchemaProps{
-							Ref: ref("go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1.DashboardReference"),
-						},
-					},
 					"folderId": {
 						SchemaProps: spec.SchemaProps{
 							Type:   []string{"integer"},
@@ -567,11 +542,11 @@ func schema_grafana_operator_apis_grafana_v1alpha1_DashboardSpec(ref common.Refe
 						},
 					},
 				},
-				Required: []string{"grafana", "dashboard", "folderId", "overwrite"},
+				Required: []string{"folderId", "overwrite"},
 			},
 		},
 		Dependencies: []string{
-			"go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1.DashboardReference", "go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1.TargetRef", "k8s.io/apimachinery/pkg/runtime.RawExtension"},
+			"go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1.TargetRef", "k8s.io/apimachinery/pkg/runtime.RawExtension"},
 	}
 }
 
@@ -595,6 +570,19 @@ func schema_grafana_operator_apis_grafana_v1alpha1_DashboardStatus(ref common.Re
 							Format:      "",
 						},
 					},
+					"reason": {
+						SchemaProps: spec.SchemaProps{
+							Description: "The reason for the current phase",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"dashboard": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Dashboard indicates the updated dashboard database",
+							Ref:         ref("go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1.DashboardReference"),
+						},
+					},
 					"conditions": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Represents the latest available observations of a Dashboard current state.",
@@ -612,7 +600,7 @@ func schema_grafana_operator_apis_grafana_v1alpha1_DashboardStatus(ref common.Re
 			},
 		},
 		Dependencies: []string{
-			"go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1.DashboardCondition"},
+			"go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1.DashboardCondition", "go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1.DashboardReference"},
 	}
 }
 

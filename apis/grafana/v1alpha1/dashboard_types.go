@@ -43,16 +43,13 @@ type Dashboard struct {
 }
 
 type DashboardSpec struct {
-	Grafana TargetRef `json:"grafana" protobuf:"bytes,1,opt,name=grafana"`
+	Grafana *TargetRef `json:"grafana,omitempty" protobuf:"bytes,1,opt,name=grafana"`
 	// +optional
-	// +kubebuilder:validation:EmbeddedResource
 	// +kubebuilder:pruning:PreserveUnknownFields
-	Model             *runtime.RawExtension `json:"model,omitempty" protobuf:"bytes,2,opt,name=model"`
-	HostedDashboardID int64                 `json:"hostedDashboardID,omitempty" protobuf:"varint,3,opt,name=hostedDashboardID"`
+	Model *runtime.RawExtension `json:"model,omitempty" protobuf:"bytes,2,opt,name=model"`
 
-	Dashboard DashboardReference `json:"dashboard" protobuf:"bytes,4,opt,name=dashboard"`
-	FolderID  int64              `json:"folderId" protobuf:"varint,5,opt,name=folderId"`
-	Overwrite bool               `json:"overwrite" protobuf:"varint,6,opt,name=overwrite"`
+	FolderID  int64 `json:"folderId" protobuf:"varint,3,opt,name=folderId"`
+	Overwrite bool  `json:"overwrite" protobuf:"varint,4,opt,name=overwrite"`
 }
 
 type TargetRef struct {
@@ -62,13 +59,12 @@ type TargetRef struct {
 }
 
 type DashboardReference struct {
-	ID            *int64   `json:"id" protobuf:"varint,1,opt,name=id"`
-	UID           *string  `json:"uid" protobuf:"bytes,2,opt,name=uid"`
-	Title         string   `json:"title" protobuf:"bytes,3,opt,name=title"`
-	Tags          []string `json:"tags" protobuf:"bytes,4,rep,name=tags"`
-	Timezone      string   `json:"timezone" protobuf:"bytes,5,opt,name=timezone"`
-	SchemaVersion int64    `json:"schemaVersion" protobuf:"varint,6,opt,name=schemaVersion"`
-	Version       int64    `json:"version" protobuf:"varint,7,opt,name=version"`
+	ID      *int64  `json:"id,omitempty" protobuf:"varint,1,opt,name=id"`
+	UID     *string `json:"uid,omitempty" protobuf:"bytes,2,opt,name=uid"`
+	OrgID   *int64  `json:"orgID,omitempty" protobuf:"varint,3,opt,name=orgID"`
+	Slug    *string `json:"slug,omitempty" protobuf:"bytes,4,opt,name=title"`
+	URL     *string `json:"url,omitempty" protobuf:"bytes,5,opt,name=url"`
+	Version *int64  `json:"version,omitempty" protobuf:"varint,6,opt,name=version"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -80,13 +76,13 @@ type DashboardList struct {
 	Items           []Dashboard `json:"items,omitempty" protobuf:"bytes,2,rep,name=items"`
 }
 
-type ClusterPhase string
+type DashboardPhase string
 
 const (
-	ClusterPhaseProcessing    ClusterPhase = "Processing"
-	ClusterPhaseUnInitialized ClusterPhase = "Uninitialized"
-	ClusterPhaseRunning       ClusterPhase = "Running"
-	ClusterPhaseSealed        ClusterPhase = "Sealed"
+	DashboardPhaseProcessing  DashboardPhase = "Processing"
+	DashboardPhaseTerminating DashboardPhase = "Terminating"
+	DashboardPhaseSuccess     DashboardPhase = "Success"
+	DashboardPhaseFailed      DashboardPhase = "Failed"
 )
 
 type DashboardStatus struct {
@@ -97,11 +93,19 @@ type DashboardStatus struct {
 
 	// Phase indicates the state this Vault cluster jumps in.
 	// +optional
-	Phase ClusterPhase `json:"phase,omitempty" protobuf:"bytes,2,opt,name=phase,casttype=ClusterPhase"`
+	Phase DashboardPhase `json:"phase,omitempty" protobuf:"bytes,2,opt,name=phase,casttype=ClusterPhase"`
+
+	// The reason for the current phase
+	// +optional
+	Reason string `json:"reason,omitempty" protobuf:"bytes,3,opt,name=reason"`
+
+	// Dashboard indicates the updated dashboard database
+	// +optional
+	Dashboard *DashboardReference `json:"dashboard,omitempty" protobuf:"bytes,4,opt,name=dashboard"`
 
 	// Represents the latest available observations of a Dashboard current state.
 	// +optional
-	Conditions []DashboardCondition `json:"conditions,omitempty" protobuf:"bytes,8,rep,name=conditions"`
+	Conditions []DashboardCondition `json:"conditions,omitempty" protobuf:"bytes,5,rep,name=conditions"`
 }
 
 type DashboardConditionType string

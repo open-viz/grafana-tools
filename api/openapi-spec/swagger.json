@@ -1182,37 +1182,22 @@
     },
     "dev.searchlight.go.grafana-operator.apis.grafana.v1alpha1.DashboardReference": {
       "type": "object",
-      "required": [
-        "id",
-        "uid",
-        "title",
-        "tags",
-        "timezone",
-        "schemaVersion",
-        "version"
-      ],
       "properties": {
         "id": {
           "type": "integer",
           "format": "int64"
         },
-        "schemaVersion": {
+        "orgID": {
           "type": "integer",
           "format": "int64"
         },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "timezone": {
-          "type": "string"
-        },
-        "title": {
+        "slug": {
           "type": "string"
         },
         "uid": {
+          "type": "string"
+        },
+        "url": {
           "type": "string"
         },
         "version": {
@@ -1224,25 +1209,16 @@
     "dev.searchlight.go.grafana-operator.apis.grafana.v1alpha1.DashboardSpec": {
       "type": "object",
       "required": [
-        "grafana",
-        "dashboard",
         "folderId",
         "overwrite"
       ],
       "properties": {
-        "dashboard": {
-          "$ref": "#/definitions/dev.searchlight.go.grafana-operator.apis.grafana.v1alpha1.DashboardReference"
-        },
         "folderId": {
           "type": "integer",
           "format": "int64"
         },
         "grafana": {
           "$ref": "#/definitions/dev.searchlight.go.grafana-operator.apis.grafana.v1alpha1.TargetRef"
-        },
-        "hostedDashboardID": {
-          "type": "integer",
-          "format": "int64"
         },
         "model": {
           "$ref": "#/definitions/io.k8s.apimachinery.pkg.runtime.RawExtension"
@@ -1262,6 +1238,10 @@
             "$ref": "#/definitions/dev.searchlight.go.grafana-operator.apis.grafana.v1alpha1.DashboardCondition"
           }
         },
+        "dashboard": {
+          "description": "Dashboard indicates the updated dashboard database",
+          "$ref": "#/definitions/dev.searchlight.go.grafana-operator.apis.grafana.v1alpha1.DashboardReference"
+        },
         "observedGeneration": {
           "description": "ObservedGeneration is the most recent generation observed for this resource. It corresponds to the resource's generation, which is updated on mutation by the API Server.",
           "type": "integer",
@@ -1269,6 +1249,10 @@
         },
         "phase": {
           "description": "Phase indicates the state this Vault cluster jumps in.",
+          "type": "string"
+        },
+        "reason": {
+          "description": "The reason for the current phase",
           "type": "string"
         }
       }

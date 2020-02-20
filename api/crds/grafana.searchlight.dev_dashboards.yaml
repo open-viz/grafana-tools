@@ -42,36 +42,6 @@ spec:
           type: object
         spec:
           properties:
-            dashboard:
-              properties:
-                id:
-                  format: int64
-                  type: integer
-                schemaVersion:
-                  format: int64
-                  type: integer
-                tags:
-                  items:
-                    type: string
-                  type: array
-                timezone:
-                  type: string
-                title:
-                  type: string
-                uid:
-                  type: string
-                version:
-                  format: int64
-                  type: integer
-              required:
-              - id
-              - schemaVersion
-              - tags
-              - timezone
-              - title
-              - uid
-              - version
-              type: object
             folderId:
               format: int64
               type: integer
@@ -84,19 +54,13 @@ spec:
                 name:
                   type: string
               type: object
-            hostedDashboardID:
-              format: int64
-              type: integer
             model:
               type: object
-              x-kubernetes-embedded-resource: true
               x-kubernetes-preserve-unknown-fields: true
             overwrite:
               type: boolean
           required:
-          - dashboard
           - folderId
-          - grafana
           - overwrite
           type: object
         status:
@@ -123,6 +87,25 @@ spec:
                     type: string
                 type: object
               type: array
+            dashboard:
+              description: Dashboard indicates the updated dashboard database
+              properties:
+                id:
+                  format: int64
+                  type: integer
+                orgID:
+                  format: int64
+                  type: integer
+                slug:
+                  type: string
+                uid:
+                  type: string
+                url:
+                  type: string
+                version:
+                  format: int64
+                  type: integer
+              type: object
             observedGeneration:
               description: ObservedGeneration is the most recent generation observed
                 for this resource. It corresponds to the resource's generation, which
@@ -131,6 +114,9 @@ spec:
               type: integer
             phase:
               description: Phase indicates the state this Vault cluster jumps in.
+              type: string
+            reason:
+              description: The reason for the current phase
               type: string
           type: object
       type: object
