@@ -17,40 +17,50 @@ limitations under the License.
 package framework
 
 import (
-	kfclient "go.searchlight.dev/grafana-operator/client/clientset/versioned"
+	cs "go.searchlight.dev/grafana-operator/client/clientset/versioned"
 
 	"github.com/appscode/go/crypto/rand"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1"
 )
 
 type Framework struct {
-	restConfig *rest.Config
-	kubeClient kubernetes.Interface
-	client     kfclient.Interface
-	namespace  string
-	name       string
+	restConfig   *rest.Config
+	kubeClient   kubernetes.Interface
+	extClient    cs.Interface
+	appcatClient appcat_cs.AppcatalogV1alpha1Interface
+
+	namespace string
+	name      string
 }
 
 func New(
 	restConfig *rest.Config,
 	kubeClient kubernetes.Interface,
-	client kfclient.Interface,
+	extClient cs.Interface,
+	appcatClient appcat_cs.AppcatalogV1alpha1Interface,
 ) *Framework {
 	return &Framework{
-		restConfig: restConfig,
-		kubeClient: kubeClient,
-		client:     client,
-		name:       "kfc",
-		namespace:  rand.WithUniqSuffix("kubeform"),
+		restConfig:   restConfig,
+		kubeClient:   kubeClient,
+		extClient:    extClient,
+		appcatClient: appcatClient,
+
+		name:      rand.WithUniqSuffix("grafana-operator"),
+		namespace: rand.WithUniqSuffix("grafana"),
 	}
 }
 
 func (f *Framework) Invoke() *Invocation {
 	return &Invocation{
 		Framework: f,
-		app:       rand.WithUniqSuffix("kfc-e2e"),
+		app:       rand.WithUniqSuffix("grafana-operator-e2e"),
 	}
+}
+
+func (f *Framework) Name() string {
+	return f.name
 }
 
 func (fi *Invocation) KubeClient() kubernetes.Interface {
@@ -59,10 +69,6 @@ func (fi *Invocation) KubeClient() kubernetes.Interface {
 
 func (fi *Invocation) RestConfig() *rest.Config {
 	return fi.restConfig
-}
-
-func (fi *Invocation) KubeformClient() kfclient.Interface {
-	return fi.client
 }
 
 type Invocation struct {

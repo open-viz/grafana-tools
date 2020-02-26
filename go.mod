@@ -1,6 +1,6 @@
 module go.searchlight.dev/grafana-operator
 
-go 1.12
+go 1.13
 
 require (
 	github.com/appscode/go v0.0.0-20191119085241-0887d8ec2ecc
@@ -10,12 +10,18 @@ require (
 	github.com/gogo/protobuf v1.2.2-0.20190730201129-28a6bbf47e48
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/google/gofuzz v1.0.0
+	github.com/gosimple/slug v1.9.0 // indirect
+	github.com/grafana-tools/sdk v0.0.0-20200117094948-01e30e222b48
+	github.com/mattn/go-colorable v0.1.4 // indirect
+	github.com/mattn/go-isatty v0.0.12 // indirect
 	github.com/onsi/ginkgo v1.8.0
 	github.com/onsi/gomega v1.5.0
 	github.com/pkg/errors v0.8.1
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.3
-	golang.org/x/sys v0.0.0-20190801041406-cbf593c0f2f3 // indirect
+	github.com/stretchr/testify v1.4.0 // indirect
+	golang.org/x/sys v0.0.0-20200219091948-cb0a6d8edb6c // indirect
+	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	k8s.io/api v0.0.0-20191114100352-16d7abae0d2a
 	k8s.io/apiextensions-apiserver v0.0.0-20191114105449-027877536833
 	k8s.io/apimachinery v0.16.5-beta.1
@@ -23,11 +29,9 @@ require (
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/kube-openapi v0.0.0-20190816220812-743ec37842bf
 	k8s.io/kubernetes v1.16.3
-	kmodules.xyz/client-go v0.0.0-20200108114229-70ba8841e60f
+	kmodules.xyz/client-go v0.0.0-20200216080917-08714f78f885
 	kmodules.xyz/crd-schema-fuzz v0.0.0-20191129174258-81f984340891
 	kmodules.xyz/custom-resources v0.0.0-20191130062942-f41b54f62419
-	kmodules.xyz/monitoring-agent-api v0.0.0-20191224204126-ee69caffab6c // indirect
-	kmodules.xyz/offshoot-api v0.0.0-20200103145223-2c4f520520d2 // indirect
 	kmodules.xyz/webhook-runtime v0.0.0-20191127075323-d4bfdee6974d
 	sigs.k8s.io/yaml v1.1.0
 )
@@ -46,6 +50,7 @@ replace (
 	github.com/Azure/go-autorest/autorest/validation => github.com/Azure/go-autorest/autorest/validation v0.1.0
 	github.com/Azure/go-autorest/logger => github.com/Azure/go-autorest/logger v0.1.0
 	github.com/Azure/go-autorest/tracing => github.com/Azure/go-autorest/tracing v0.5.0
+	github.com/grafana-tools/sdk => github.com/searchlight/grafana-sdk v0.0.0-20200219122750-883bc6af7309
 	github.com/kubernetes-csi/external-snapshotter => github.com/kmodules/external-snapshotter v1.2.1-0.20191128100451-0265c5fa679a
 	github.com/prometheus/client_golang => github.com/prometheus/client_golang v0.9.2
 	google.golang.org/api => google.golang.org/api v0.6.1-0.20190607001116-5213b8090861

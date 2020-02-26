@@ -17,7 +17,7 @@ limitations under the License.
 package framework
 
 import (
-	"errors"
+	"fmt"
 	"time"
 
 	. "github.com/onsi/gomega"
@@ -28,20 +28,20 @@ import (
 func (f *Framework) EventuallyCRD() GomegaAsyncAssertion {
 	return Eventually(
 		func() error {
-			// Check ServiceAccount CRD
-			if _, err := f.client.GrafanaV1alpha1().Datasources(core.NamespaceAll).List(metav1.ListOptions{}); err != nil {
-				return errors.New("CRD Datasource is not ready")
+			// Check Datasource CRD
+			/*if _, err := f.extClient.GrafanaV1alpha1().Datasources(core.NamespaceAll).List(metav1.ListOptions{}); err != nil {
+				return fmt.Errorf("CRD Dashboard is not ready. Reason: %v", err)
+			}*/
+
+			// Check Dashboard CRD
+			if _, err := f.extClient.GrafanaV1alpha1().Dashboards(core.NamespaceAll).List(metav1.ListOptions{}); err != nil {
+				return fmt.Errorf("CRD Dashboard is not ready. Reason: %v", err)
 			}
 
-			// Check ResourceGroup CRD
-			if _, err := f.client.GrafanaV1alpha1().Dashboards(core.NamespaceAll).List(metav1.ListOptions{}); err != nil {
-				return errors.New("CRD Dashboard is not ready")
-			}
-
-			// Check DbInstance CRD
-			if _, err := f.client.GrafanaV1alpha1().DashboardTemplates(core.NamespaceAll).List(metav1.ListOptions{}); err != nil {
-				return errors.New("CRD DashboardTemplate is not ready")
-			}
+			// Check DashboardTemplate CRD
+			/*if _, err := f.extClient.GrafanaV1alpha1().DashboardTemplates(core.NamespaceAll).List(metav1.ListOptions{}); err != nil {
+				return fmt.Errorf("CRD Dashboard is not ready. Reason: %v", err)
+			}*/
 			return nil
 		},
 		time.Minute*2,
