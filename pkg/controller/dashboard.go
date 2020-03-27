@@ -17,6 +17,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -149,7 +150,7 @@ func (c *GrafanaController) runDashboardFinalizer(dashboard *api.Dashboard) {
 	dashboard.Status = newDashboard.Status
 
 	if dashboard.Status.Dashboard != nil {
-		_, err := c.grafanaClient.DeleteDashboard(types.String(dashboard.Status.Dashboard.Slug))
+		_, err := c.grafanaClient.DeleteDashboard(context.Background(), types.String(dashboard.Status.Dashboard.Slug))
 		if err != nil {
 			c.recorder.Eventf(
 				dashboard,
@@ -181,7 +182,11 @@ func (c *GrafanaController) updateDashboard(dashboard *api.Dashboard, board sdk.
 		board.UID = types.String(dashboard.Status.Dashboard.UID)
 	}
 
-	statusMsg, err := c.grafanaClient.SetDashboard(board, int(dashboard.Spec.FolderID), dashboard.Spec.Overwrite)
+	params := sdk.SetDashboardParams{
+		FolderID:  int(dashboard.Spec.FolderID),
+		Overwrite: dashboard.Spec.Overwrite,
+	}
+	statusMsg, err := c.grafanaClient.SetDashboard(context.Background(), board, params)
 	if err != nil {
 		return errors.Wrap(err, "failed to save dashboard in grafana server")
 	}
@@ -231,8 +236,11 @@ func (c *GrafanaController) setGrafanaClient(dashboard *api.Dashboard) error {
 	c.grafanaClient = sdk.NewClient(apiURL, apiKey, sdk.DefaultHTTPClient)
 
 	return wait.PollImmediate(100*time.Millisecond, 1*time.Minute, func() (bool, error) {
-		err := c.grafanaClient.CheckHealth()
-		return err == nil, nil
+		health, err := c.grafanaClient.GetHealth(context.Background())
+		if err != nil {
+			return false, err
+		}
+		return health.Database == "ok", nil
 	})
 }
 

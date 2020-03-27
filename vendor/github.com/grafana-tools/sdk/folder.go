@@ -19,23 +19,21 @@ package sdk
    ॐ तारे तुत्तारे तुरे स्व
 */
 
-import (
-	"fmt"
-)
-
-// Checks health of the grafana base url
-// Reflects GET BaseURL API call.
-func (r *Client) CheckHealth() error {
-	var (
-		raw  []byte
-		code int
-		err  error
-	)
-	if raw, code, err = r.get("", nil); err != nil {
-		return err
-	}
-	if code != 200 {
-		return fmt.Errorf("HTTP error %d: returns %s", code, raw)
-	}
-	return nil
+// Folder as described in the doc
+// https://grafana.com/docs/grafana/latest/http_api/folder/#get-all-folders
+type Folder struct {
+	ID        int    `json:"id"`
+	UID       string `json:"uid"`
+	Title     string `json:"title"`
+	URL       string `json:"url"`
+	HasAcl    bool   `json:"has_acl"`
+	CanSave   bool   `json:"can_save"`
+	CanEdit   bool   `json:"can_edit"`
+	CanAdmin  bool   `json:"can_admin"`
+	CreatedBy string `json:"created_by"`
+	Created   string `json:"created"`
+	UpdatedBy string `json:"updated_by"`
+	Updated   string `json:"updated"`
+	Version   int    `json:"version"`
+	Overwrite bool   `json:"overwrite"`
 }
