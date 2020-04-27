@@ -476,7 +476,7 @@ install:
 		--set operator.tag=$(TAG) \
 		--set imagePullPolicy=Always \
 		$(IMAGE_PULL_SECRETS); \
-	kubectl wait --for=condition=Ready pods -n kube-system -l app=grafana-operator --timeout=5m
+	kubectl wait --for=condition=Ready pods -n kube-system -l 'app.kubernetes.io/name=grafana-operator,app.kubernetes.io/instance=grafana-operator' --timeout=5m
 
 .PHONY: uninstall
 uninstall:
