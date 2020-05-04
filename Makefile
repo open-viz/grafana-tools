@@ -72,9 +72,9 @@ TAG              := $(VERSION)_$(OS)_$(ARCH)
 TAG_PROD         := $(TAG)
 TAG_DBG          := $(VERSION)-dbg_$(OS)_$(ARCH)
 
-GO_VERSION       ?= 1.13.8
+GO_VERSION       ?= 1.14.2
 BUILD_IMAGE      ?= appscode/golang-dev:$(GO_VERSION)
-CHART_TEST_IMAGE ?= quay.io/helmpack/chart-testing:v3.0.0-beta.1
+CHART_TEST_IMAGE ?= quay.io/helmpack/chart-testing:v3.0.0-rc.1
 
 OUTBIN = bin/$(OS)_$(ARCH)/$(BIN)
 ifeq ($(OS),windows)
@@ -470,13 +470,12 @@ endif
 .PHONY: install
 install:
 	@cd ../installer; \
-	helm install grafana-operator charts/grafana-operator \
+	helm install grafana-operator charts/grafana-operator --wait \
 		--namespace=kube-system \
 		--set operator.registry=$(REGISTRY) \
 		--set operator.tag=$(TAG) \
 		--set imagePullPolicy=Always \
 		$(IMAGE_PULL_SECRETS); \
-	kubectl wait --for=condition=Ready pods -n kube-system -l 'app.kubernetes.io/name=grafana-operator,app.kubernetes.io/instance=grafana-operator' --timeout=5m
 
 .PHONY: uninstall
 uninstall:
