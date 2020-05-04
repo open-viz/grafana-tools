@@ -238,7 +238,7 @@ func (c *GrafanaController) setGrafanaClient(dashboard *api.Dashboard) error {
 	return wait.PollImmediate(100*time.Millisecond, 1*time.Minute, func() (bool, error) {
 		health, err := c.grafanaClient.GetHealth(context.Background())
 		if err != nil {
-			return false, err
+			return false, nil
 		}
 		return health.Database == "ok", nil
 	})
