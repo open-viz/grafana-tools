@@ -11,12 +11,12 @@ require (
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/google/gofuzz v1.0.0
 	github.com/gosimple/slug v1.9.0 // indirect
-	github.com/grafana-tools/sdk v0.0.0-20200117094948-01e30e222b48
+	github.com/grafana-tools/sdk v0.0.0-20200326200416-f0431e44c1c3
 	github.com/mattn/go-colorable v0.1.4 // indirect
 	github.com/mattn/go-isatty v0.0.12 // indirect
 	github.com/onsi/ginkgo v1.8.0
 	github.com/onsi/gomega v1.5.0
-	github.com/pkg/errors v0.8.1
+	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.3
 	github.com/stretchr/testify v1.4.0 // indirect
@@ -50,7 +50,6 @@ replace (
 	github.com/Azure/go-autorest/autorest/validation => github.com/Azure/go-autorest/autorest/validation v0.1.0
 	github.com/Azure/go-autorest/logger => github.com/Azure/go-autorest/logger v0.1.0
 	github.com/Azure/go-autorest/tracing => github.com/Azure/go-autorest/tracing v0.5.0
-	github.com/grafana-tools/sdk => github.com/searchlight/grafana-sdk v0.0.0-20200219122750-883bc6af7309
 	github.com/kubernetes-csi/external-snapshotter => github.com/kmodules/external-snapshotter v1.2.1-0.20191128100451-0265c5fa679a
 	github.com/prometheus/client_golang => github.com/prometheus/client_golang v0.9.2
 	google.golang.org/api => google.golang.org/api v0.6.1-0.20190607001116-5213b8090861
