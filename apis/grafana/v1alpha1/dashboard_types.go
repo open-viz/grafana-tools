@@ -17,9 +17,9 @@ limitations under the License.
 package v1alpha1
 
 import (
-	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	kmapi "kmodules.xyz/client-go/api/v1"
 )
 
 const (
@@ -105,31 +105,5 @@ type DashboardStatus struct {
 
 	// Represents the latest available observations of a Dashboard current state.
 	// +optional
-	Conditions []DashboardCondition `json:"conditions,omitempty" protobuf:"bytes,5,rep,name=conditions"`
-}
-
-type DashboardConditionType string
-
-// These are valid conditions of a Dashboard.
-const (
-	DashboardConditionFailure DashboardConditionType = "Failure"
-)
-
-// DashboardCondition describes the state of a Dashboard at a certain point.
-type DashboardCondition struct {
-	// Type of DashboardCondition condition.
-	// +optional
-	Type DashboardConditionType `json:"type,omitempty" protobuf:"bytes,1,opt,name=type,casttype=DashboardConditionType"`
-
-	// Status of the condition, one of True, False, Unknown.
-	// +optional
-	Status core.ConditionStatus `json:"status,omitempty" protobuf:"bytes,2,opt,name=status,casttype=k8s.io/api/core/v1.ConditionStatus"`
-
-	// The reason for the condition's.
-	// +optional
-	Reason string `json:"reason,omitempty" protobuf:"bytes,3,opt,name=reason"`
-
-	// A human readable message indicating details about the transition.
-	// +optional
-	Message string `json:"message,omitempty" protobuf:"bytes,4,opt,name=message"`
+	Conditions []kmapi.Condition `json:"conditions,omitempty" protobuf:"bytes,5,rep,name=conditions"`
 }

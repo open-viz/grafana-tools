@@ -35,6 +35,7 @@ import (
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	kmapi "kmodules.xyz/client-go/api/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	"kmodules.xyz/client-go/tools/queue"
@@ -101,10 +102,10 @@ func (c *GrafanaController) runDashboardInjector(key string) error {
 // it creates or updates dashboard
 func (c *GrafanaController) reconcileDashboard(dashboard *api.Dashboard) error {
 	// update Processing status
-	newDashboard, err := util.UpdateDashboardStatus(c.extClient.GrafanaV1alpha1(), dashboard, func(in *api.DashboardStatus) *api.DashboardStatus {
+	newDashboard, err := util.UpdateDashboardStatus(c.extClient.GrafanaV1alpha1(), dashboard.ObjectMeta, func(in *api.DashboardStatus) *api.DashboardStatus {
 		in.Phase = api.DashboardPhaseProcessing
 		in.Reason = "Started processing of dashboard"
-		in.Conditions = []api.DashboardCondition{}
+		in.Conditions = []kmapi.Condition{}
 		in.ObservedGeneration = dashboard.Generation
 
 		return in
@@ -137,7 +138,7 @@ func (c *GrafanaController) reconcileDashboard(dashboard *api.Dashboard) error {
 // before the dashboard is deleted
 func (c *GrafanaController) runDashboardFinalizer(dashboard *api.Dashboard) {
 	// update Terminating status
-	newDashboard, err := util.UpdateDashboardStatus(c.extClient.GrafanaV1alpha1(), dashboard, func(in *api.DashboardStatus) *api.DashboardStatus {
+	newDashboard, err := util.UpdateDashboardStatus(c.extClient.GrafanaV1alpha1(), dashboard.ObjectMeta, func(in *api.DashboardStatus) *api.DashboardStatus {
 		in.Phase = api.DashboardPhaseTerminating
 		in.Reason = "Terminating dashboard"
 		in.ObservedGeneration = dashboard.Generation
@@ -191,7 +192,7 @@ func (c *GrafanaController) updateDashboard(dashboard *api.Dashboard, board sdk.
 		return errors.Wrap(err, "failed to save dashboard in grafana server")
 	}
 
-	newDashboard, err := util.UpdateDashboardStatus(c.extClient.GrafanaV1alpha1(), dashboard, func(in *api.DashboardStatus) *api.DashboardStatus {
+	newDashboard, err := util.UpdateDashboardStatus(c.extClient.GrafanaV1alpha1(), dashboard.ObjectMeta, func(in *api.DashboardStatus) *api.DashboardStatus {
 		in.Phase = api.DashboardPhaseSuccess
 		in.Reason = "Successfully completed the modification process"
 		in.ObservedGeneration = dashboard.Generation

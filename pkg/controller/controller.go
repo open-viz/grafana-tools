@@ -39,6 +39,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
+	kmapi "kmodules.xyz/client-go/api/v1"
 	crdutils "kmodules.xyz/client-go/apiextensions/v1beta1"
 	"kmodules.xyz/client-go/tools/queue"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
@@ -121,12 +122,12 @@ func (c *GrafanaController) pushFailureEvent(dashboard *api.Dashboard, reason st
 		dashboard.Name,
 		reason,
 	)
-	dashboard, err := util.UpdateDashboardStatus(c.extClient.GrafanaV1alpha1(), dashboard, func(in *api.DashboardStatus) *api.DashboardStatus {
+	dashboard, err := util.UpdateDashboardStatus(c.extClient.GrafanaV1alpha1(), dashboard.ObjectMeta, func(in *api.DashboardStatus) *api.DashboardStatus {
 		in.Phase = api.DashboardPhaseFailed
 		in.Reason = reason
-		in.Conditions = append(in.Conditions, api.DashboardCondition{
-			Type:    api.DashboardConditionFailure,
-			Status:  core.ConditionTrue,
+		in.Conditions = kmapi.SetCondition(in.Conditions, kmapi.Condition{
+			Type:    kmapi.ConditionFailure,
+			Status:  kmapi.ConditionTrue,
 			Reason:  reason,
 			Message: reason,
 		})
