@@ -34,7 +34,6 @@ import (
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
 		"go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1.Dashboard":                  schema_grafana_operator_apis_grafana_v1alpha1_Dashboard(ref),
-		"go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1.DashboardCondition":         schema_grafana_operator_apis_grafana_v1alpha1_DashboardCondition(ref),
 		"go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1.DashboardList":              schema_grafana_operator_apis_grafana_v1alpha1_DashboardList(ref),
 		"go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1.DashboardReference":         schema_grafana_operator_apis_grafana_v1alpha1_DashboardReference(ref),
 		"go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1.DashboardSpec":              schema_grafana_operator_apis_grafana_v1alpha1_DashboardSpec(ref),
@@ -333,6 +332,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"k8s.io/apimachinery/pkg/runtime.Unknown":                                              schema_k8sio_apimachinery_pkg_runtime_Unknown(ref),
 		"k8s.io/apimachinery/pkg/util/intstr.IntOrString":                                      schema_apimachinery_pkg_util_intstr_IntOrString(ref),
 		"k8s.io/apimachinery/pkg/version.Info":                                                 schema_k8sio_apimachinery_pkg_version_Info(ref),
+		"kmodules.xyz/client-go/api/v1.Condition":                                              schema_kmodulesxyz_client_go_api_v1_Condition(ref),
 	}
 }
 
@@ -376,47 +376,6 @@ func schema_grafana_operator_apis_grafana_v1alpha1_Dashboard(ref common.Referenc
 		},
 		Dependencies: []string{
 			"go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1.DashboardSpec", "go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1.DashboardStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
-	}
-}
-
-func schema_grafana_operator_apis_grafana_v1alpha1_DashboardCondition(ref common.ReferenceCallback) common.OpenAPIDefinition {
-	return common.OpenAPIDefinition{
-		Schema: spec.Schema{
-			SchemaProps: spec.SchemaProps{
-				Description: "DashboardCondition describes the state of a Dashboard at a certain point.",
-				Type:        []string{"object"},
-				Properties: map[string]spec.Schema{
-					"type": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Type of DashboardCondition condition.",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"status": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Status of the condition, one of True, False, Unknown.",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"reason": {
-						SchemaProps: spec.SchemaProps{
-							Description: "The reason for the condition's.",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"message": {
-						SchemaProps: spec.SchemaProps{
-							Description: "A human readable message indicating details about the transition.",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-				},
-			},
-		},
 	}
 }
 
@@ -590,7 +549,7 @@ func schema_grafana_operator_apis_grafana_v1alpha1_DashboardStatus(ref common.Re
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
 									SchemaProps: spec.SchemaProps{
-										Ref: ref("go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1.DashboardCondition"),
+										Ref: ref("kmodules.xyz/client-go/api/v1.Condition"),
 									},
 								},
 							},
@@ -600,7 +559,7 @@ func schema_grafana_operator_apis_grafana_v1alpha1_DashboardStatus(ref common.Re
 			},
 		},
 		Dependencies: []string{
-			"go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1.DashboardCondition", "go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1.DashboardReference"},
+			"go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1.DashboardReference", "kmodules.xyz/client-go/api/v1.Condition"},
 	}
 }
 
@@ -15455,5 +15414,61 @@ func schema_k8sio_apimachinery_pkg_version_Info(ref common.ReferenceCallback) co
 				Required: []string{"major", "minor", "gitVersion", "gitCommit", "gitTreeState", "buildDate", "goVersion", "compiler", "platform"},
 			},
 		},
+	}
+}
+
+func schema_kmodulesxyz_client_go_api_v1_Condition(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"type": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Type of condition in CamelCase or in foo.example.com/CamelCase. Many .condition.type values are consistent across resources like Available, but because arbitrary conditions can be useful (see .node.status.conditions), the ability to deconflict is important.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Status of the condition, one of True, False, Unknown.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"observedGeneration": {
+						SchemaProps: spec.SchemaProps{
+							Description: "If set, this represents the .metadata.generation that the condition was set based upon. For instance, if .metadata.generation is currently 12, but the .status.condition[x].observedGeneration is 9, the condition is out of date with respect to the current state of the instance.",
+							Type:        []string{"integer"},
+							Format:      "int64",
+						},
+					},
+					"lastTransitionTime": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Last time the condition transitioned from one status to another. This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.",
+							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Time"),
+						},
+					},
+					"reason": {
+						SchemaProps: spec.SchemaProps{
+							Description: "The reason for the condition's last transition in CamelCase. The specific API may choose whether or not this field is considered a guaranteed API. This field may not be empty.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"message": {
+						SchemaProps: spec.SchemaProps{
+							Description: "A human readable message indicating details about the transition. This field may be empty.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
+				Required: []string{"type", "status", "lastTransitionTime", "reason", "message"},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.Time"},
 	}
 }
