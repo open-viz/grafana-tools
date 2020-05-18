@@ -3,7 +3,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    app: searchlight
+    app.kubernetes.io/name: searchlight
   name: datasources.grafana.searchlight.dev
 spec:
   group: grafana.searchlight.dev

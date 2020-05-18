@@ -216,8 +216,8 @@ patch-crd-%: $(BUILD_DIRS)
 .PHONY: label-crds
 label-crds: $(BUILD_DIRS)
 	@for f in api/crds/*.yaml; do \
-		echo "applying app=searchlight label to $$f"; \
-		kubectl label --overwrite -f $$f --local=true -o yaml app=searchlight > bin/crd.yaml; \
+		echo "applying app.kubernetes.io/name=searchlight label to $$f"; \
+		kubectl label --overwrite -f $$f --local=true -o yaml app.kubernetes.io/name=searchlight > bin/crd.yaml; \
 		mv bin/crd.yaml $$f; \
 	done
 
@@ -484,7 +484,7 @@ uninstall:
 
 .PHONY: purge
 purge: uninstall
-	kubectl delete crds -l app=searchlight
+	kubectl delete crds -l app.kubernetes.io/name=searchlight
 
 .PHONY: dev
 dev: gen fmt push
