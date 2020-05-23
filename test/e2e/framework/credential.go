@@ -17,6 +17,7 @@ limitations under the License.
 package framework
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"strconv"
@@ -24,6 +25,7 @@ import (
 	"github.com/appscode/go/types"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	meta_util "kmodules.xyz/client-go/meta"
 	"kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 )
@@ -53,12 +55,12 @@ func (f *Framework) CreateAppBinding() error {
 		},
 	}
 
-	_, err := f.appcatClient.AppBindings(obj.Namespace).Create(obj)
+	_, err := f.appcatClient.AppBindings(obj.Namespace).Create(context.TODO(), obj, metav1.CreateOptions{})
 	return err
 }
 
 func (f *Framework) DeleteAppBinding() error {
-	return f.appcatClient.AppBindings(f.namespace).Delete(f.name, nil)
+	return f.appcatClient.AppBindings(f.namespace).Delete(context.TODO(), f.name, meta_util.DeleteInForeground())
 }
 
 func (f *Framework) SecretName() string {
@@ -76,12 +78,12 @@ func (f *Framework) CreateSecret(apiKey string) error {
 			"apiKey": []byte(apiKey),
 		},
 	}
-	_, err := f.kubeClient.CoreV1().Secrets(obj.Namespace).Create(obj)
+	_, err := f.kubeClient.CoreV1().Secrets(obj.Namespace).Create(context.TODO(), obj, metav1.CreateOptions{})
 	return err
 }
 
 func (f *Framework) DeleteSecret() error {
-	return f.kubeClient.CoreV1().Secrets(f.namespace).Delete(f.name, nil)
+	return f.kubeClient.CoreV1().Secrets(f.namespace).Delete(context.TODO(), f.name, metav1.DeleteOptions{})
 }
 
 // getApiURLandApiKey extracts ApiURL and ApiKey from appBinding and secret

@@ -17,6 +17,7 @@ limitations under the License.
 package framework
 
 import (
+	"context"
 	"time"
 
 	"github.com/grafana-tools/sdk"
@@ -28,12 +29,12 @@ import (
 )
 
 func (f *Framework) GetGrafanaClient() (*sdk.Client, error) {
-	appBinding, err := f.appcatClient.AppBindings(f.namespace).Get(f.name, metav1.GetOptions{})
+	appBinding, err := f.appcatClient.AppBindings(f.namespace).Get(context.TODO(), f.name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	secret, err := f.kubeClient.CoreV1().Secrets(f.namespace).Get(appBinding.Spec.Secret.Name, metav1.GetOptions{})
+	secret, err := f.kubeClient.CoreV1().Secrets(f.namespace).Get(context.TODO(), appBinding.Spec.Secret.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -75,10 +76,10 @@ func (f *Framework) DeleteGrafanaServer() error {
 
 func (f *Framework) WaitForGrafanaServerToBeReady() {
 	Eventually(func() bool {
-		deploy, err := f.kubeClient.AppsV1().Deployments(f.namespace).Get(f.name, metav1.GetOptions{})
+		deploy, err := f.kubeClient.AppsV1().Deployments(f.namespace).Get(context.TODO(), f.name, metav1.GetOptions{})
 		Expect(err).NotTo(HaveOccurred())
 
-		pods, err := f.kubeClient.CoreV1().Pods(deploy.Namespace).List(metav1.ListOptions{
+		pods, err := f.kubeClient.CoreV1().Pods(deploy.Namespace).List(context.TODO(), metav1.ListOptions{
 			LabelSelector: labels.Set(deploy.GetLabels()).String(),
 		})
 		Expect(err).NotTo(HaveOccurred())

@@ -78,10 +78,10 @@ func (c *GrafanaController) runDashboardInjector(key string) error {
 		} else {
 			if !core_util.HasFinalizer(dashboard.ObjectMeta, DashboardFinalizer) {
 				// Add finalizer
-				_, _, err := util.PatchDashboard(c.extClient.GrafanaV1alpha1(), dashboard, func(vp *api.Dashboard) *api.Dashboard {
+				_, _, err := util.PatchDashboard(context.TODO(), c.extClient.GrafanaV1alpha1(), dashboard, func(vp *api.Dashboard) *api.Dashboard {
 					vp.ObjectMeta = core_util.AddFinalizer(dashboard.ObjectMeta, DashboardFinalizer)
 					return vp
-				})
+				}, metav1.PatchOptions{})
 				if err != nil {
 					return errors.Wrapf(err, "failed to set Dashboard finalizer for %s/%s", dashboard.Namespace, dashboard.Name)
 				}
@@ -102,14 +102,14 @@ func (c *GrafanaController) runDashboardInjector(key string) error {
 // it creates or updates dashboard
 func (c *GrafanaController) reconcileDashboard(dashboard *api.Dashboard) error {
 	// update Processing status
-	newDashboard, err := util.UpdateDashboardStatus(c.extClient.GrafanaV1alpha1(), dashboard.ObjectMeta, func(in *api.DashboardStatus) *api.DashboardStatus {
+	newDashboard, err := util.UpdateDashboardStatus(context.TODO(), c.extClient.GrafanaV1alpha1(), dashboard.ObjectMeta, func(in *api.DashboardStatus) *api.DashboardStatus {
 		in.Phase = api.DashboardPhaseProcessing
 		in.Reason = "Started processing of dashboard"
 		in.Conditions = []kmapi.Condition{}
 		in.ObservedGeneration = dashboard.Generation
 
 		return in
-	})
+	}, metav1.UpdateOptions{})
 	if err != nil {
 		return errors.Wrapf(err, "failed to update dashboard phase to `%s`", api.DashboardPhaseSuccess)
 	}
@@ -138,13 +138,13 @@ func (c *GrafanaController) reconcileDashboard(dashboard *api.Dashboard) error {
 // before the dashboard is deleted
 func (c *GrafanaController) runDashboardFinalizer(dashboard *api.Dashboard) {
 	// update Terminating status
-	newDashboard, err := util.UpdateDashboardStatus(c.extClient.GrafanaV1alpha1(), dashboard.ObjectMeta, func(in *api.DashboardStatus) *api.DashboardStatus {
+	newDashboard, err := util.UpdateDashboardStatus(context.TODO(), c.extClient.GrafanaV1alpha1(), dashboard.ObjectMeta, func(in *api.DashboardStatus) *api.DashboardStatus {
 		in.Phase = api.DashboardPhaseTerminating
 		in.Reason = "Terminating dashboard"
 		in.ObservedGeneration = dashboard.Generation
 
 		return in
-	})
+	}, metav1.UpdateOptions{})
 	if err != nil {
 		glog.Infof("Failed to update dashboard phase to `%s`. Reason: %v", api.DashboardPhaseTerminating, err)
 	}
@@ -167,10 +167,10 @@ func (c *GrafanaController) runDashboardFinalizer(dashboard *api.Dashboard) {
 		}
 	}
 
-	_, _, err = util.PatchDashboard(c.extClient.GrafanaV1alpha1(), dashboard, func(in *api.Dashboard) *api.Dashboard {
+	_, _, err = util.PatchDashboard(context.TODO(), c.extClient.GrafanaV1alpha1(), dashboard, func(in *api.Dashboard) *api.Dashboard {
 		in.ObjectMeta = core_util.RemoveFinalizer(dashboard.ObjectMeta, DashboardFinalizer)
 		return in
-	})
+	}, metav1.PatchOptions{})
 	if err != nil {
 		glog.Infof("Failed to set Dashboard finalizer for %s/%s. Reason: %v.", dashboard.Namespace, dashboard.Name, err)
 	}
@@ -192,24 +192,30 @@ func (c *GrafanaController) updateDashboard(dashboard *api.Dashboard, board sdk.
 		return errors.Wrap(err, "failed to save dashboard in grafana server")
 	}
 
-	newDashboard, err := util.UpdateDashboardStatus(c.extClient.GrafanaV1alpha1(), dashboard.ObjectMeta, func(in *api.DashboardStatus) *api.DashboardStatus {
-		in.Phase = api.DashboardPhaseSuccess
-		in.Reason = "Successfully completed the modification process"
-		in.ObservedGeneration = dashboard.Generation
+	newDashboard, err := util.UpdateDashboardStatus(
+		context.TODO(),
+		c.extClient.GrafanaV1alpha1(),
+		dashboard.ObjectMeta,
+		func(in *api.DashboardStatus) *api.DashboardStatus {
+			in.Phase = api.DashboardPhaseSuccess
+			in.Reason = "Successfully completed the modification process"
+			in.ObservedGeneration = dashboard.Generation
 
-		in.Dashboard = &api.DashboardReference{
-			ID:      types.Int64P(int64(types.UInt(statusMsg.ID))),
-			UID:     statusMsg.UID,
-			Slug:    statusMsg.Slug,
-			URL:     statusMsg.URL,
-			Version: types.Int64P(int64(types.Int(statusMsg.Version))),
-		}
-		if statusMsg.OrgID != nil {
-			in.Dashboard.OrgID = types.Int64P(int64(types.UInt(statusMsg.OrgID)))
-		}
+			in.Dashboard = &api.DashboardReference{
+				ID:      types.Int64P(int64(types.UInt(statusMsg.ID))),
+				UID:     statusMsg.UID,
+				Slug:    statusMsg.Slug,
+				URL:     statusMsg.URL,
+				Version: types.Int64P(int64(types.Int(statusMsg.Version))),
+			}
+			if statusMsg.OrgID != nil {
+				in.Dashboard.OrgID = types.Int64P(int64(types.UInt(statusMsg.OrgID)))
+			}
 
-		return in
-	})
+			return in
+		},
+		metav1.UpdateOptions{},
+	)
 	if err != nil {
 		return errors.Wrapf(err, "failed to update dashboard phase to `%s`", api.DashboardPhaseSuccess)
 	}
@@ -220,12 +226,12 @@ func (c *GrafanaController) updateDashboard(dashboard *api.Dashboard, board sdk.
 
 // setGrafanaClient sets grafana client from user provided data
 func (c *GrafanaController) setGrafanaClient(dashboard *api.Dashboard) error {
-	appBinding, err := c.appCatalogClient.AppBindings(dashboard.Namespace).Get(dashboard.Spec.Grafana.Name, metav1.GetOptions{})
+	appBinding, err := c.appCatalogClient.AppBindings(dashboard.Namespace).Get(context.TODO(), dashboard.Spec.Grafana.Name, metav1.GetOptions{})
 	if err != nil {
 		return errors.Wrap(err, "failed to fetch AppBinding")
 	}
 
-	secret, err := c.kubeClient.CoreV1().Secrets(dashboard.Namespace).Get(appBinding.Spec.Secret.Name, metav1.GetOptions{})
+	secret, err := c.kubeClient.CoreV1().Secrets(dashboard.Namespace).Get(context.TODO(), appBinding.Spec.Secret.Name, metav1.GetOptions{})
 	if err != nil {
 		return errors.Wrap(err, "failed to fetch Secret")
 	}

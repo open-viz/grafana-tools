@@ -17,6 +17,8 @@ limitations under the License.
 package framework
 
 import (
+	"context"
+
 	"github.com/appscode/go/types"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -83,12 +85,12 @@ func (f *Framework) CreateGrafanaDeployment() error {
 		},
 	}
 
-	_, err := f.kubeClient.AppsV1().Deployments(obj.Namespace).Create(obj)
+	_, err := f.kubeClient.AppsV1().Deployments(obj.Namespace).Create(context.TODO(), obj, metav1.CreateOptions{})
 	return err
 }
 
 func (f *Framework) DeleteGrafanaDeployment() error {
-	return f.kubeClient.AppsV1().Deployments(f.namespace).Delete(f.name, nil)
+	return f.kubeClient.AppsV1().Deployments(f.namespace).Delete(context.TODO(), f.name, metav1.DeleteOptions{})
 }
 
 func (f *Framework) GrafanaServiceName() string {
@@ -115,10 +117,10 @@ func (f *Framework) CreateGrafanaService() error {
 		},
 	}
 
-	_, err := f.kubeClient.CoreV1().Services(obj.Namespace).Create(obj)
+	_, err := f.kubeClient.CoreV1().Services(obj.Namespace).Create(context.TODO(), obj, metav1.CreateOptions{})
 	return err
 }
 
 func (f *Framework) DeleteGrafanaService() error {
-	return f.kubeClient.CoreV1().Services(f.namespace).Delete(f.name, nil)
+	return f.kubeClient.CoreV1().Services(f.namespace).Delete(context.TODO(), f.name, metav1.DeleteOptions{})
 }

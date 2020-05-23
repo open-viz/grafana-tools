@@ -17,6 +17,7 @@ limitations under the License.
 package framework
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -34,7 +35,7 @@ func (f *Framework) EventuallyCRD() GomegaAsyncAssertion {
 			}*/
 
 			// Check Dashboard CRD
-			if _, err := f.extClient.GrafanaV1alpha1().Dashboards(core.NamespaceAll).List(metav1.ListOptions{}); err != nil {
+			if _, err := f.extClient.GrafanaV1alpha1().Dashboards(core.NamespaceAll).List(context.TODO(), metav1.ListOptions{}); err != nil {
 				return fmt.Errorf("CRD Dashboard is not ready. Reason: %v", err)
 			}
 
