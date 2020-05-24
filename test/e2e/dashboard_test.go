@@ -208,7 +208,9 @@ var _ = Describe("Grafana Operator E2E testing", func() {
 			ctx := context.TODO()
 			ctx, cancel := context.WithTimeout(ctx, retryTimeout)
 			defer cancel()
-			ri := dynamic.NewForConfigOrDie(f.RestConfig()).Resource(appcat.SchemeGroupVersion.WithResource(appcat.ResourceApps)).Namespace(f.Namespace())
+			ri := dynamic.NewForConfigOrDie(f.RestConfig()).
+				Resource(appcat.SchemeGroupVersion.WithResource(appcat.ResourceApps)).
+				Namespace(f.Namespace())
 			err = dynamic_util.WaitUntilDeleted(ri, ctx.Done(), f.AppBindingName())
 			Expect(err).NotTo(HaveOccurred())
 		})
