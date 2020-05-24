@@ -17,6 +17,7 @@ limitations under the License.
 package e2e_test
 
 import (
+	"context"
 	"io/ioutil"
 	"os"
 	"time"
@@ -29,6 +30,13 @@ import (
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/dynamic"
+	dynamic_util "kmodules.xyz/client-go/dynamic"
+	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
+)
+
+const (
+	retryTimeout = 5 * time.Minute
 )
 
 var _ = Describe("Grafana Operator E2E testing", func() {
@@ -65,7 +73,7 @@ var _ = Describe("Grafana Operator E2E testing", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				return dashboard.Status.Phase == api.DashboardPhaseSuccess || dashboard.Status.Phase == api.DashboardPhaseFailed
-			}, 5*time.Minute, 100*time.Millisecond).Should(BeTrue())
+			}, retryTimeout, 100*time.Millisecond).Should(BeTrue())
 
 		}
 
@@ -78,7 +86,7 @@ var _ = Describe("Grafana Operator E2E testing", func() {
 			Eventually(func() error {
 				_, err = f.GetDashboard()
 				return err
-			}, 5*time.Minute, 100*time.Millisecond).ShouldNot(BeNil())
+			}, retryTimeout, 100*time.Millisecond).ShouldNot(BeNil())
 		}
 	)
 
@@ -194,6 +202,14 @@ var _ = Describe("Grafana Operator E2E testing", func() {
 
 			By("Deleting AppBinding")
 			err = root.DeleteAppBinding()
+			Expect(err).NotTo(HaveOccurred())
+
+			By("Wait until AppBinding is deleted")
+			ctx := context.TODO()
+			ctx, cancel := context.WithTimeout(ctx, retryTimeout)
+			defer cancel()
+			ri := dynamic.NewForConfigOrDie(f.RestConfig()).Resource(appcat.SchemeGroupVersion.WithResource(appcat.ResourceApps)).Namespace(f.Namespace())
+			err = dynamic_util.WaitUntilDeleted(ri, ctx.Done(), f.AppBindingName())
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})
