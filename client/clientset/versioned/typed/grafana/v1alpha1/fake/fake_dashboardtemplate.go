@@ -19,6 +19,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	v1alpha1 "go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -40,7 +42,7 @@ var dashboardtemplatesResource = schema.GroupVersionResource{Group: "grafana.sea
 var dashboardtemplatesKind = schema.GroupVersionKind{Group: "grafana.searchlight.dev", Version: "v1alpha1", Kind: "DashboardTemplate"}
 
 // Get takes name of the dashboardTemplate, and returns the corresponding dashboardTemplate object, and an error if there is any.
-func (c *FakeDashboardTemplates) Get(name string, options v1.GetOptions) (result *v1alpha1.DashboardTemplate, err error) {
+func (c *FakeDashboardTemplates) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.DashboardTemplate, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewGetAction(dashboardtemplatesResource, c.ns, name), &v1alpha1.DashboardTemplate{})
 
@@ -51,7 +53,7 @@ func (c *FakeDashboardTemplates) Get(name string, options v1.GetOptions) (result
 }
 
 // List takes label and field selectors, and returns the list of DashboardTemplates that match those selectors.
-func (c *FakeDashboardTemplates) List(opts v1.ListOptions) (result *v1alpha1.DashboardTemplateList, err error) {
+func (c *FakeDashboardTemplates) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.DashboardTemplateList, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewListAction(dashboardtemplatesResource, dashboardtemplatesKind, c.ns, opts), &v1alpha1.DashboardTemplateList{})
 
@@ -73,14 +75,14 @@ func (c *FakeDashboardTemplates) List(opts v1.ListOptions) (result *v1alpha1.Das
 }
 
 // Watch returns a watch.Interface that watches the requested dashboardTemplates.
-func (c *FakeDashboardTemplates) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *FakeDashboardTemplates) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
 		InvokesWatch(testing.NewWatchAction(dashboardtemplatesResource, c.ns, opts))
 
 }
 
 // Create takes the representation of a dashboardTemplate and creates it.  Returns the server's representation of the dashboardTemplate, and an error, if there is any.
-func (c *FakeDashboardTemplates) Create(dashboardTemplate *v1alpha1.DashboardTemplate) (result *v1alpha1.DashboardTemplate, err error) {
+func (c *FakeDashboardTemplates) Create(ctx context.Context, dashboardTemplate *v1alpha1.DashboardTemplate, opts v1.CreateOptions) (result *v1alpha1.DashboardTemplate, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewCreateAction(dashboardtemplatesResource, c.ns, dashboardTemplate), &v1alpha1.DashboardTemplate{})
 
@@ -91,7 +93,7 @@ func (c *FakeDashboardTemplates) Create(dashboardTemplate *v1alpha1.DashboardTem
 }
 
 // Update takes the representation of a dashboardTemplate and updates it. Returns the server's representation of the dashboardTemplate, and an error, if there is any.
-func (c *FakeDashboardTemplates) Update(dashboardTemplate *v1alpha1.DashboardTemplate) (result *v1alpha1.DashboardTemplate, err error) {
+func (c *FakeDashboardTemplates) Update(ctx context.Context, dashboardTemplate *v1alpha1.DashboardTemplate, opts v1.UpdateOptions) (result *v1alpha1.DashboardTemplate, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateAction(dashboardtemplatesResource, c.ns, dashboardTemplate), &v1alpha1.DashboardTemplate{})
 
@@ -102,7 +104,7 @@ func (c *FakeDashboardTemplates) Update(dashboardTemplate *v1alpha1.DashboardTem
 }
 
 // Delete takes name of the dashboardTemplate and deletes it. Returns an error if one occurs.
-func (c *FakeDashboardTemplates) Delete(name string, options *v1.DeleteOptions) error {
+func (c *FakeDashboardTemplates) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
 		Invokes(testing.NewDeleteAction(dashboardtemplatesResource, c.ns, name), &v1alpha1.DashboardTemplate{})
 
@@ -110,15 +112,15 @@ func (c *FakeDashboardTemplates) Delete(name string, options *v1.DeleteOptions) 
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *FakeDashboardTemplates) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(dashboardtemplatesResource, c.ns, listOptions)
+func (c *FakeDashboardTemplates) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
+	action := testing.NewDeleteCollectionAction(dashboardtemplatesResource, c.ns, listOpts)
 
 	_, err := c.Fake.Invokes(action, &v1alpha1.DashboardTemplateList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched dashboardTemplate.
-func (c *FakeDashboardTemplates) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.DashboardTemplate, err error) {
+func (c *FakeDashboardTemplates) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.DashboardTemplate, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewPatchSubresourceAction(dashboardtemplatesResource, c.ns, name, pt, data, subresources...), &v1alpha1.DashboardTemplate{})
 

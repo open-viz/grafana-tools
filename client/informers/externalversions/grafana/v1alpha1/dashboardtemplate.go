@@ -19,6 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	time "time"
 
 	grafanav1alpha1 "go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1"
@@ -62,13 +63,13 @@ func NewFilteredDashboardTemplateInformer(client versioned.Interface, namespace 
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.GrafanaV1alpha1().DashboardTemplates(namespace).List(options)
+				return client.GrafanaV1alpha1().DashboardTemplates(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.GrafanaV1alpha1().DashboardTemplates(namespace).Watch(options)
+				return client.GrafanaV1alpha1().DashboardTemplates(namespace).Watch(context.TODO(), options)
 			},
 		},
 		&grafanav1alpha1.DashboardTemplate{},
