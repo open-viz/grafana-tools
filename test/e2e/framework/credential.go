@@ -83,7 +83,7 @@ func (f *Framework) CreateSecret(apiKey string) error {
 }
 
 func (f *Framework) DeleteSecret() error {
-	return f.kubeClient.CoreV1().Secrets(f.namespace).Delete(context.TODO(), f.name, metav1.DeleteOptions{})
+	return f.kubeClient.CoreV1().Secrets(f.namespace).Delete(context.TODO(), f.name, meta_util.DeleteInForeground())
 }
 
 // getApiURLandApiKey extracts ApiURL and ApiKey from appBinding and secret
