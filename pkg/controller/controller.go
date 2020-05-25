@@ -31,8 +31,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/grafana-tools/sdk"
 	core "k8s.io/api/core/v1"
-	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
+	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/informers"
@@ -42,7 +41,7 @@ import (
 	"k8s.io/client-go/tools/record"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
 	kmapi "kmodules.xyz/client-go/api/v1"
-	crdutils "kmodules.xyz/client-go/apiextensions/v1beta1"
+	"kmodules.xyz/client-go/apiextensions"
 	"kmodules.xyz/client-go/tools/queue"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1"
@@ -55,7 +54,7 @@ type GrafanaController struct {
 	kubeClient       kubernetes.Interface
 	extClient        cs.Interface
 	appCatalogClient appcat_cs.AppcatalogV1alpha1Interface
-	crdClient        crd_cs.ApiextensionsV1beta1Interface
+	crdClient        crd_cs.Interface
 	recorder         record.EventRecorder
 	// Prometheus client
 	promClient pcm.MonitoringV1Interface
@@ -73,11 +72,11 @@ type GrafanaController struct {
 }
 
 func (c *GrafanaController) ensureCustomResourceDefinitions() error {
-	crds := []*crd_api.CustomResourceDefinition{
+	crds := []*apiextensions.CustomResourceDefinition{
 		api.Dashboard{}.CustomResourceDefinition(),
 		appcat.AppBinding{}.CustomResourceDefinition(),
 	}
-	return crdutils.RegisterCRDs(context.TODO(), c.kubeClient.Discovery(), c.crdClient, crds)
+	return apiextensions.RegisterCRDs(c.crdClient, crds)
 }
 
 func (c *GrafanaController) Run(stopCh <-chan struct{}) {

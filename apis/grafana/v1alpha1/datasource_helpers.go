@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	"go.searchlight.dev/grafana-operator/api/crds"
 
-	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	"kmodules.xyz/client-go/apiextensions"
 )
 
 func (_ Datasource) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {
