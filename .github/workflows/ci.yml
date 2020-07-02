@@ -39,9 +39,9 @@ jobs:
           chmod +x ./kubectl
           sudo mv ./kubectl /usr/local/bin/kubectl
 
-      - name: Run checks
-        run: |
-          make ci
+#       - name: Run checks
+#         run: |
+#           make ci
 
       - name: Build
         env:
