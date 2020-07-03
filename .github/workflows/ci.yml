@@ -40,7 +40,6 @@ jobs:
           sudo mv ./kubectl /usr/local/bin/kubectl
 
 
-
       # - name: Run checks
       #   run: |
       #     make ci
