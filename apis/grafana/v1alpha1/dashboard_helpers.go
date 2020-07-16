@@ -1,5 +1,5 @@
 /*
-Copyright The Searchlight Authors.
+Copyright AppsCode Inc. and Contributors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"go.searchlight.dev/grafana-operator/api/crds"
+	"go.searchlight.dev/grafana-operator/crds"
 
 	"kmodules.xyz/client-go/apiextensions"
 )

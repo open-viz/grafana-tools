@@ -1,5 +1,5 @@
 /*
-Copyright The Searchlight Authors.
+Copyright AppsCode Inc. and Contributors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ func generateSwaggerJson() {
 		glog.Fatal(err)
 	}
 
-	filename := gort.GOPath() + "/src/go.searchlight.dev/grafana-operator/api/openapi-spec/swagger.json"
+	filename := gort.GOPath() + "/src/go.searchlight.dev/grafana-operator/openapi/swagger.json"
 	err = os.MkdirAll(filepath.Dir(filename), 0755)
 	if err != nil {
 		glog.Fatal(err)
