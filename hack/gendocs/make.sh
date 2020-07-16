@@ -1,6 +1,6 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-# Copyright The Searchlight Authors.
+# Copyright AppsCode Inc. and Contributors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-pushd $GOPATH/src/go.searchlight.dev/grafana-operator/hack/gendocs
+set -eou pipefail
+
+SCRIPT_ROOT=$(realpath $(dirname "${BASH_SOURCE[0]}")/../..)
+SCRIPT_NAME=$(basename "${BASH_SOURCE[0]}")
+pushd $SCRIPT_ROOT/hack/gendocs
+
+# http://redsymbol.net/articles/bash-exit-traps/
+function cleanup() {
+    popd
+}
+trap cleanup EXIT
+
 go run main.go
-popd
