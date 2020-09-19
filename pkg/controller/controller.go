@@ -127,7 +127,7 @@ func (c *GrafanaController) pushFailureEvent(dashboard *api.Dashboard, reason st
 		in.Phase = api.DashboardPhaseFailed
 		in.Reason = reason
 		in.Conditions = kmapi.SetCondition(in.Conditions, kmapi.Condition{
-			Type:    kmapi.ConditionFailure,
+			Type:    kmapi.ConditionFailed,
 			Status:  kmapi.ConditionTrue,
 			Reason:  reason,
 			Message: reason,
