@@ -1407,10 +1407,10 @@ kmodules.xyz/crd-schema-fuzz v0.0.0-20200922204806-c1426cd7fcf4 h1:NWWv+Qju8xzHZ
 kmodules.xyz/crd-schema-fuzz v0.0.0-20200922204806-c1426cd7fcf4/go.mod h1:WrO3fryNyFCgqqyWnwI89lnzWA7kN072Ehya7ELGfzE=
 kmodules.xyz/custom-resources v0.0.0-20200922210108-70f2815a43bb h1:SwMPMh6A196yoe8kAH+guTNS8rsTfB2dRbFNh6g0Znk=
 kmodules.xyz/custom-resources v0.0.0-20200922210108-70f2815a43bb/go.mod h1:+YU32jSWaGGE4etTr/iCF88tLAeDNq1lhptVymjUbjg=
-kmodules.xyz/monitoring-agent-api v0.0.0-20200923055102-fc5d27139768 h1:IJzr+9ydXfO2krRBmrt7e9Lr4w2MYSI7lguDAFm54Xc=
-kmodules.xyz/monitoring-agent-api v0.0.0-20200923055102-fc5d27139768/go.mod h1:WD8UJt8h37KF9nHbbstY7KDfkOxSkdrYbIr+WO6PaYw=
-kmodules.xyz/offshoot-api v0.0.0-20200923055031-420a2bc7c32b h1:Hj6mvMu2WRplV2gKGiazmC3dm6kYoFuva2hVLA/IkcU=
-kmodules.xyz/offshoot-api v0.0.0-20200923055031-420a2bc7c32b/go.mod h1:Wy3/mWK2lWQOviKVpBtiCEYtLaYIaSiym8leZNKBUd4=
+kmodules.xyz/monitoring-agent-api v0.0.0-20200923111044-0b2ef3080406 h1:GAto0Sw9KOLwbtZLXu10MEJSVvdfJTNLg2H5UZWhJOA=
+kmodules.xyz/monitoring-agent-api v0.0.0-20200923111044-0b2ef3080406/go.mod h1:WD8UJt8h37KF9nHbbstY7KDfkOxSkdrYbIr+WO6PaYw=
+kmodules.xyz/offshoot-api v0.0.0-20200923101056-74484e941b8f h1:N9aZp1U21tS8gtEx4jbDStili7qQnePtI1pY3qB0IrQ=
+kmodules.xyz/offshoot-api v0.0.0-20200923101056-74484e941b8f/go.mod h1:Wy3/mWK2lWQOviKVpBtiCEYtLaYIaSiym8leZNKBUd4=
 kmodules.xyz/openshift v0.0.0-20200922211657-1ece16d36c18/go.mod h1:kOnEGdrj+DxTYJWHftqEHeYywCgh9tEiBOD5kPhVbCc=
 kmodules.xyz/webhook-runtime v0.0.0-20200922211931-8337935590de h1:uWgv78OoOWx9eQdu6SEkPopvbpnL8WxZEMNd3/Oye2w=
 kmodules.xyz/webhook-runtime v0.0.0-20200922211931-8337935590de/go.mod h1:5A8s2nvrNAZGrt0OlsiiuZIik3xWyKW6+ZSwgljIm78=
