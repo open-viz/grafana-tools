@@ -49,10 +49,10 @@ require (
 	k8s.io/kube-openapi v0.0.0-20200410145947-61e04a5be9a6
 	k8s.io/kubernetes v1.18.9
 	k8s.io/utils v0.0.0-20200414100711-2df71ebbae66 // indirect
-	kmodules.xyz/client-go v0.0.0-20200929030759-cce6a3c623c1
+	kmodules.xyz/client-go v0.0.0-20201007024140-3223988adf40
 	kmodules.xyz/crd-schema-fuzz v0.0.0-20200922204806-c1426cd7fcf4
 	kmodules.xyz/custom-resources v0.0.0-20200922210108-70f2815a43bb
-	kmodules.xyz/monitoring-agent-api v0.0.0-20200923111044-0b2ef3080406 // indirect
+	kmodules.xyz/monitoring-agent-api v0.0.0-20201007064223-c0fbcdb742f1 // indirect
 	kmodules.xyz/offshoot-api v0.0.0-20200923101056-74484e941b8f // indirect
 	kmodules.xyz/webhook-runtime v0.0.0-20200922211931-8337935590de
 	sigs.k8s.io/yaml v1.2.0
