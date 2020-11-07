@@ -13,7 +13,6 @@ require (
 	github.com/onsi/gomega v1.8.1
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus-operator/prometheus-operator v0.42.0
-	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.42.0 // indirect
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/pflag v1.0.5
 	golang.org/x/net v0.0.0-20200625001655-4c5254603344 // indirect
