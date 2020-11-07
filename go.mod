@@ -3,32 +3,32 @@ module go.searchlight.dev/grafana-operator
 go 1.13
 
 require (
-	github.com/appscode/go v0.0.0-20200928211031-cc0c23082d91
-	github.com/coreos/prometheus-operator v0.39.0
 	github.com/evanphx/json-patch v4.9.0+incompatible
-	github.com/go-openapi/spec v0.19.8
+	github.com/go-openapi/spec v0.19.7
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/google/gofuzz v1.1.0
-	github.com/grafana-tools/sdk v0.0.0-20200520194427-14a3f1e087f0
+	github.com/grafana-tools/sdk v0.0.0-20201025204618-ad428f9e2b02
 	github.com/onsi/ginkgo v1.11.0
 	github.com/onsi/gomega v1.8.1
 	github.com/pkg/errors v0.9.1
+	github.com/prometheus-operator/prometheus-operator v0.42.0
+	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.42.0 // indirect
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/pflag v1.0.5
-	gomodules.xyz/pointer v0.0.0-20201105071923-daf60fa55209 // indirect
+	gomodules.xyz/pointer v0.0.0-20201105040656-991dd254b680
+	gomodules.xyz/runtime v0.0.0-20201104200926-d838b09dda8b
+	gomodules.xyz/x v0.0.0-20201105065653-91c568df6331
 	k8s.io/api v0.18.9
 	k8s.io/apiextensions-apiserver v0.18.9
 	k8s.io/apimachinery v0.18.9
 	k8s.io/apiserver v0.18.9
-	k8s.io/client-go v12.0.0+incompatible
+	k8s.io/client-go v0.18.9
 	k8s.io/kube-openapi v0.0.0-20200410145947-61e04a5be9a6
 	k8s.io/kubernetes v1.18.9
 	kmodules.xyz/client-go v0.0.0-20201105071625-0b277310b9b8
 	kmodules.xyz/crd-schema-fuzz v0.0.0-20200922204806-c1426cd7fcf4
 	kmodules.xyz/custom-resources v0.0.0-20201105075444-3c6af51b4f79
-	kmodules.xyz/monitoring-agent-api v0.0.0-20201105074044-be7a1044891a // indirect
-	kmodules.xyz/offshoot-api v0.0.0-20201105074700-8675f5f686f2 // indirect
 	kmodules.xyz/webhook-runtime v0.0.0-20201105073856-2dc7382b88c6
 	sigs.k8s.io/yaml v1.2.0
 )
@@ -62,6 +62,26 @@ replace github.com/Azure/go-autorest/autorest/validation => github.com/Azure/go-
 replace github.com/Azure/go-autorest/logger => github.com/Azure/go-autorest/logger v0.1.0
 
 replace github.com/Azure/go-autorest/tracing => github.com/Azure/go-autorest/tracing v0.5.0
+
+replace github.com/go-openapi/analysis => github.com/go-openapi/analysis v0.19.5
+
+replace github.com/go-openapi/errors => github.com/go-openapi/errors v0.19.2
+
+replace github.com/go-openapi/jsonpointer => github.com/go-openapi/jsonpointer v0.19.3
+
+replace github.com/go-openapi/jsonreference => github.com/go-openapi/jsonreference v0.19.3
+
+replace github.com/go-openapi/loads => github.com/go-openapi/loads v0.19.4
+
+replace github.com/go-openapi/runtime => github.com/go-openapi/runtime v0.19.4
+
+replace github.com/go-openapi/spec => github.com/go-openapi/spec v0.19.3
+
+replace github.com/go-openapi/strfmt => github.com/go-openapi/strfmt v0.19.3
+
+replace github.com/go-openapi/swag => github.com/go-openapi/swag v0.19.5
+
+replace github.com/go-openapi/validate => github.com/go-openapi/validate v0.19.5
 
 replace github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.1
 

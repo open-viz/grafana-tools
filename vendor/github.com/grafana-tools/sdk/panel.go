@@ -70,7 +70,7 @@ type (
 		HideTimeOverride *bool     `json:"hideTimeOverride,omitempty"`
 		ID               uint      `json:"id"`
 		IsNew            bool      `json:"isNew"`
-		Links            []link    `json:"links,omitempty"`    // general
+		Links            []Link    `json:"links,omitempty"`    // general
 		MinSpan          *float32  `json:"minSpan,omitempty"`  // templating options
 		OfType           panelType `json:"-"`                  // it required for defining type of the panel
 		Renderer         *string   `json:"renderer,omitempty"` // display styles
@@ -110,6 +110,7 @@ type (
 		Type      string         `json:"type,omitempty"`
 	}
 	Alert struct {
+		AlertRuleTags       map[string]string   `json:"alertRuleTags,omitempty"`
 		Conditions          []AlertCondition    `json:"conditions,omitempty"`
 		ExecutionErrorState string              `json:"executionErrorState,omitempty"`
 		Frequency           string              `json:"frequency,omitempty"`
@@ -237,7 +238,8 @@ type (
 		DashboardTags         []string `json:"dashboardTags,omitempty"`
 	}
 	RowPanel struct {
-		Panels []Panel
+		Panels    []Panel `json:"panels"`
+		Collapsed bool    `json:"collapsed"`
 	}
 	CustomPanel map[string]interface{}
 )
@@ -266,12 +268,13 @@ type (
 		Values *[]string   `json:"values,omitempty"`
 	}
 	Axis struct {
-		Format  string       `json:"format"`
-		LogBase int          `json:"logBase"`
-		Max     *FloatString `json:"max,omitempty"`
-		Min     *FloatString `json:"min,omitempty"`
-		Show    bool         `json:"show"`
-		Label   string       `json:"label,omitempty"`
+		Format   string       `json:"format"`
+		LogBase  int          `json:"logBase"`
+		Decimals int          `json:"decimals,omitempty"`
+		Max      *FloatString `json:"max,omitempty"`
+		Min      *FloatString `json:"min,omitempty"`
+		Show     bool         `json:"show"`
+		Label    string       `json:"label,omitempty"`
 	}
 	SeriesOverride struct {
 		Alias         string      `json:"alias"`
@@ -314,15 +317,17 @@ type (
 		Value    string `json:"value"`
 	}
 	ColumnStyle struct {
-		Alias      *string   `json:"alias"`
-		DateFormat *string   `json:"dateFormat,omitempty"`
-		Pattern    string    `json:"pattern"`
-		Type       string    `json:"type"`
-		ColorMode  *string   `json:"colorMode,omitempty"`
-		Colors     *[]string `json:"colors,omitempty"`
-		Decimals   *uint     `json:"decimals,omitempty"`
-		Thresholds *[]string `json:"thresholds,omitempty"`
-		Unit       *string   `json:"unit,omitempty"`
+		Alias       *string    `json:"alias"`
+		DateFormat  *string    `json:"dateFormat,omitempty"`
+		Pattern     string     `json:"pattern"`
+		Type        string     `json:"type"`
+		ColorMode   *string    `json:"colorMode,omitempty"`
+		Colors      *[]string  `json:"colors,omitempty"`
+		Decimals    *uint      `json:"decimals,omitempty"`
+		Thresholds  *[]string  `json:"thresholds,omitempty"`
+		Unit        *string    `json:"unit,omitempty"`
+		MappingType int        `json:"mappingType,omitempty"`
+		ValueMaps   []ValueMap `json:"valueMaps,omitempty"`
 	}
 )
 
@@ -354,6 +359,27 @@ type (
 type Target struct {
 	RefID      string `json:"refId"`
 	Datasource string `json:"datasource,omitempty"`
+	Hide       bool   `json:"hide,omitempty"`
+
+	// For PostgreSQL
+	Table        string `json:"table,omitempty"`
+	TimeColumn   string `json:"timeColumn,omitempty"`
+	MetricColumn string `json:"metricColumn,omitempty"`
+	RawSql       string `json:"rawSql,omitempty"`
+	Select       [][]struct {
+		Params []string `json:"params,omitempty"`
+		Type   string   `json:"type,omitempty"`
+	} `json:"select,omitempty"`
+	Where []struct {
+		Type     string   `json:"type,omitempty"`
+		Name     string   `json:"name,omitempty"`
+		Params   []string `json:"params,omitempty"`
+		Datatype string   `json:"datatype,omitempty"`
+	} `json:"where,omitempty"`
+	Group []struct {
+		Type   string   `json:"type,omitempty"`
+		Params []string `json:"params,omitempty"`
+	} `json:"group,omitempty"`
 
 	// For Prometheus
 	Expr           string `json:"expr,omitempty"`
@@ -363,6 +389,9 @@ type Target struct {
 	LegendFormat   string `json:"legendFormat,omitempty"`
 	Instant        bool   `json:"instant,omitempty"`
 	Format         string `json:"format,omitempty"`
+
+	// For InfluxDB
+	Measurement string `json:"measurement,omitempty"`
 
 	// For Elasticsearch
 	DsType  *string `json:"dsType,omitempty"`
@@ -401,6 +430,7 @@ type Target struct {
 
 	// For the Stackdriver data source. Find out more information at
 	// https:/grafana.com/docs/grafana/v6.0/features/datasources/stackdriver/
+	ProjectName        string                    `json:"projectName,omitempty"`
 	AlignOptions       []StackdriverAlignOptions `json:"alignOptions,omitempty"`
 	AliasBy            string                    `json:"aliasBy,omitempty"`
 	MetricType         string                    `json:"metricType,omitempty"`

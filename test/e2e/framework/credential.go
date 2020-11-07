@@ -22,7 +22,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/appscode/go/types"
+	"gomodules.xyz/pointer"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	meta_util "kmodules.xyz/client-go/meta"
@@ -45,7 +45,7 @@ func (f *Framework) CreateAppBinding() error {
 				Name: f.name,
 			},
 			ClientConfig: appcat.ClientConfig{
-				//URL: types.StringP(apiURL),
+				//URL: pointer.StringP(apiURL),
 				Service: &appcat.ServiceReference{
 					Scheme: "http",
 					Name:   f.name,
@@ -90,7 +90,7 @@ func (f *Framework) DeleteSecret() error {
 func (f *Framework) getApiURLandApiKey(appBinding *v1alpha1.AppBinding, secret *core.Secret) (apiURL, apiKey string, err error) {
 	cfg := appBinding.Spec.ClientConfig
 	if cfg.URL != nil {
-		apiURL = types.String(cfg.URL)
+		apiURL = pointer.String(cfg.URL)
 	} else if cfg.Service != nil {
 		apiurl := url.URL{
 			Scheme:   cfg.Service.Scheme,

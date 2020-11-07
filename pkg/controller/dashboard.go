@@ -28,10 +28,10 @@ import (
 	"go.searchlight.dev/grafana-operator/client/clientset/versioned/typed/grafana/v1alpha1/util"
 	"go.searchlight.dev/grafana-operator/pkg/eventer"
 
-	"github.com/appscode/go/types"
 	"github.com/golang/glog"
 	"github.com/grafana-tools/sdk"
 	"github.com/pkg/errors"
+	"gomodules.xyz/pointer"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -151,7 +151,7 @@ func (c *GrafanaController) runDashboardFinalizer(dashboard *api.Dashboard) {
 	dashboard.Status = newDashboard.Status
 
 	if dashboard.Status.Dashboard != nil {
-		_, err := c.grafanaClient.DeleteDashboard(context.Background(), types.String(dashboard.Status.Dashboard.Slug))
+		_, err := c.grafanaClient.DeleteDashboard(context.Background(), pointer.String(dashboard.Status.Dashboard.Slug))
 		if err != nil {
 			c.recorder.Eventf(
 				dashboard,
@@ -179,8 +179,8 @@ func (c *GrafanaController) runDashboardFinalizer(dashboard *api.Dashboard) {
 // updateDashboard updates dashboard database through api request
 func (c *GrafanaController) updateDashboard(dashboard *api.Dashboard, board sdk.Board) error {
 	if dashboard.Status.Dashboard != nil {
-		board.ID = uint(types.Int64(dashboard.Status.Dashboard.ID))
-		board.UID = types.String(dashboard.Status.Dashboard.UID)
+		board.ID = uint(pointer.Int64(dashboard.Status.Dashboard.ID))
+		board.UID = pointer.String(dashboard.Status.Dashboard.UID)
 	}
 
 	params := sdk.SetDashboardParams{
@@ -202,14 +202,14 @@ func (c *GrafanaController) updateDashboard(dashboard *api.Dashboard, board sdk.
 			in.ObservedGeneration = dashboard.Generation
 
 			in.Dashboard = &api.DashboardReference{
-				ID:      types.Int64P(int64(types.UInt(statusMsg.ID))),
+				ID:      pointer.Int64P(int64(pointer.Uint(statusMsg.ID))),
 				UID:     statusMsg.UID,
 				Slug:    statusMsg.Slug,
 				URL:     statusMsg.URL,
-				Version: types.Int64P(int64(types.Int(statusMsg.Version))),
+				Version: pointer.Int64P(int64(pointer.Int(statusMsg.Version))),
 			}
 			if statusMsg.OrgID != nil {
-				in.Dashboard.OrgID = types.Int64P(int64(types.UInt(statusMsg.OrgID)))
+				in.Dashboard.OrgID = pointer.Int64P(int64(pointer.Uint(statusMsg.OrgID)))
 			}
 
 			return in
@@ -255,7 +255,7 @@ func (c *GrafanaController) setGrafanaClient(dashboard *api.Dashboard) error {
 func getApiURLandApiKey(appBinding *v1alpha1.AppBinding, secret *core.Secret) (apiURL, apiKey string, err error) {
 	cfg := appBinding.Spec.ClientConfig
 	if cfg.URL != nil {
-		apiURL = types.String(cfg.URL)
+		apiURL = pointer.String(cfg.URL)
 	} else if cfg.Service != nil {
 		apiurl := url.URL{
 			Scheme:   cfg.Service.Scheme,
