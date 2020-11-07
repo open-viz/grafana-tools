@@ -25,9 +25,9 @@ import (
 	api "go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1"
 	"go.searchlight.dev/grafana-operator/test/e2e/framework"
 
-	"github.com/appscode/go/types"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"gomodules.xyz/pointer"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/dynamic"
@@ -140,7 +140,7 @@ var _ = Describe("Grafana Operator E2E testing", func() {
 
 				Expect(dashboard.Status.Dashboard.ID).NotTo(BeNil())
 				Expect(dashboard.Status.Dashboard.UID).NotTo(BeNil())
-				Expect(dashboard.Status.Dashboard.Version).To(BeEquivalentTo(types.Int64P(dashboard.Status.ObservedGeneration)))
+				Expect(dashboard.Status.Dashboard.Version).To(BeEquivalentTo(pointer.Int64P(dashboard.Status.ObservedGeneration)))
 			})
 		})
 

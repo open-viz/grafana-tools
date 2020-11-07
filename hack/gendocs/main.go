@@ -28,8 +28,8 @@ import (
 
 	"go.searchlight.dev/grafana-operator/pkg/cmds"
 
-	"github.com/appscode/go/runtime"
 	"github.com/spf13/cobra/doc"
+	"gomodules.xyz/runtime"
 )
 
 const (

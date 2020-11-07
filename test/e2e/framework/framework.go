@@ -19,7 +19,7 @@ package framework
 import (
 	cs "go.searchlight.dev/grafana-operator/client/clientset/versioned"
 
-	"github.com/appscode/go/crypto/rand"
+	"gomodules.xyz/x/crypto/rand"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1"

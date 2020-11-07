@@ -19,7 +19,7 @@ package framework
 import (
 	"context"
 
-	"github.com/appscode/go/types"
+	"gomodules.xyz/pointer"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -38,7 +38,7 @@ func (f *Framework) CreateGrafanaDeployment() error {
 			Namespace: f.namespace,
 		},
 		Spec: apps.DeploymentSpec{
-			Replicas: types.Int32P(1),
+			Replicas: pointer.Int32P(1),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
 					"app": f.name,
