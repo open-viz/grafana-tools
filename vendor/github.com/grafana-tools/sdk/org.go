@@ -19,12 +19,13 @@ package sdk
 */
 
 type Org struct {
-	ID   uint   `json:"id"`
-	Name string `json:"name"`
+	ID      uint    `json:"id"`
+	Name    string  `json:"name"`
+	Address Address `json:"address"`
 }
 
 type OrgUser struct {
-	ID    uint   `json:"id"`
+	ID    uint   `json:"userId"`
 	OrgId uint   `json:"orgId"`
 	Email string `json:"email"`
 	Login string `json:"login"`

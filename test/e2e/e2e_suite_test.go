@@ -26,8 +26,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
+	"gomodules.xyz/kglog"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
-	"kmodules.xyz/client-go/logs"
 	"kmodules.xyz/client-go/tools/clientcmd"
 )
 
@@ -40,7 +40,7 @@ var (
 )
 
 func TestE2e(t *testing.T) {
-	logs.InitLogs()
+	kglog.InitLogs()
 	RegisterFailHandler(Fail)
 	SetDefaultEventuallyTimeout(TIMEOUT)
 
