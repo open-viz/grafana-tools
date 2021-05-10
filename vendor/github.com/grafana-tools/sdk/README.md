@@ -34,6 +34,8 @@ library is useful per se.
 ```go
 	board := sdk.NewBoard("Sample dashboard title")
 	board.ID = 1
+	board.Time.From = "now-30m"
+	board.Time.To = "now"
 	row1 := board.AddRow("Sample row title")
 	row1.Add(sdk.NewGraph("Sample graph"))
 	graph := sdk.NewGraph("Sample graph 2")
@@ -133,3 +135,4 @@ https://github.com/grafana-tools/sdk
 * [github.com/mgit-at/grafana-backup](https://github.com/mgit-at/grafana-backup) — just saves dashboards localy.
 * [github.com/raintank/memo](https://github.com/raintank/memo) — send slack mentions to Grafana annotations.
 * [github.com/retzkek/grafctl](https://github.com/retzkek/grafctl) — backup/restore/track dashboards with git.
+* [github.com/grafana/grizzly](https://github.com/grafana/grizzly) — manage Grafana dashboards via CLI and libsonnet/jsonnet

@@ -27,8 +27,10 @@ import (
 )
 
 // DashboardLister helps list Dashboards.
+// All objects returned here must be treated as read-only.
 type DashboardLister interface {
 	// List lists all Dashboards in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.Dashboard, err error)
 	// Dashboards returns an object that can list and get Dashboards.
 	Dashboards(namespace string) DashboardNamespaceLister
@@ -59,10 +61,13 @@ func (s *dashboardLister) Dashboards(namespace string) DashboardNamespaceLister 
 }
 
 // DashboardNamespaceLister helps list and get Dashboards.
+// All objects returned here must be treated as read-only.
 type DashboardNamespaceLister interface {
 	// List lists all Dashboards in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.Dashboard, err error)
 	// Get retrieves the Dashboard from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.Dashboard, error)
 	DashboardNamespaceListerExpansion
 }

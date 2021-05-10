@@ -27,8 +27,10 @@ import (
 )
 
 // DatasourceLister helps list Datasources.
+// All objects returned here must be treated as read-only.
 type DatasourceLister interface {
 	// List lists all Datasources in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.Datasource, err error)
 	// Datasources returns an object that can list and get Datasources.
 	Datasources(namespace string) DatasourceNamespaceLister
@@ -59,10 +61,13 @@ func (s *datasourceLister) Datasources(namespace string) DatasourceNamespaceList
 }
 
 // DatasourceNamespaceLister helps list and get Datasources.
+// All objects returned here must be treated as read-only.
 type DatasourceNamespaceLister interface {
 	// List lists all Datasources in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.Datasource, err error)
 	// Get retrieves the Datasource from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.Datasource, error)
 	DatasourceNamespaceListerExpansion
 }
