@@ -21,7 +21,6 @@ package v1alpha1
 import (
 	v1alpha1 "go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1"
 	"go.searchlight.dev/grafana-operator/client/clientset/versioned/scheme"
-
 	rest "k8s.io/client-go/rest"
 )
 

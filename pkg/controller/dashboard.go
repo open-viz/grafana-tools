@@ -43,7 +43,7 @@ import (
 )
 
 const (
-	DashboardFinalizer = "dahsboard.grafana.searchlight.dev"
+	DashboardFinalizer = "dashboard.grafana.searchlight.dev"
 )
 
 func (c *GrafanaController) initDashboardWatcher() {
@@ -89,7 +89,7 @@ func (c *GrafanaController) runDashboardInjector(key string) error {
 			if !meta_util.MustAlreadyReconciled(dashboard) {
 				err = c.reconcileDashboard(dashboard)
 				if err != nil {
-					c.pushFailureEvent(dashboard, err.Error())
+					c.pushDashboardFailureEvent(dashboard, err.Error())
 					return errors.Wrapf(err, "for Dashboard %s/%s", dashboard.Namespace, dashboard.Name)
 				}
 			}
@@ -115,11 +115,12 @@ func (c *GrafanaController) reconcileDashboard(dashboard *api.Dashboard) error {
 	}
 	dashboard.Status = newDashboard.Status
 
-	if err = c.setGrafanaClient(dashboard); err != nil {
+	if err = c.setGrafanaClient(dashboard.Namespace, dashboard.Spec.Grafana); err != nil {
 		return errors.Wrap(err, "failed to set grafana client")
 	}
 
 	var board sdk.Board
+
 	if dashboard.Spec.Model == nil {
 		return errors.New("dashboard model not found")
 	}
@@ -225,13 +226,13 @@ func (c *GrafanaController) updateDashboard(dashboard *api.Dashboard, board sdk.
 }
 
 // setGrafanaClient sets grafana client from user provided data
-func (c *GrafanaController) setGrafanaClient(dashboard *api.Dashboard) error {
-	appBinding, err := c.appCatalogClient.AppBindings(dashboard.Namespace).Get(context.TODO(), dashboard.Spec.Grafana.Name, metav1.GetOptions{})
+func (c *GrafanaController) setGrafanaClient(ns string, targetRef *api.TargetRef) error {
+	appBinding, err := c.appCatalogClient.AppBindings(ns).Get(context.TODO(), targetRef.Name, metav1.GetOptions{})
 	if err != nil {
 		return errors.Wrap(err, "failed to fetch AppBinding")
 	}
 
-	secret, err := c.kubeClient.CoreV1().Secrets(dashboard.Namespace).Get(context.TODO(), appBinding.Spec.Secret.Name, metav1.GetOptions{})
+	secret, err := c.kubeClient.CoreV1().Secrets(ns).Get(context.TODO(), appBinding.Spec.Secret.Name, metav1.GetOptions{})
 	if err != nil {
 		return errors.Wrap(err, "failed to fetch Secret")
 	}

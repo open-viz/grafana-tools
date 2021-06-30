@@ -104,5 +104,8 @@ func (c *Config) New() (*GrafanaController, error) {
 	// For Dashboard
 	ctrl.initDashboardWatcher()
 
+	// For Datasource
+	ctrl.initDatasourceWatcher()
+
 	return ctrl, nil
 }

@@ -36,6 +36,52 @@ spec:
         metadata:
           type: object
         spec:
+          properties:
+            access:
+              type: string
+            basicAuth:
+              type: boolean
+            basicAuthPassword:
+              type: string
+            basicAuthUser:
+              type: string
+            database:
+              type: string
+            editable:
+              type: boolean
+            grafana:
+              properties:
+                apiVersion:
+                  type: string
+                kind:
+                  type: string
+                name:
+                  type: string
+              type: object
+            id:
+              format: int64
+              type: integer
+            isDefault:
+              type: boolean
+            name:
+              type: string
+            orgId:
+              format: int64
+              type: integer
+            password:
+              type: string
+            type:
+              type: string
+            url:
+              type: string
+            user:
+              type: string
+          required:
+          - access
+          - grafana
+          - name
+          - type
+          - url
           type: object
         status:
           properties:

@@ -67,6 +67,11 @@ type GrafanaController struct {
 	dashboardInformer cache.SharedIndexInformer
 	dashboardLister   grafana_listers.DashboardLister
 
+	//for DataSource
+	datasourceQueue    *queue.Worker
+	datasourceInformer cache.SharedIndexInformer
+	datasourceLister   grafana_listers.DatasourceLister
+
 	// Grafana client
 	grafanaClient *sdk.Client
 }
@@ -74,6 +79,7 @@ type GrafanaController struct {
 func (c *GrafanaController) ensureCustomResourceDefinitions() error {
 	crds := []*apiextensions.CustomResourceDefinition{
 		api.Dashboard{}.CustomResourceDefinition(),
+		api.Datasource{}.CustomResourceDefinition(),
 		appcat.AppBinding{}.CustomResourceDefinition(),
 	}
 	return apiextensions.RegisterCRDs(c.crdClient, crds)
@@ -110,11 +116,14 @@ func (c *GrafanaController) RunInformers(stopCh <-chan struct{}) {
 	//For Dashboard
 	go c.dashboardQueue.Run(stopCh)
 
+	//For Datasource
+	go c.datasourceQueue.Run(stopCh)
+
 	<-stopCh
 	glog.Info("Stopping Vault operator")
 }
 
-func (c *GrafanaController) pushFailureEvent(dashboard *api.Dashboard, reason string) {
+func (c *GrafanaController) pushDashboardFailureEvent(dashboard *api.Dashboard, reason string) {
 	c.recorder.Eventf(
 		dashboard,
 		core.EventTypeWarning,

@@ -152,6 +152,35 @@ message DatasourceList {
 }
 
 message DatasourceSpec {
+  optional TargetRef grafana = 15;
+
+  optional int64 id = 1;
+
+  optional int64 orgId = 2;
+
+  optional string name = 3;
+
+  optional string type = 4;
+
+  optional string access = 5;
+
+  optional string url = 6;
+
+  optional string password = 7;
+
+  optional string user = 8;
+
+  optional string database = 9;
+
+  optional bool basicAuth = 10;
+
+  optional string basicAuthUser = 11;
+
+  optional string basicAuthPassword = 12;
+
+  optional bool isDefault = 13;
+
+  optional bool editable = 14;
 }
 
 message DatasourceStatus {
