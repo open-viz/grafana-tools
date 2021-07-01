@@ -71,10 +71,14 @@ func (c *GrafanaController) runDashboardInjector(key string) error {
 		if dashboard.DeletionTimestamp != nil {
 			if core_util.HasFinalizer(dashboard.ObjectMeta, DashboardFinalizer) {
 				// Finalize Dashboard
-				go c.runDashboardFinalizer(dashboard)
+				err := c.runDashboardFinalizer(dashboard)
+				if err != nil {
+					return err
+				}
 			} else {
 				glog.Infof("Finalizer not found for GrafanaDashboard %s/%s", dashboard.Namespace, dashboard.Name)
 			}
+			return nil
 		} else {
 			if !core_util.HasFinalizer(dashboard.ObjectMeta, DashboardFinalizer) {
 				// Add finalizer
@@ -137,7 +141,7 @@ func (c *GrafanaController) reconcileDashboard(dashboard *api.Dashboard) error {
 
 // runDashboardFinalizer performs what need to be done
 // before the dashboard is deleted
-func (c *GrafanaController) runDashboardFinalizer(dashboard *api.Dashboard) {
+func (c *GrafanaController) runDashboardFinalizer(dashboard *api.Dashboard) error {
 	// update Terminating status
 	newDashboard, err := util.UpdateDashboardStatus(context.TODO(), c.extClient.GrafanaV1alpha1(), dashboard.ObjectMeta, func(in *api.DashboardStatus) *api.DashboardStatus {
 		in.Phase = api.DashboardPhaseTerminating
@@ -147,12 +151,12 @@ func (c *GrafanaController) runDashboardFinalizer(dashboard *api.Dashboard) {
 		return in
 	}, metav1.UpdateOptions{})
 	if err != nil {
-		glog.Infof("Failed to update dashboard phase to `%s`. Reason: %v", api.DashboardPhaseTerminating, err)
+		return err
 	}
 	dashboard.Status = newDashboard.Status
 
-	if dashboard.Status.Dashboard != nil {
-		_, err := c.grafanaClient.DeleteDashboard(context.Background(), pointer.String(dashboard.Status.Dashboard.Slug))
+	if dashboard.Status.Dashboard.UID != nil {
+		statusMsg, err := c.grafanaClient.DeleteDashboardByUID(context.TODO(), pointer.String(dashboard.Status.Dashboard.UID))
 		if err != nil {
 			c.recorder.Eventf(
 				dashboard,
@@ -164,16 +168,20 @@ func (c *GrafanaController) runDashboardFinalizer(dashboard *api.Dashboard) {
 			)
 
 			glog.Infof("Failed to delete GrafanaDashboard: %v. Reason: %v", dashboard.Name, err)
-			return
+			return err
 		}
+		glog.Infof("Dashboard is deleted with message: %s\n", pointer.String(statusMsg.Message))
+	} else {
+		return errors.New("finalizer can't be removed. reason: Dashboard UID is missing")
 	}
 	_, _, err = util.PatchDashboard(context.TODO(), c.extClient.GrafanaV1alpha1(), dashboard, func(in *api.Dashboard) *api.Dashboard {
 		in.ObjectMeta = core_util.RemoveFinalizer(dashboard.ObjectMeta, DashboardFinalizer)
 		return in
 	}, metav1.PatchOptions{})
 	if err != nil {
-		glog.Infof("Failed to set Dashboard finalizer for %s/%s. Reason: %v.", dashboard.Namespace, dashboard.Name, err)
+		return err
 	}
+	return nil
 }
 
 // updateDashboard updates dashboard database through api request

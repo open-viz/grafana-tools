@@ -2,6 +2,7 @@ apiVersion: appcatalog.appscode.com/v1alpha1
 kind: AppBinding
 metadata:
     name: grafana
+    namespace: monitoring
 spec:
     secret:
         name: grafana-api-key

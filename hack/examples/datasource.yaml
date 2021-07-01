@@ -10,5 +10,5 @@ spec:
   name: TestDSUpdated
   type: prometheus
   access: proxy
-  url: http://127.0.0.1:9999
+  url: http://prometheus-kube-prometheus-prometheus:9090
   isDefault: false
