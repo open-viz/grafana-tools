@@ -167,7 +167,6 @@ func (c *GrafanaController) runDashboardFinalizer(dashboard *api.Dashboard) {
 			return
 		}
 	}
-
 	_, _, err = util.PatchDashboard(context.TODO(), c.extClient.GrafanaV1alpha1(), dashboard, func(in *api.Dashboard) *api.Dashboard {
 		in.ObjectMeta = core_util.RemoveFinalizer(dashboard.ObjectMeta, DashboardFinalizer)
 		return in
