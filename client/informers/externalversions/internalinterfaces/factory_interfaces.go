@@ -22,6 +22,7 @@ import (
 	time "time"
 
 	versioned "go.searchlight.dev/grafana-operator/client/clientset/versioned"
+
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	cache "k8s.io/client-go/tools/cache"

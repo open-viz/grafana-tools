@@ -43,7 +43,12 @@ func (f *Framework) GetGrafanaClient() (*sdk.Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return sdk.NewClient(apiURL, apiKey, sdk.DefaultHTTPClient), nil
+
+	client, err := sdk.NewClient(apiURL, apiKey, sdk.DefaultHTTPClient)
+	if err != nil {
+		return nil, err
+	}
+	return client, nil
 }
 
 func (f *Framework) DeployGrafanaServer() error {

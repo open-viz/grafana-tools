@@ -22,6 +22,7 @@ import (
 	"fmt"
 
 	v1alpha1 "go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1"
+
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
 )

@@ -241,7 +241,10 @@ func (c *GrafanaController) setGrafanaClient(ns string, targetRef *api.TargetRef
 	if err != nil {
 		return errors.Wrap(err, "failed to get apiURL or apiKey")
 	}
-	c.grafanaClient = sdk.NewClient(apiURL, apiKey, sdk.DefaultHTTPClient)
+	c.grafanaClient, err = sdk.NewClient(apiURL, apiKey, sdk.DefaultHTTPClient)
+	if err != nil {
+		return err
+	}
 
 	return wait.PollImmediate(100*time.Millisecond, 1*time.Minute, func() (bool, error) {
 		health, err := c.grafanaClient.GetHealth(context.Background())

@@ -41,21 +41,21 @@ type Datasource struct {
 }
 
 type DatasourceSpec struct {
-	Grafana           *TargetRef `json:"grafana" protobuf:"bytes,15,opt,name=grafana"`
-	ID                int64      `json:"id,omitempty" protobuf:"bytes,1,opt,name=id"`
-	OrgID             int64      `json:"orgId,omitempty" protobuf:"bytes,2,opt,name=orgId"`
-	Name              string     `json:"name" protobuf:"bytes,3,opt,name=name"`
-	Type              string     `json:"type" protobuf:"bytes,4,opt,name=type"`
-	Access            string     `json:"access" protobuf:"bytes,5,opt,name=access"`
-	URL               string     `json:"url" protobuf:"bytes,6,opt,name=url"`
-	Password          string     `json:"password,omitempty" protobuf:"bytes,7,opt,name=password"`
-	User              string     `json:"user,omitempty" protobuf:"bytes,8,opt,name=user"`
-	Database          string     `json:"database,omitempty" protobuf:"bytes,9,opt,name=database"`
-	BasicAuth         bool       `json:"basicAuth,omitempty" protobuf:"bytes,10,opt,name=basicAuth"`
-	BasicAuthUser     string     `json:"basicAuthUser,omitempty" protobuf:"bytes,11,opt,name=basicAuthUser"`
-	BasicAuthPassword string     `json:"basicAuthPassword,omitempty" protobuf:"bytes,12,opt,name=basicAuthPassword"`
-	IsDefault         bool       `json:"isDefault,omitempty" protobuf:"bytes,13,opt,name=isDefault"`
-	Editable          bool       `json:"editable,omitempty" protobuf:"bytes,14,opt,name=editable"`
+	Grafana           *TargetRef `json:"grafana" protobuf:"bytes,1,opt,name=grafana"`
+	ID                int64      `json:"id,omitempty" protobuf:"bytes,2,opt,name=id"`
+	OrgID             int64      `json:"orgId" protobuf:"bytes,3,opt,name=orgId"`
+	Name              string     `json:"name" protobuf:"bytes,4,opt,name=name"`
+	Type              string     `json:"type" protobuf:"bytes,5,opt,name=type"`
+	Access            string     `json:"access" protobuf:"bytes,6,opt,name=access"`
+	URL               string     `json:"url" protobuf:"bytes,7,opt,name=url"`
+	Password          string     `json:"password,omitempty" protobuf:"bytes,8,opt,name=password"`
+	User              string     `json:"user,omitempty" protobuf:"bytes,9,opt,name=user"`
+	Database          string     `json:"database,omitempty" protobuf:"bytes,10,opt,name=database"`
+	BasicAuth         bool       `json:"basicAuth,omitempty" protobuf:"bytes,11,opt,name=basicAuth"`
+	BasicAuthUser     string     `json:"basicAuthUser,omitempty" protobuf:"bytes,12,opt,name=basicAuthUser"`
+	BasicAuthPassword string     `json:"basicAuthPassword,omitempty" protobuf:"bytes,13,opt,name=basicAuthPassword"`
+	IsDefault         bool       `json:"isDefault,omitempty" protobuf:"bytes,14,opt,name=isDefault"`
+	Editable          bool       `json:"editable,omitempty" protobuf:"bytes,15,opt,name=editable"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -72,4 +72,6 @@ type DatasourceStatus struct {
 	// resource's generation, which is updated on mutation by the API Server.
 	// +optional
 	ObservedGeneration int64 `json:"observedGeneration,omitempty" protobuf:"varint,1,opt,name=observedGeneration"`
+
+	DatasourceID *int64 `json:"datasourceId,omitempty" protobuf:"bytes,2,opt,name=datasourceID"`
 }

@@ -152,35 +152,35 @@ message DatasourceList {
 }
 
 message DatasourceSpec {
-  optional TargetRef grafana = 15;
+  optional TargetRef grafana = 1;
 
-  optional int64 id = 1;
+  optional int64 id = 2;
 
-  optional int64 orgId = 2;
+  optional int64 orgId = 3;
 
-  optional string name = 3;
+  optional string name = 4;
 
-  optional string type = 4;
+  optional string type = 5;
 
-  optional string access = 5;
+  optional string access = 6;
 
-  optional string url = 6;
+  optional string url = 7;
 
-  optional string password = 7;
+  optional string password = 8;
 
-  optional string user = 8;
+  optional string user = 9;
 
-  optional string database = 9;
+  optional string database = 10;
 
-  optional bool basicAuth = 10;
+  optional bool basicAuth = 11;
 
-  optional string basicAuthUser = 11;
+  optional string basicAuthUser = 12;
 
-  optional string basicAuthPassword = 12;
+  optional string basicAuthPassword = 13;
 
-  optional bool isDefault = 13;
+  optional bool isDefault = 14;
 
-  optional bool editable = 14;
+  optional bool editable = 15;
 }
 
 message DatasourceStatus {
@@ -188,6 +188,8 @@ message DatasourceStatus {
   // resource's generation, which is updated on mutation by the API Server.
   // +optional
   optional int64 observedGeneration = 1;
+
+  optional int64 datasourceID = 2;
 }
 
 message TargetRef {

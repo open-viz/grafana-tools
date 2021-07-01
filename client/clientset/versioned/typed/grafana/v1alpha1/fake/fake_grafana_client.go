@@ -20,6 +20,7 @@ package fake
 
 import (
 	v1alpha1 "go.searchlight.dev/grafana-operator/client/clientset/versioned/typed/grafana/v1alpha1"
+
 	rest "k8s.io/client-go/rest"
 	testing "k8s.io/client-go/testing"
 )

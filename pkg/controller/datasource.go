@@ -19,9 +19,14 @@ package controller
 import (
 	"context"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"gomodules.xyz/pointer"
+
+	api "go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1"
+
 	"github.com/golang/glog"
 	"github.com/grafana-tools/sdk"
-	api "go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1"
 	"kmodules.xyz/client-go/tools/queue"
 )
 
@@ -47,7 +52,7 @@ func (c *GrafanaController) runDatasourceInjector(key string) error {
 	} else {
 		ds := obj.(*api.Datasource)
 		glog.Infof("Sync/Add/Update for Datasource %s/%s\n", ds.Namespace, ds.Name)
-		err = c.CreateDataSource(ds)
+		err = c.reconcileDatasource(ds)
 		if err != nil {
 			return err
 		}
@@ -55,7 +60,7 @@ func (c *GrafanaController) runDatasourceInjector(key string) error {
 	return nil
 }
 
-func (c *GrafanaController) CreateDataSource(ds *api.Datasource) error {
+func (c *GrafanaController) reconcileDatasource(ds *api.Datasource) error {
 	dataSrc := sdk.Datasource{
 		OrgID:     uint(ds.Spec.OrgID),
 		Name:      ds.Spec.Name,
@@ -68,7 +73,26 @@ func (c *GrafanaController) CreateDataSource(ds *api.Datasource) error {
 	if err != nil {
 		return err
 	}
-	_, err = c.grafanaClient.CreateDatasource(context.TODO(), dataSrc)
+
+	if ds.Status.DatasourceID != nil {
+		dataSrc.ID = uint(pointer.Int64(ds.Status.DatasourceID))
+
+		statusMsg, err := c.grafanaClient.UpdateDatasource(context.TODO(), dataSrc)
+		if err != nil {
+			return err
+		}
+		glog.Infof("Datasource is updated with message: %s\n", pointer.String(statusMsg.Message))
+		return nil
+	}
+	statusMsg, err := c.grafanaClient.CreateDatasource(context.TODO(), dataSrc)
+	if err != nil {
+		return err
+	}
+	glog.Infof("Datasource is created with message: %s\n", pointer.String(statusMsg.Message))
+	if statusMsg.ID != nil {
+		ds.Status.DatasourceID = pointer.Int64P(int64(pointer.Uint(statusMsg.ID)))
+	}
+	_, err = c.extClient.GrafanaV1alpha1().Datasources(ds.Namespace).UpdateStatus(context.TODO(), ds, metav1.UpdateOptions{})
 	if err != nil {
 		return err
 	}

@@ -882,8 +882,9 @@ func schema_grafana_operator_apis_grafana_v1alpha1_DatasourceSpec(ref common.Ref
 					},
 					"orgId": {
 						SchemaProps: spec.SchemaProps{
-							Type:   []string{"integer"},
-							Format: "int64",
+							Default: 0,
+							Type:    []string{"integer"},
+							Format:  "int64",
 						},
 					},
 					"name": {
@@ -963,7 +964,7 @@ func schema_grafana_operator_apis_grafana_v1alpha1_DatasourceSpec(ref common.Ref
 						},
 					},
 				},
-				Required: []string{"grafana", "name", "type", "access", "url"},
+				Required: []string{"grafana", "orgId", "name", "type", "access", "url"},
 			},
 		},
 		Dependencies: []string{
@@ -982,6 +983,12 @@ func schema_grafana_operator_apis_grafana_v1alpha1_DatasourceStatus(ref common.R
 							Description: "ObservedGeneration is the most recent generation observed for this resource. It corresponds to the resource's generation, which is updated on mutation by the API Server.",
 							Type:        []string{"integer"},
 							Format:      "int64",
+						},
+					},
+					"datasourceId": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"integer"},
+							Format: "int64",
 						},
 					},
 				},

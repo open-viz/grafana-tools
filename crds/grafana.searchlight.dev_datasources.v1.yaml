@@ -79,11 +79,15 @@ spec:
             - access
             - grafana
             - name
+            - orgId
             - type
             - url
             type: object
           status:
             properties:
+              datasourceId:
+                format: int64
+                type: integer
               observedGeneration:
                 description: ObservedGeneration is the most recent generation observed
                   for this resource. It corresponds to the resource's generation,

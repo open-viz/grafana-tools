@@ -24,6 +24,7 @@ import (
 
 	v1alpha1 "go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1"
 	scheme "go.searchlight.dev/grafana-operator/client/clientset/versioned/scheme"
+
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
