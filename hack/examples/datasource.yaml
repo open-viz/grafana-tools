@@ -7,7 +7,7 @@ spec:
   grafana:
     name: grafana
   orgId: 1
-  name: TestDSUpdated
+  name: TestDS
   type: prometheus
   access: proxy
   url: http://prometheus-kube-prometheus-prometheus:9090

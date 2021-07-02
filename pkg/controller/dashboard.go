@@ -151,7 +151,7 @@ func (c *GrafanaController) runDashboardFinalizer(dashboard *api.Dashboard) erro
 		return in
 	}, metav1.UpdateOptions{})
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "failed to update dashboard phase to %q\n", api.DatasourcePhaseTerminating)
 	}
 	dashboard.Status = newDashboard.Status
 

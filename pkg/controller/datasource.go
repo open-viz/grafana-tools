@@ -18,13 +18,12 @@ package controller
 
 import (
 	"context"
-	"errors"
-
-	api "go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1"
-	"go.searchlight.dev/grafana-operator/client/clientset/versioned/typed/grafana/v1alpha1/util"
 
 	"github.com/golang/glog"
 	"github.com/grafana-tools/sdk"
+	"github.com/pkg/errors"
+	api "go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1"
+	"go.searchlight.dev/grafana-operator/client/clientset/versioned/typed/grafana/v1alpha1/util"
 	"gomodules.xyz/pointer"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -53,10 +52,6 @@ func (c *GrafanaController) runDatasourceInjector(key string) error {
 	} else {
 		ds := obj.(*api.Datasource).DeepCopy()
 		glog.Infof("Sync/Add/Update for Datasource %s/%s\n", ds.Namespace, ds.Name)
-		err := c.setGrafanaClient(ds.Namespace, ds.Spec.Grafana)
-		if err != nil {
-			return err
-		}
 		err = c.reconcileDatasource(ds)
 		if err != nil {
 			return err
@@ -66,6 +61,18 @@ func (c *GrafanaController) runDatasourceInjector(key string) error {
 }
 
 func (c *GrafanaController) reconcileDatasource(ds *api.Datasource) error {
+	// Update Datasource Status to processing
+	updatedDS, err := util.UpdateDatasourceStatus(context.TODO(), c.extClient.GrafanaV1alpha1(), ds.ObjectMeta, func(st *api.DatasourceStatus) *api.DatasourceStatus {
+		st.Phase = api.DatasourcePhaseProcessing
+		st.Reason = "Started processing Datasource"
+		st.ObservedGeneration = ds.Generation
+		return st
+	}, metav1.UpdateOptions{})
+	if err != nil {
+		return errors.Wrapf(err, "failed to update Datasource phase to %q\n", api.DatasourcePhaseProcessing)
+	}
+	ds.Status = updatedDS.Status
+
 	if ds.DeletionTimestamp != nil {
 		if core_util.HasFinalizer(ds.ObjectMeta, DatasourceFinalizer) {
 			err := c.runDatasourceFinalizer(ds)
@@ -77,15 +84,23 @@ func (c *GrafanaController) reconcileDatasource(ds *api.Datasource) error {
 	}
 	if !core_util.HasFinalizer(ds.ObjectMeta, DatasourceFinalizer) {
 		// Add Finalizer
-		_, _, err := util.PatchDatasource(context.TODO(), c.extClient.GrafanaV1alpha1(), ds, func(up *api.Datasource) *api.Datasource {
+		updatedDS, _, err := util.PatchDatasource(context.TODO(), c.extClient.GrafanaV1alpha1(), ds, func(up *api.Datasource) *api.Datasource {
 			up.ObjectMeta = core_util.AddFinalizer(ds.ObjectMeta, DatasourceFinalizer)
 			return up
 		}, metav1.PatchOptions{})
 		if err != nil {
 			return err
 		}
-		return nil
+		ds = updatedDS
 	}
+	err = c.createOrUpdateDatasource(ds)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *GrafanaController) createOrUpdateDatasource(ds *api.Datasource) error {
 	dataSrc := sdk.Datasource{
 		OrgID:     uint(ds.Spec.OrgID),
 		Name:      ds.Spec.Name,
@@ -95,14 +110,16 @@ func (c *GrafanaController) reconcileDatasource(ds *api.Datasource) error {
 		IsDefault: ds.Spec.IsDefault,
 	}
 
-	if ds.Status.DatasourceID != nil {
-		dataSrc.ID = uint(pointer.Int64(ds.Status.DatasourceID))
+	err := c.setGrafanaClient(ds.Namespace, ds.Spec.Grafana)
+	if err != nil {
+		return err
+	}
 
-		statusMsg, err := c.grafanaClient.UpdateDatasource(context.TODO(), dataSrc)
+	if ds.Status.DatasourceID != nil {
+		err := c.updateDatasource(ds, dataSrc)
 		if err != nil {
-			return err
+			return errors.Wrapf(err, "can't update Datasource, reason: %v", err)
 		}
-		glog.Infof("Datasource is updated with message: %s\n", pointer.String(statusMsg.Message))
 		return nil
 	}
 	statusMsg, err := c.grafanaClient.CreateDatasource(context.TODO(), dataSrc)
@@ -110,17 +127,55 @@ func (c *GrafanaController) reconcileDatasource(ds *api.Datasource) error {
 		return err
 	}
 	glog.Infof("Datasource is created with message: %s\n", pointer.String(statusMsg.Message))
-	if statusMsg.ID != nil {
-		ds.Status.DatasourceID = pointer.Int64P(int64(pointer.Uint(statusMsg.ID)))
+	_, err = util.UpdateDatasourceStatus(context.TODO(), c.extClient.GrafanaV1alpha1(), ds.ObjectMeta, func(st *api.DatasourceStatus) *api.DatasourceStatus {
+		st.Phase = api.DatasourcePhaseSuccess
+		st.Reason = "Successfully created Grafana Datasource"
+		st.ObservedGeneration = ds.Generation
+		st.DatasourceID = pointer.Int64P(int64(pointer.Uint(statusMsg.ID)))
+
+		return st
+	}, metav1.UpdateOptions{})
+	if err != nil {
+		return errors.Wrapf(err, "failed to update Datasource phase to %q\n", api.DatasourcePhaseSuccess)
 	}
-	_, err = c.extClient.GrafanaV1alpha1().Datasources(ds.Namespace).UpdateStatus(context.TODO(), ds, metav1.UpdateOptions{})
+	return nil
+}
+
+func (c *GrafanaController) updateDatasource(ds *api.Datasource, dataSrc sdk.Datasource) error {
+	dataSrc.ID = uint(pointer.Int64(ds.Status.DatasourceID))
+
+	statusMsg, err := c.grafanaClient.UpdateDatasource(context.TODO(), dataSrc)
 	if err != nil {
 		return err
+	}
+	glog.Infof("Datasource is updated with message: %s\n", pointer.String(statusMsg.Message))
+	// Update status to Success
+	_, err = util.UpdateDatasourceStatus(context.TODO(), c.extClient.GrafanaV1alpha1(), ds.ObjectMeta, func(st *api.DatasourceStatus) *api.DatasourceStatus {
+		st.Phase = api.DatasourcePhaseSuccess
+		st.Reason = "Successfully updated Grafana Datasource"
+		st.ObservedGeneration = ds.Generation
+
+		return st
+	}, metav1.UpdateOptions{})
+	if err != nil {
+		return errors.Wrapf(err, "failed to update Datasource phase to %q\n", api.DatasourcePhaseSuccess)
 	}
 	return nil
 }
 
 func (c *GrafanaController) runDatasourceFinalizer(ds *api.Datasource) error {
+	newDS, err := util.UpdateDatasourceStatus(context.TODO(), c.extClient.GrafanaV1alpha1(), ds.ObjectMeta, func(st *api.DatasourceStatus) *api.DatasourceStatus {
+		st.Phase = api.DatasourcePhaseTerminating
+		st.Reason = "Terminating Datasource"
+		st.ObservedGeneration = ds.Generation
+
+		return st
+	}, metav1.UpdateOptions{})
+	if err != nil {
+		return errors.Wrapf(err, "failed to update Datasource phase to %q\n", api.DatasourcePhaseTerminating)
+	}
+	ds.Status = newDS.Status
+
 	if ds.Status.DatasourceID == nil {
 		return errors.New("datasource can't be deleted: reason: Datasource ID is missing")
 	}

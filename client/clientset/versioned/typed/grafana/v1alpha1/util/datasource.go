@@ -19,6 +19,10 @@ package util
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+
+	kerr "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/util/wait"
 
 	api "go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1"
 	cs "go.searchlight.dev/grafana-operator/client/clientset/versioned/typed/grafana/v1alpha1"
@@ -66,4 +70,52 @@ func PatchDatasourceObject(
 	glog.V(3).Infof("Patching Datasource %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
 	out, err := c.Datasources(cur.Namespace).Patch(ctx, cur.Name, types.MergePatchType, patch, opts)
 	return out, kutil.VerbPatched, err
+}
+
+func UpdateDatasourceStatus(
+	ctx context.Context,
+	c cs.GrafanaV1alpha1Interface,
+	meta metav1.ObjectMeta,
+	transform func(*api.DatasourceStatus) *api.DatasourceStatus,
+	opts metav1.UpdateOptions,
+) (result *api.Datasource, err error) {
+	apply := func(x *api.Datasource) *api.Datasource {
+		return &api.Datasource{
+			TypeMeta:   x.TypeMeta,
+			ObjectMeta: x.ObjectMeta,
+			Spec:       x.Spec,
+			Status:     *transform(x.Status.DeepCopy()),
+		}
+	}
+
+	attempt := 0
+	cur, err := c.Datasources(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
+		attempt++
+		var e2 error
+		result, e2 = c.Datasources(meta.Namespace).UpdateStatus(ctx, apply(cur), opts)
+		if kerr.IsConflict(e2) {
+			latest, e3 := c.Datasources(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
+			switch {
+			case e3 == nil:
+				cur = latest
+				return false, nil
+			case kutil.IsRequestRetryable(e3):
+				return false, nil
+			default:
+				return false, e3
+			}
+		} else if err != nil && !kutil.IsRequestRetryable(e2) {
+			return false, e2
+		}
+		return e2 == nil, nil
+	})
+
+	if err != nil {
+		err = fmt.Errorf("failed to update status of Dashboard %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
+	}
+	return
 }
