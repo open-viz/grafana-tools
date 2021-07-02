@@ -18,6 +18,7 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kmapi "kmodules.xyz/client-go/api/v1"
 )
 
 const (
@@ -32,6 +33,8 @@ const (
 
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:path=datasources,singular=datasource,categories={grafana,searchlight,appscode}
+// +kubebuilder:printcolumn:name="Status",type="string",JSONPath=".status.phase"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 type Datasource struct {
 	metav1.TypeMeta   `json:",inline,omitempty"`
@@ -67,6 +70,15 @@ type DatasourceList struct {
 	Items           []Datasource `json:"items,omitempty" protobuf:"bytes,2,rep,name=items"`
 }
 
+type DatasourcePhase string
+
+const (
+	DatasourcePhaseProcessing  DatasourcePhase = "Processing"
+	DatasourcePhaseTerminating DatasourcePhase = "Terminating"
+	DatasourcePhaseSuccess     DatasourcePhase = "Success"
+	DatasourcePhaseFailed      DatasourcePhase = "Failed"
+)
+
 type DatasourceStatus struct {
 	// ObservedGeneration is the most recent generation observed for this resource. It corresponds to the
 	// resource's generation, which is updated on mutation by the API Server.
@@ -74,4 +86,10 @@ type DatasourceStatus struct {
 	ObservedGeneration int64 `json:"observedGeneration,omitempty" protobuf:"varint,1,opt,name=observedGeneration"`
 
 	DatasourceID *int64 `json:"datasourceId,omitempty" protobuf:"bytes,2,opt,name=datasourceID"`
+
+	Phase DatasourcePhase `json:"phase,omitempty" protobuf:"bytes,3,opt,name=phase"`
+
+	Reason string `json:"reason,omitempty" protobuf:"bytes,4,opt,name=reason"`
+
+	Conditions []kmapi.Condition `json:"conditions,omitempty" protobuf:"bytes,5,rep,name=conditions"`
 }

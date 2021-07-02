@@ -31,6 +31,8 @@ option go_package = "v1alpha1";
 
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:path=dashboards,singular=dashboard,categories={grafana,searchlight,appscode}
+// +kubebuilder:printcolumn:name="Status",type="string",JSONPath=".status.phase"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 message Dashboard {
   optional k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 1;
@@ -136,6 +138,8 @@ message DashboardTemplateSpec {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:path=datasources,singular=datasource,categories={grafana,searchlight,appscode}
+// +kubebuilder:printcolumn:name="Status",type="string",JSONPath=".status.phase"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 message Datasource {
   optional k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 1;
@@ -190,6 +194,12 @@ message DatasourceStatus {
   optional int64 observedGeneration = 1;
 
   optional int64 datasourceID = 2;
+
+  optional string phase = 3;
+
+  optional string reason = 4;
+
+  repeated kmodules.xyz.client_go.api.v1.Condition conditions = 5;
 }
 
 message TargetRef {

@@ -34,6 +34,8 @@ const (
 
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:path=dashboards,singular=dashboard,categories={grafana,searchlight,appscode}
+// +kubebuilder:printcolumn:name="Status",type="string",JSONPath=".status.phase"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 type Dashboard struct {
 	metav1.TypeMeta   `json:",inline,omitempty"`
