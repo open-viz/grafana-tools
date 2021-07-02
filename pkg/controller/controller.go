@@ -133,7 +133,7 @@ func (c *GrafanaController) pushDashboardFailureEvent(dashboard *api.Dashboard, 
 		reason,
 	)
 	dashboard, err := util.UpdateDashboardStatus(context.TODO(), c.extClient.GrafanaV1alpha1(), dashboard.ObjectMeta, func(in *api.DashboardStatus) *api.DashboardStatus {
-		in.Phase = api.DashboardPhaseFailed
+		in.Phase = api.GrafanaPhaseFailed
 		in.Reason = reason
 		in.Conditions = kmapi.SetCondition(in.Conditions, kmapi.Condition{
 			Type:    kmapi.ConditionFailed,
@@ -147,6 +147,37 @@ func (c *GrafanaController) pushDashboardFailureEvent(dashboard *api.Dashboard, 
 	if err != nil {
 		c.recorder.Eventf(
 			dashboard,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToUpdate,
+			err.Error(),
+		)
+	}
+}
+
+func (c *GrafanaController) pushDatasourceFailureEvent(ds *api.Datasource, reason string) {
+	c.recorder.Eventf(
+		ds,
+		core.EventTypeWarning,
+		eventer.EventReasonFailedToStart,
+		`Failed to complete operation for Datasource: "%v". Reason: %v`,
+		ds.Name,
+		reason,
+	)
+	ds, err := util.UpdateDatasourceStatus(context.TODO(), c.extClient.GrafanaV1alpha1(), ds.ObjectMeta, func(in *api.DatasourceStatus) *api.DatasourceStatus {
+		in.Phase = api.GrafanaPhaseFailed
+		in.Reason = reason
+		in.Conditions = kmapi.SetCondition(in.Conditions, kmapi.Condition{
+			Type:    kmapi.ConditionFailed,
+			Status:  core.ConditionTrue,
+			Reason:  reason,
+			Message: reason,
+		})
+		in.ObservedGeneration = ds.Generation
+		return in
+	}, metav1.UpdateOptions{})
+	if err != nil {
+		c.recorder.Eventf(
+			ds,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToUpdate,
 			err.Error(),

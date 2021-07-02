@@ -19,11 +19,12 @@ package controller
 import (
 	"context"
 
+	api "go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1"
+	"go.searchlight.dev/grafana-operator/client/clientset/versioned/typed/grafana/v1alpha1/util"
+
 	"github.com/golang/glog"
 	"github.com/grafana-tools/sdk"
 	"github.com/pkg/errors"
-	api "go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1"
-	"go.searchlight.dev/grafana-operator/client/clientset/versioned/typed/grafana/v1alpha1/util"
 	"gomodules.xyz/pointer"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -63,13 +64,13 @@ func (c *GrafanaController) runDatasourceInjector(key string) error {
 func (c *GrafanaController) reconcileDatasource(ds *api.Datasource) error {
 	// Update Datasource Status to processing
 	updatedDS, err := util.UpdateDatasourceStatus(context.TODO(), c.extClient.GrafanaV1alpha1(), ds.ObjectMeta, func(st *api.DatasourceStatus) *api.DatasourceStatus {
-		st.Phase = api.DatasourcePhaseProcessing
+		st.Phase = api.GrafanaPhaseProcessing
 		st.Reason = "Started processing Datasource"
 		st.ObservedGeneration = ds.Generation
 		return st
 	}, metav1.UpdateOptions{})
 	if err != nil {
-		return errors.Wrapf(err, "failed to update Datasource phase to %q\n", api.DatasourcePhaseProcessing)
+		return errors.Wrapf(err, "failed to update Datasource phase to %q\n", api.GrafanaPhaseProcessing)
 	}
 	ds.Status = updatedDS.Status
 
@@ -124,11 +125,12 @@ func (c *GrafanaController) createOrUpdateDatasource(ds *api.Datasource) error {
 	}
 	statusMsg, err := c.grafanaClient.CreateDatasource(context.TODO(), dataSrc)
 	if err != nil {
+		c.pushDatasourceFailureEvent(ds, err.Error())
 		return err
 	}
 	glog.Infof("Datasource is created with message: %s\n", pointer.String(statusMsg.Message))
 	_, err = util.UpdateDatasourceStatus(context.TODO(), c.extClient.GrafanaV1alpha1(), ds.ObjectMeta, func(st *api.DatasourceStatus) *api.DatasourceStatus {
-		st.Phase = api.DatasourcePhaseSuccess
+		st.Phase = api.GrafanaPhaseSuccess
 		st.Reason = "Successfully created Grafana Datasource"
 		st.ObservedGeneration = ds.Generation
 		st.DatasourceID = pointer.Int64P(int64(pointer.Uint(statusMsg.ID)))
@@ -136,7 +138,7 @@ func (c *GrafanaController) createOrUpdateDatasource(ds *api.Datasource) error {
 		return st
 	}, metav1.UpdateOptions{})
 	if err != nil {
-		return errors.Wrapf(err, "failed to update Datasource phase to %q\n", api.DatasourcePhaseSuccess)
+		return errors.Wrapf(err, "failed to update Datasource phase to %q\n", api.GrafanaPhaseSuccess)
 	}
 	return nil
 }
@@ -146,33 +148,34 @@ func (c *GrafanaController) updateDatasource(ds *api.Datasource, dataSrc sdk.Dat
 
 	statusMsg, err := c.grafanaClient.UpdateDatasource(context.TODO(), dataSrc)
 	if err != nil {
+		c.pushDatasourceFailureEvent(ds, err.Error())
 		return err
 	}
 	glog.Infof("Datasource is updated with message: %s\n", pointer.String(statusMsg.Message))
 	// Update status to Success
 	_, err = util.UpdateDatasourceStatus(context.TODO(), c.extClient.GrafanaV1alpha1(), ds.ObjectMeta, func(st *api.DatasourceStatus) *api.DatasourceStatus {
-		st.Phase = api.DatasourcePhaseSuccess
+		st.Phase = api.GrafanaPhaseSuccess
 		st.Reason = "Successfully updated Grafana Datasource"
 		st.ObservedGeneration = ds.Generation
 
 		return st
 	}, metav1.UpdateOptions{})
 	if err != nil {
-		return errors.Wrapf(err, "failed to update Datasource phase to %q\n", api.DatasourcePhaseSuccess)
+		return errors.Wrapf(err, "failed to update Datasource phase to %q\n", api.GrafanaPhaseSuccess)
 	}
 	return nil
 }
 
 func (c *GrafanaController) runDatasourceFinalizer(ds *api.Datasource) error {
 	newDS, err := util.UpdateDatasourceStatus(context.TODO(), c.extClient.GrafanaV1alpha1(), ds.ObjectMeta, func(st *api.DatasourceStatus) *api.DatasourceStatus {
-		st.Phase = api.DatasourcePhaseTerminating
+		st.Phase = api.GrafanaPhaseTerminating
 		st.Reason = "Terminating Datasource"
 		st.ObservedGeneration = ds.Generation
 
 		return st
 	}, metav1.UpdateOptions{})
 	if err != nil {
-		return errors.Wrapf(err, "failed to update Datasource phase to %q\n", api.DatasourcePhaseTerminating)
+		return errors.Wrapf(err, "failed to update Datasource phase to %q\n", api.GrafanaPhaseTerminating)
 	}
 	ds.Status = newDS.Status
 
@@ -182,6 +185,7 @@ func (c *GrafanaController) runDatasourceFinalizer(ds *api.Datasource) error {
 	dsID := uint(pointer.Int64(ds.Status.DatasourceID))
 	statusMsg, err := c.grafanaClient.DeleteDatasource(context.TODO(), dsID)
 	if err != nil {
+		c.pushDatasourceFailureEvent(ds, err.Error())
 		return err
 	}
 	glog.Infof("Datasource is deleted with message: %s\n", pointer.String(statusMsg.Message))

@@ -21,16 +21,15 @@ import (
 	"encoding/json"
 	"fmt"
 
-	kerr "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/util/wait"
-
 	api "go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1"
 	cs "go.searchlight.dev/grafana-operator/client/clientset/versioned/typed/grafana/v1alpha1"
 
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/golang/glog"
+	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/wait"
 	kutil "kmodules.xyz/client-go"
 )
 

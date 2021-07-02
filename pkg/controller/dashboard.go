@@ -107,7 +107,7 @@ func (c *GrafanaController) runDashboardInjector(key string) error {
 func (c *GrafanaController) reconcileDashboard(dashboard *api.Dashboard) error {
 	// update Processing status
 	newDashboard, err := util.UpdateDashboardStatus(context.TODO(), c.extClient.GrafanaV1alpha1(), dashboard.ObjectMeta, func(in *api.DashboardStatus) *api.DashboardStatus {
-		in.Phase = api.DashboardPhaseProcessing
+		in.Phase = api.GrafanaPhaseProcessing
 		in.Reason = "Started processing of dashboard"
 		in.Conditions = []kmapi.Condition{}
 		in.ObservedGeneration = dashboard.Generation
@@ -115,7 +115,7 @@ func (c *GrafanaController) reconcileDashboard(dashboard *api.Dashboard) error {
 		return in
 	}, metav1.UpdateOptions{})
 	if err != nil {
-		return errors.Wrapf(err, "failed to update dashboard phase to `%s`", api.DashboardPhaseSuccess)
+		return errors.Wrapf(err, "failed to update dashboard phase to `%s`", api.GrafanaPhaseSuccess)
 	}
 	dashboard.Status = newDashboard.Status
 
@@ -144,14 +144,14 @@ func (c *GrafanaController) reconcileDashboard(dashboard *api.Dashboard) error {
 func (c *GrafanaController) runDashboardFinalizer(dashboard *api.Dashboard) error {
 	// update Terminating status
 	newDashboard, err := util.UpdateDashboardStatus(context.TODO(), c.extClient.GrafanaV1alpha1(), dashboard.ObjectMeta, func(in *api.DashboardStatus) *api.DashboardStatus {
-		in.Phase = api.DashboardPhaseTerminating
+		in.Phase = api.GrafanaPhaseTerminating
 		in.Reason = "Terminating dashboard"
 		in.ObservedGeneration = dashboard.Generation
 
 		return in
 	}, metav1.UpdateOptions{})
 	if err != nil {
-		return errors.Wrapf(err, "failed to update dashboard phase to %q\n", api.DatasourcePhaseTerminating)
+		return errors.Wrapf(err, "failed to update dashboard phase to %q\n", api.GrafanaPhaseTerminating)
 	}
 	dashboard.Status = newDashboard.Status
 
@@ -205,7 +205,7 @@ func (c *GrafanaController) updateDashboard(dashboard *api.Dashboard, board sdk.
 		c.extClient.GrafanaV1alpha1(),
 		dashboard.ObjectMeta,
 		func(in *api.DashboardStatus) *api.DashboardStatus {
-			in.Phase = api.DashboardPhaseSuccess
+			in.Phase = api.GrafanaPhaseSuccess
 			in.Reason = "Successfully completed the modification process"
 			in.ObservedGeneration = dashboard.Generation
 
@@ -225,7 +225,7 @@ func (c *GrafanaController) updateDashboard(dashboard *api.Dashboard, board sdk.
 		metav1.UpdateOptions{},
 	)
 	if err != nil {
-		return errors.Wrapf(err, "failed to update dashboard phase to `%s`", api.DashboardPhaseSuccess)
+		return errors.Wrapf(err, "failed to update dashboard phase to `%s`", api.GrafanaPhaseSuccess)
 	}
 	dashboard.Status = newDashboard.Status
 

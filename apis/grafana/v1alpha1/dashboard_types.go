@@ -78,13 +78,13 @@ type DashboardList struct {
 	Items           []Dashboard `json:"items,omitempty" protobuf:"bytes,2,rep,name=items"`
 }
 
-type DashboardPhase string
+type GrafanaPhase string
 
 const (
-	DashboardPhaseProcessing  DashboardPhase = "Processing"
-	DashboardPhaseTerminating DashboardPhase = "Terminating"
-	DashboardPhaseSuccess     DashboardPhase = "Success"
-	DashboardPhaseFailed      DashboardPhase = "Failed"
+	GrafanaPhaseProcessing  GrafanaPhase = "Processing"
+	GrafanaPhaseTerminating GrafanaPhase = "Terminating"
+	GrafanaPhaseSuccess     GrafanaPhase = "Success"
+	GrafanaPhaseFailed      GrafanaPhase = "Failed"
 )
 
 type DashboardStatus struct {
@@ -95,7 +95,7 @@ type DashboardStatus struct {
 
 	// Phase indicates the state this Vault cluster jumps in.
 	// +optional
-	Phase DashboardPhase `json:"phase,omitempty" protobuf:"bytes,2,opt,name=phase,casttype=ClusterPhase"`
+	Phase GrafanaPhase `json:"phase,omitempty" protobuf:"bytes,2,opt,name=phase,casttype=ClusterPhase"`
 
 	// The reason for the current phase
 	// +optional
