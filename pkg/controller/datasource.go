@@ -105,8 +105,8 @@ func (c *GrafanaController) createOrUpdateDatasource(ds *api.Datasource) error {
 	dataSrc := sdk.Datasource{
 		OrgID:     uint(ds.Spec.OrgID),
 		Name:      ds.Spec.Name,
-		Type:      ds.Spec.Type,
-		Access:    ds.Spec.Access,
+		Type:      string(ds.Spec.Type),
+		Access:    string(ds.Spec.Access),
 		URL:       ds.Spec.URL,
 		IsDefault: ds.Spec.IsDefault,
 	}
