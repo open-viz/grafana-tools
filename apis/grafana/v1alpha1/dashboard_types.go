@@ -78,15 +78,6 @@ type DashboardList struct {
 	Items           []Dashboard `json:"items,omitempty" protobuf:"bytes,2,rep,name=items"`
 }
 
-type GrafanaPhase string
-
-const (
-	GrafanaPhaseProcessing  GrafanaPhase = "Processing"
-	GrafanaPhaseTerminating GrafanaPhase = "Terminating"
-	GrafanaPhaseSuccess     GrafanaPhase = "Success"
-	GrafanaPhaseFailed      GrafanaPhase = "Failed"
-)
-
 type DashboardStatus struct {
 	// ObservedGeneration is the most recent generation observed for this resource. It corresponds to the
 	// resource's generation, which is updated on mutation by the API Server.

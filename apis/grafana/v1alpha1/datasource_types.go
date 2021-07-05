@@ -27,19 +27,6 @@ const (
 	ResourceDatasources    = "datasources"
 )
 
-type DatasourceType string
-
-const (
-	DatasourceTypePrometheus DatasourceType = "prometheus"
-)
-
-type DatasourceAccessType string
-
-const (
-	DatasourceAccessTypeProxy  DatasourceAccessType = "proxy"
-	DatasourceAccessTypeDirect DatasourceAccessType = "direct"
-)
-
 // +genclient
 // +k8s:openapi-gen=true
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
