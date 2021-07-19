@@ -30,17 +30,17 @@ func (f *Framework) EventuallyCRD() GomegaAsyncAssertion {
 	return Eventually(
 		func() error {
 			// Check Datasource CRD
-			/*if _, err := f.extClient.GrafanaV1alpha1().Datasources(core.NamespaceAll).List(metav1.ListOptions{}); err != nil {
+			/*if _, err := f.extClient.OpenvizV1alpha1().Datasources(core.NamespaceAll).List(metav1.ListOptions{}); err != nil {
 				return fmt.Errorf("CRD Dashboard is not ready. Reason: %v", err)
 			}*/
 
 			// Check Dashboard CRD
-			if _, err := f.extClient.GrafanaV1alpha1().Dashboards(core.NamespaceAll).List(context.TODO(), metav1.ListOptions{}); err != nil {
+			if _, err := f.extClient.OpenvizV1alpha1().Dashboards(core.NamespaceAll).List(context.TODO(), metav1.ListOptions{}); err != nil {
 				return fmt.Errorf("CRD Dashboard is not ready. Reason: %v", err)
 			}
 
 			// Check DashboardTemplate CRD
-			/*if _, err := f.extClient.GrafanaV1alpha1().DashboardTemplates(core.NamespaceAll).List(metav1.ListOptions{}); err != nil {
+			/*if _, err := f.extClient.OpenvizV1alpha1().DashboardTemplates(core.NamespaceAll).List(metav1.ListOptions{}); err != nil {
 				return fmt.Errorf("CRD Dashboard is not ready. Reason: %v", err)
 			}*/
 			return nil

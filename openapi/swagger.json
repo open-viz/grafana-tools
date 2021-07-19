@@ -44,7 +44,7 @@
         }
       }
     },
-    "/apis/grafana.searchlight.dev/": {
+    "/apis/openviz.dev/": {
       "get": {
         "description": "get information of a group",
         "consumes": [
@@ -61,9 +61,9 @@
           "https"
         ],
         "tags": [
-          "grafanaSearchlightDev"
+          "openvizDev"
         ],
-        "operationId": "getGrafanaSearchlightDevAPIGroup",
+        "operationId": "getOpenvizDevAPIGroup",
         "responses": {
           "200": {
             "description": "OK",
@@ -74,7 +74,7 @@
         }
       }
     },
-    "/apis/grafana.searchlight.dev/v1alpha1/": {
+    "/apis/openviz.dev/v1alpha1/": {
       "get": {
         "description": "get available resources",
         "consumes": [
@@ -91,9 +91,9 @@
           "https"
         ],
         "tags": [
-          "grafanaSearchlightDev_v1alpha1"
+          "openvizDev_v1alpha1"
         ],
-        "operationId": "getGrafanaSearchlightDevV1alpha1APIResources",
+        "operationId": "getOpenvizDevV1alpha1APIResources",
         "responses": {
           "200": {
             "description": "OK",
@@ -104,7 +104,7 @@
         }
       }
     },
-    "/apis/grafana.searchlight.dev/v1alpha1/dashboards": {
+    "/apis/openviz.dev/v1alpha1/dashboards": {
       "get": {
         "description": "list or watch objects of kind Dashboard",
         "consumes": [
@@ -121,20 +121,20 @@
           "https"
         ],
         "tags": [
-          "grafanaSearchlightDev_v1alpha1"
+          "openvizDev_v1alpha1"
         ],
-        "operationId": "listGrafanaSearchlightDevV1alpha1DashboardForAllNamespaces",
+        "operationId": "listOpenvizDevV1alpha1DashboardForAllNamespaces",
         "responses": {
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/dev.searchlight.go.grafana-operator.apis.grafana.v1alpha1.DashboardList"
+              "$ref": "#/definitions/dev.openviz.go.grafana-operator.apis.openviz.v1alpha1.DashboardList"
             }
           }
         },
         "x-kubernetes-action": "list",
         "x-kubernetes-group-version-kind": {
-          "group": "grafana.searchlight.dev",
+          "group": "openviz.dev",
           "version": "v1alpha1",
           "kind": "Dashboard"
         }
@@ -212,7 +212,7 @@
         }
       ]
     },
-    "/apis/grafana.searchlight.dev/v1alpha1/namespaces/{namespace}/dashboards": {
+    "/apis/openviz.dev/v1alpha1/namespaces/{namespace}/dashboards": {
       "get": {
         "description": "list or watch objects of kind Dashboard",
         "consumes": [
@@ -229,9 +229,9 @@
           "https"
         ],
         "tags": [
-          "grafanaSearchlightDev_v1alpha1"
+          "openvizDev_v1alpha1"
         ],
-        "operationId": "listGrafanaSearchlightDevV1alpha1NamespacedDashboard",
+        "operationId": "listOpenvizDevV1alpha1NamespacedDashboard",
         "parameters": [
           {
             "uniqueItems": true,
@@ -301,13 +301,13 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/dev.searchlight.go.grafana-operator.apis.grafana.v1alpha1.DashboardList"
+              "$ref": "#/definitions/dev.openviz.go.grafana-operator.apis.openviz.v1alpha1.DashboardList"
             }
           }
         },
         "x-kubernetes-action": "list",
         "x-kubernetes-group-version-kind": {
-          "group": "grafana.searchlight.dev",
+          "group": "openviz.dev",
           "version": "v1alpha1",
           "kind": "Dashboard"
         }
@@ -326,16 +326,16 @@
           "https"
         ],
         "tags": [
-          "grafanaSearchlightDev_v1alpha1"
+          "openvizDev_v1alpha1"
         ],
-        "operationId": "createGrafanaSearchlightDevV1alpha1NamespacedDashboard",
+        "operationId": "createOpenvizDevV1alpha1NamespacedDashboard",
         "parameters": [
           {
             "name": "body",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/dev.searchlight.go.grafana-operator.apis.grafana.v1alpha1.Dashboard"
+              "$ref": "#/definitions/dev.openviz.go.grafana-operator.apis.openviz.v1alpha1.Dashboard"
             }
           },
           {
@@ -357,25 +357,25 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/dev.searchlight.go.grafana-operator.apis.grafana.v1alpha1.Dashboard"
+              "$ref": "#/definitions/dev.openviz.go.grafana-operator.apis.openviz.v1alpha1.Dashboard"
             }
           },
           "201": {
             "description": "Created",
             "schema": {
-              "$ref": "#/definitions/dev.searchlight.go.grafana-operator.apis.grafana.v1alpha1.Dashboard"
+              "$ref": "#/definitions/dev.openviz.go.grafana-operator.apis.openviz.v1alpha1.Dashboard"
             }
           },
           "202": {
             "description": "Accepted",
             "schema": {
-              "$ref": "#/definitions/dev.searchlight.go.grafana-operator.apis.grafana.v1alpha1.Dashboard"
+              "$ref": "#/definitions/dev.openviz.go.grafana-operator.apis.openviz.v1alpha1.Dashboard"
             }
           }
         },
         "x-kubernetes-action": "post",
         "x-kubernetes-group-version-kind": {
-          "group": "grafana.searchlight.dev",
+          "group": "openviz.dev",
           "version": "v1alpha1",
           "kind": "Dashboard"
         }
@@ -394,9 +394,9 @@
           "https"
         ],
         "tags": [
-          "grafanaSearchlightDev_v1alpha1"
+          "openvizDev_v1alpha1"
         ],
-        "operationId": "deleteGrafanaSearchlightDevV1alpha1CollectionNamespacedDashboard",
+        "operationId": "deleteOpenvizDevV1alpha1CollectionNamespacedDashboard",
         "parameters": [
           {
             "name": "body",
@@ -493,7 +493,7 @@
         },
         "x-kubernetes-action": "deletecollection",
         "x-kubernetes-group-version-kind": {
-          "group": "grafana.searchlight.dev",
+          "group": "openviz.dev",
           "version": "v1alpha1",
           "kind": "Dashboard"
         }
@@ -516,7 +516,7 @@
         }
       ]
     },
-    "/apis/grafana.searchlight.dev/v1alpha1/namespaces/{namespace}/dashboards/{name}": {
+    "/apis/openviz.dev/v1alpha1/namespaces/{namespace}/dashboards/{name}": {
       "get": {
         "description": "read the specified Dashboard",
         "consumes": [
@@ -531,20 +531,20 @@
           "https"
         ],
         "tags": [
-          "grafanaSearchlightDev_v1alpha1"
+          "openvizDev_v1alpha1"
         ],
-        "operationId": "readGrafanaSearchlightDevV1alpha1NamespacedDashboard",
+        "operationId": "readOpenvizDevV1alpha1NamespacedDashboard",
         "responses": {
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/dev.searchlight.go.grafana-operator.apis.grafana.v1alpha1.Dashboard"
+              "$ref": "#/definitions/dev.openviz.go.grafana-operator.apis.openviz.v1alpha1.Dashboard"
             }
           }
         },
         "x-kubernetes-action": "get",
         "x-kubernetes-group-version-kind": {
-          "group": "grafana.searchlight.dev",
+          "group": "openviz.dev",
           "version": "v1alpha1",
           "kind": "Dashboard"
         }
@@ -563,16 +563,16 @@
           "https"
         ],
         "tags": [
-          "grafanaSearchlightDev_v1alpha1"
+          "openvizDev_v1alpha1"
         ],
-        "operationId": "replaceGrafanaSearchlightDevV1alpha1NamespacedDashboard",
+        "operationId": "replaceOpenvizDevV1alpha1NamespacedDashboard",
         "parameters": [
           {
             "name": "body",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/dev.searchlight.go.grafana-operator.apis.grafana.v1alpha1.Dashboard"
+              "$ref": "#/definitions/dev.openviz.go.grafana-operator.apis.openviz.v1alpha1.Dashboard"
             }
           },
           {
@@ -594,19 +594,19 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/dev.searchlight.go.grafana-operator.apis.grafana.v1alpha1.Dashboard"
+              "$ref": "#/definitions/dev.openviz.go.grafana-operator.apis.openviz.v1alpha1.Dashboard"
             }
           },
           "201": {
             "description": "Created",
             "schema": {
-              "$ref": "#/definitions/dev.searchlight.go.grafana-operator.apis.grafana.v1alpha1.Dashboard"
+              "$ref": "#/definitions/dev.openviz.go.grafana-operator.apis.openviz.v1alpha1.Dashboard"
             }
           }
         },
         "x-kubernetes-action": "put",
         "x-kubernetes-group-version-kind": {
-          "group": "grafana.searchlight.dev",
+          "group": "openviz.dev",
           "version": "v1alpha1",
           "kind": "Dashboard"
         }
@@ -625,9 +625,9 @@
           "https"
         ],
         "tags": [
-          "grafanaSearchlightDev_v1alpha1"
+          "openvizDev_v1alpha1"
         ],
-        "operationId": "deleteGrafanaSearchlightDevV1alpha1NamespacedDashboard",
+        "operationId": "deleteOpenvizDevV1alpha1NamespacedDashboard",
         "parameters": [
           {
             "name": "body",
@@ -681,7 +681,7 @@
         },
         "x-kubernetes-action": "delete",
         "x-kubernetes-group-version-kind": {
-          "group": "grafana.searchlight.dev",
+          "group": "openviz.dev",
           "version": "v1alpha1",
           "kind": "Dashboard"
         }
@@ -703,9 +703,9 @@
           "https"
         ],
         "tags": [
-          "grafanaSearchlightDev_v1alpha1"
+          "openvizDev_v1alpha1"
         ],
-        "operationId": "patchGrafanaSearchlightDevV1alpha1NamespacedDashboard",
+        "operationId": "patchOpenvizDevV1alpha1NamespacedDashboard",
         "parameters": [
           {
             "name": "body",
@@ -741,13 +741,13 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/dev.searchlight.go.grafana-operator.apis.grafana.v1alpha1.Dashboard"
+              "$ref": "#/definitions/dev.openviz.go.grafana-operator.apis.openviz.v1alpha1.Dashboard"
             }
           }
         },
         "x-kubernetes-action": "patch",
         "x-kubernetes-group-version-kind": {
-          "group": "grafana.searchlight.dev",
+          "group": "openviz.dev",
           "version": "v1alpha1",
           "kind": "Dashboard"
         }
@@ -778,7 +778,7 @@
         }
       ]
     },
-    "/apis/grafana.searchlight.dev/v1alpha1/watch/dashboards": {
+    "/apis/openviz.dev/v1alpha1/watch/dashboards": {
       "get": {
         "description": "watch individual changes to a list of Dashboard. deprecated: use the 'watch' parameter with a list operation instead.",
         "consumes": [
@@ -795,9 +795,9 @@
           "https"
         ],
         "tags": [
-          "grafanaSearchlightDev_v1alpha1"
+          "openvizDev_v1alpha1"
         ],
-        "operationId": "watchGrafanaSearchlightDevV1alpha1DashboardListForAllNamespaces",
+        "operationId": "watchOpenvizDevV1alpha1DashboardListForAllNamespaces",
         "responses": {
           "200": {
             "description": "OK",
@@ -808,7 +808,7 @@
         },
         "x-kubernetes-action": "watchlist",
         "x-kubernetes-group-version-kind": {
-          "group": "grafana.searchlight.dev",
+          "group": "openviz.dev",
           "version": "v1alpha1",
           "kind": "Dashboard"
         }
@@ -886,7 +886,7 @@
         }
       ]
     },
-    "/apis/grafana.searchlight.dev/v1alpha1/watch/namespaces/{namespace}/dashboards": {
+    "/apis/openviz.dev/v1alpha1/watch/namespaces/{namespace}/dashboards": {
       "get": {
         "description": "watch individual changes to a list of Dashboard. deprecated: use the 'watch' parameter with a list operation instead.",
         "consumes": [
@@ -903,9 +903,9 @@
           "https"
         ],
         "tags": [
-          "grafanaSearchlightDev_v1alpha1"
+          "openvizDev_v1alpha1"
         ],
-        "operationId": "watchGrafanaSearchlightDevV1alpha1NamespacedDashboardList",
+        "operationId": "watchOpenvizDevV1alpha1NamespacedDashboardList",
         "responses": {
           "200": {
             "description": "OK",
@@ -916,7 +916,7 @@
         },
         "x-kubernetes-action": "watchlist",
         "x-kubernetes-group-version-kind": {
-          "group": "grafana.searchlight.dev",
+          "group": "openviz.dev",
           "version": "v1alpha1",
           "kind": "Dashboard"
         }
@@ -1002,7 +1002,7 @@
         }
       ]
     },
-    "/apis/grafana.searchlight.dev/v1alpha1/watch/namespaces/{namespace}/dashboards/{name}": {
+    "/apis/openviz.dev/v1alpha1/watch/namespaces/{namespace}/dashboards/{name}": {
       "get": {
         "description": "watch changes to an object of kind Dashboard. deprecated: use the 'watch' parameter with a list operation instead, filtered to a single item with the 'fieldSelector' parameter.",
         "consumes": [
@@ -1019,9 +1019,9 @@
           "https"
         ],
         "tags": [
-          "grafanaSearchlightDev_v1alpha1"
+          "openvizDev_v1alpha1"
         ],
-        "operationId": "watchGrafanaSearchlightDevV1alpha1NamespacedDashboard",
+        "operationId": "watchOpenvizDevV1alpha1NamespacedDashboard",
         "responses": {
           "200": {
             "description": "OK",
@@ -1032,7 +1032,7 @@
         },
         "x-kubernetes-action": "watch",
         "x-kubernetes-group-version-kind": {
-          "group": "grafana.searchlight.dev",
+          "group": "openviz.dev",
           "version": "v1alpha1",
           "kind": "Dashboard"
         }
@@ -1128,7 +1128,7 @@
     }
   },
   "definitions": {
-    "dev.searchlight.go.grafana-operator.apis.grafana.v1alpha1.Dashboard": {
+    "dev.openviz.go.grafana-operator.apis.openviz.v1alpha1.Dashboard": {
       "type": "object",
       "properties": {
         "apiVersion": {
@@ -1145,22 +1145,22 @@
         },
         "spec": {
           "default": {},
-          "$ref": "#/definitions/dev.searchlight.go.grafana-operator.apis.grafana.v1alpha1.DashboardSpec"
+          "$ref": "#/definitions/dev.openviz.go.grafana-operator.apis.openviz.v1alpha1.DashboardSpec"
         },
         "status": {
           "default": {},
-          "$ref": "#/definitions/dev.searchlight.go.grafana-operator.apis.grafana.v1alpha1.DashboardStatus"
+          "$ref": "#/definitions/dev.openviz.go.grafana-operator.apis.openviz.v1alpha1.DashboardStatus"
         }
       },
       "x-kubernetes-group-version-kind": [
         {
-          "group": "grafana.searchlight.dev",
+          "group": "openviz.dev",
           "kind": "Dashboard",
           "version": "v1alpha1"
         }
       ]
     },
-    "dev.searchlight.go.grafana-operator.apis.grafana.v1alpha1.DashboardList": {
+    "dev.openviz.go.grafana-operator.apis.openviz.v1alpha1.DashboardList": {
       "type": "object",
       "properties": {
         "apiVersion": {
@@ -1171,7 +1171,7 @@
           "type": "array",
           "items": {
             "default": {},
-            "$ref": "#/definitions/dev.searchlight.go.grafana-operator.apis.grafana.v1alpha1.Dashboard"
+            "$ref": "#/definitions/dev.openviz.go.grafana-operator.apis.openviz.v1alpha1.Dashboard"
           }
         },
         "kind": {
@@ -1185,13 +1185,13 @@
       },
       "x-kubernetes-group-version-kind": [
         {
-          "group": "grafana.searchlight.dev",
+          "group": "openviz.dev",
           "kind": "DashboardList",
           "version": "v1alpha1"
         }
       ]
     },
-    "dev.searchlight.go.grafana-operator.apis.grafana.v1alpha1.DashboardReference": {
+    "dev.openviz.go.grafana-operator.apis.openviz.v1alpha1.DashboardReference": {
       "type": "object",
       "properties": {
         "id": {
@@ -1217,7 +1217,7 @@
         }
       }
     },
-    "dev.searchlight.go.grafana-operator.apis.grafana.v1alpha1.DashboardSpec": {
+    "dev.openviz.go.grafana-operator.apis.openviz.v1alpha1.DashboardSpec": {
       "type": "object",
       "required": [
         "folderId",
@@ -1230,7 +1230,7 @@
           "default": 0
         },
         "grafana": {
-          "$ref": "#/definitions/dev.searchlight.go.grafana-operator.apis.grafana.v1alpha1.TargetRef"
+          "$ref": "#/definitions/dev.openviz.go.grafana-operator.apis.openviz.v1alpha1.TargetRef"
         },
         "model": {
           "$ref": "#/definitions/io.k8s.apimachinery.pkg.runtime.RawExtension"
@@ -1241,7 +1241,7 @@
         }
       }
     },
-    "dev.searchlight.go.grafana-operator.apis.grafana.v1alpha1.DashboardStatus": {
+    "dev.openviz.go.grafana-operator.apis.openviz.v1alpha1.DashboardStatus": {
       "type": "object",
       "properties": {
         "conditions": {
@@ -1254,7 +1254,7 @@
         },
         "dashboard": {
           "description": "Dashboard indicates the updated dashboard database",
-          "$ref": "#/definitions/dev.searchlight.go.grafana-operator.apis.grafana.v1alpha1.DashboardReference"
+          "$ref": "#/definitions/dev.openviz.go.grafana-operator.apis.openviz.v1alpha1.DashboardReference"
         },
         "observedGeneration": {
           "description": "ObservedGeneration is the most recent generation observed for this resource. It corresponds to the resource's generation, which is updated on mutation by the API Server.",
@@ -1271,7 +1271,7 @@
         }
       }
     },
-    "dev.searchlight.go.grafana-operator.apis.grafana.v1alpha1.TargetRef": {
+    "dev.openviz.go.grafana-operator.apis.openviz.v1alpha1.TargetRef": {
       "type": "object",
       "properties": {
         "apiVersion": {
@@ -1520,7 +1520,7 @@
           "version": "v1"
         },
         {
-          "group": "grafana.searchlight.dev",
+          "group": "openviz.dev",
           "kind": "DeleteOptions",
           "version": "v1alpha1"
         }
@@ -1823,7 +1823,7 @@
           "version": "v1"
         },
         {
-          "group": "grafana.searchlight.dev",
+          "group": "openviz.dev",
           "kind": "Status",
           "version": "v1alpha1"
         }
@@ -1912,7 +1912,7 @@
           "version": "v1"
         },
         {
-          "group": "grafana.searchlight.dev",
+          "group": "openviz.dev",
           "kind": "WatchEvent",
           "version": "v1alpha1"
         }

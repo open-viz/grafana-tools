@@ -17,7 +17,7 @@ limitations under the License.
 package framework
 
 import (
-	cs "go.searchlight.dev/grafana-operator/client/clientset/versioned"
+	cs "go.openviz.dev/grafana-operator/client/clientset/versioned"
 
 	"gomodules.xyz/x/crypto/rand"
 	"k8s.io/client-go/kubernetes"

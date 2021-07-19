@@ -17,19 +17,15 @@ limitations under the License.
 package cmds
 
 import (
-	"flag"
 	"os"
 
-	"go.searchlight.dev/grafana-operator/client/clientset/versioned/scheme"
+	"go.openviz.dev/grafana-operator/client/clientset/versioned/scheme"
 
 	"github.com/spf13/cobra"
-	"gomodules.xyz/kglog"
-	"gomodules.xyz/x/flags"
 	v "gomodules.xyz/x/version"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/kubernetes/pkg/api/legacyscheme"
 	"kmodules.xyz/client-go/tools/cli"
 	appcatscheme "kmodules.xyz/custom-resources/client/clientset/versioned/scheme"
 )
@@ -37,19 +33,15 @@ import (
 func NewRootCmd() *cobra.Command {
 	var rootCmd = &cobra.Command{
 		Use:               "grafana-operator [command]",
-		Short:             `Vault Operator by AppsCode - HashiCorp Vault Operator for Kubernetes`,
+		Short:             `Grafana Operator by AppsCode`,
 		DisableAutoGenTag: true,
 		PersistentPreRun: func(c *cobra.Command, args []string) {
-			flags.DumpAll(c.Flags())
 			cli.SendAnalytics(c, v.Version.Version)
 
 			utilruntime.Must(scheme.AddToScheme(clientsetscheme.Scheme))
 			utilruntime.Must(appcatscheme.AddToScheme(clientsetscheme.Scheme))
-			utilruntime.Must(scheme.AddToScheme(legacyscheme.Scheme))
 		},
 	}
-	rootCmd.PersistentFlags().AddGoFlagSet(flag.CommandLine)
-	kglog.ParseFlags()
 	rootCmd.PersistentFlags().BoolVar(&cli.EnableAnalytics, "enable-analytics", cli.EnableAnalytics, "Send analytical events to Google Analytics")
 
 	rootCmd.AddCommand(v.NewCmdVersion())

@@ -20,13 +20,13 @@ import (
 	"testing"
 	"time"
 
-	"go.searchlight.dev/grafana-operator/pkg/controller"
-	"go.searchlight.dev/grafana-operator/test/e2e/framework"
+	"go.openviz.dev/grafana-operator/pkg/controller"
+	"go.openviz.dev/grafana-operator/test/e2e/framework"
 
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
-	"gomodules.xyz/kglog"
+	"gomodules.xyz/logs"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"kmodules.xyz/client-go/tools/clientcmd"
 )
@@ -40,7 +40,7 @@ var (
 )
 
 func TestE2e(t *testing.T) {
-	kglog.InitLogs()
+	logs.InitLogs()
 	RegisterFailHandler(Fail)
 	SetDefaultEventuallyTimeout(TIMEOUT)
 

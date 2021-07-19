@@ -21,7 +21,7 @@ package versioned
 import (
 	"fmt"
 
-	grafanav1alpha1 "go.searchlight.dev/grafana-operator/client/clientset/versioned/typed/grafana/v1alpha1"
+	openvizv1alpha1 "go.openviz.dev/grafana-operator/client/clientset/versioned/typed/openviz/v1alpha1"
 
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
@@ -30,19 +30,19 @@ import (
 
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
-	GrafanaV1alpha1() grafanav1alpha1.GrafanaV1alpha1Interface
+	OpenvizV1alpha1() openvizv1alpha1.OpenvizV1alpha1Interface
 }
 
 // Clientset contains the clients for groups. Each group has exactly one
 // version included in a Clientset.
 type Clientset struct {
 	*discovery.DiscoveryClient
-	grafanaV1alpha1 *grafanav1alpha1.GrafanaV1alpha1Client
+	openvizV1alpha1 *openvizv1alpha1.OpenvizV1alpha1Client
 }
 
-// GrafanaV1alpha1 retrieves the GrafanaV1alpha1Client
-func (c *Clientset) GrafanaV1alpha1() grafanav1alpha1.GrafanaV1alpha1Interface {
-	return c.grafanaV1alpha1
+// OpenvizV1alpha1 retrieves the OpenvizV1alpha1Client
+func (c *Clientset) OpenvizV1alpha1() openvizv1alpha1.OpenvizV1alpha1Interface {
+	return c.openvizV1alpha1
 }
 
 // Discovery retrieves the DiscoveryClient
@@ -66,7 +66,7 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 	}
 	var cs Clientset
 	var err error
-	cs.grafanaV1alpha1, err = grafanav1alpha1.NewForConfig(&configShallowCopy)
+	cs.openvizV1alpha1, err = openvizv1alpha1.NewForConfig(&configShallowCopy)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +82,7 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 // panics if there is an error in the config.
 func NewForConfigOrDie(c *rest.Config) *Clientset {
 	var cs Clientset
-	cs.grafanaV1alpha1 = grafanav1alpha1.NewForConfigOrDie(c)
+	cs.openvizV1alpha1 = openvizv1alpha1.NewForConfigOrDie(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClientForConfigOrDie(c)
 	return &cs
@@ -91,7 +91,7 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 // New creates a new Clientset for the given RESTClient.
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
-	cs.grafanaV1alpha1 = grafanav1alpha1.New(c)
+	cs.openvizV1alpha1 = openvizv1alpha1.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)
 	return &cs

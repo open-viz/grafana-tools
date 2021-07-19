@@ -15885,8 +15885,8 @@ func schema_custom_resources_apis_metrics_v1alpha1_MetricValue(ref common.Refere
 					"value": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Value contains the metric value. It is always equal to 1. It is defined when some information of the object is collected as labels but there is no specific metric value.\n\nExample: For metrics \"kube_pod_info\", there are some information like host_ip, pod_ip, node name is collected as labels. As there must be a metric value, metric value is kept as 1. The metric will look like `kube_pod_info{host_ip=\"172.18.0.2\", pod_ip=\"10.244.0.14\", node=\"kind-control-plane\" .....}  1`",
-							Type:        []string{"string"},
-							Format:      "",
+							Type:        []string{"number"},
+							Format:      "double",
 						},
 					},
 					"valueFromPath": {
@@ -15934,7 +15934,7 @@ func schema_custom_resources_apis_metrics_v1alpha1_Metrics(ref common.ReferenceC
 					},
 					"type": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Type defines the metrics type. For kubernetes based object, types can only be gauge",
+							Description: "Type defines the metrics type. For kubernetes based object, types can only be \"gauge\"",
 							Default:     "",
 							Type:        []string{"string"},
 							Format:      "",
@@ -15978,7 +15978,6 @@ func schema_custom_resources_apis_metrics_v1alpha1_Metrics(ref common.ReferenceC
 					"states": {
 						SchemaProps: spec.SchemaProps{
 							Description: "States handle metrics with label cardinality. States specify the possible states for a label and their corresponding MetricValue configuration.\n\nMetrics must contain either States or MetricValue. If both are specified, MetricValue will be ignored.",
-							Default:     map[string]interface{}{},
 							Ref:         ref("kmodules.xyz/custom-resources/apis/metrics/v1alpha1.State"),
 						},
 					},
@@ -16232,27 +16231,27 @@ func schema_custom_resources_apis_metrics_v1alpha1_TargetRef(ref common.Referenc
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "TargetRef contains the Object's group and resource to specify the target resource",
+				Description: "TargetRef contains the Object's apiVersion & kind to specify the target resource",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
-					"group": {
+					"kind": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Group defines the group of the object. Example: For Deployment, Group will be 'apps'",
+							Description: "Kind is a string value representing the REST resource this object represents. In CamelCase.",
 							Default:     "",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
-					"resource": {
+					"apiVersion": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Resource defines the resource of the object. Example: For Deployment, Resource will be 'deployments'",
+							Description: "APIVersion defines the versioned schema of this representation of an object.",
 							Default:     "",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
 				},
-				Required: []string{"group", "resource"},
+				Required: []string{"kind", "apiVersion"},
 			},
 		},
 	}

@@ -20,14 +20,13 @@ import (
 	"context"
 	"fmt"
 
-	api "go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1"
-	cs "go.searchlight.dev/grafana-operator/client/clientset/versioned"
-	"go.searchlight.dev/grafana-operator/client/clientset/versioned/typed/grafana/v1alpha1/util"
-	grafanainformers "go.searchlight.dev/grafana-operator/client/informers/externalversions"
-	grafana_listers "go.searchlight.dev/grafana-operator/client/listers/grafana/v1alpha1"
-	"go.searchlight.dev/grafana-operator/pkg/eventer"
+	api "go.openviz.dev/grafana-operator/apis/openviz/v1alpha1"
+	cs "go.openviz.dev/grafana-operator/client/clientset/versioned"
+	"go.openviz.dev/grafana-operator/client/clientset/versioned/typed/openviz/v1alpha1/util"
+	grafanainformers "go.openviz.dev/grafana-operator/client/informers/externalversions"
+	grafana_listers "go.openviz.dev/grafana-operator/client/listers/openviz/v1alpha1"
+	"go.openviz.dev/grafana-operator/pkg/eventer"
 
-	"github.com/golang/glog"
 	"github.com/grafana-tools/sdk"
 	pcm "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	core "k8s.io/api/core/v1"
@@ -39,7 +38,8 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
-	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
+	"k8s.io/klog/v2"
+	reg_util "kmodules.xyz/client-go/admissionregistration/v1"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	"kmodules.xyz/client-go/apiextensions"
 	"kmodules.xyz/client-go/tools/queue"
@@ -103,7 +103,7 @@ func (c *GrafanaController) Run(stopCh <-chan struct{}) {
 func (c *GrafanaController) RunInformers(stopCh <-chan struct{}) {
 	defer runtime.HandleCrash()
 
-	glog.Info("Starting Grafana controller")
+	klog.Info("Starting Grafana controller")
 
 	c.extInformerFactory.Start(stopCh)
 	for _, v := range c.extInformerFactory.WaitForCacheSync(stopCh) {
@@ -120,7 +120,7 @@ func (c *GrafanaController) RunInformers(stopCh <-chan struct{}) {
 	go c.datasourceQueue.Run(stopCh)
 
 	<-stopCh
-	glog.Info("Stopping Vault operator")
+	klog.Info("Stopping Vault operator")
 }
 
 func (c *GrafanaController) pushDashboardFailureEvent(dashboard *api.Dashboard, reason string) {
@@ -132,7 +132,7 @@ func (c *GrafanaController) pushDashboardFailureEvent(dashboard *api.Dashboard, 
 		dashboard.Name,
 		reason,
 	)
-	dashboard, err := util.UpdateDashboardStatus(context.TODO(), c.extClient.GrafanaV1alpha1(), dashboard.ObjectMeta, func(in *api.DashboardStatus) *api.DashboardStatus {
+	dashboard, err := util.UpdateDashboardStatus(context.TODO(), c.extClient.OpenvizV1alpha1(), dashboard.ObjectMeta, func(in *api.DashboardStatus) *api.DashboardStatus {
 		in.Phase = api.GrafanaPhaseFailed
 		in.Reason = reason
 		in.Conditions = kmapi.SetCondition(in.Conditions, kmapi.Condition{
@@ -163,7 +163,7 @@ func (c *GrafanaController) pushDatasourceFailureEvent(ds *api.Datasource, reaso
 		ds.Name,
 		reason,
 	)
-	ds, err := util.UpdateDatasourceStatus(context.TODO(), c.extClient.GrafanaV1alpha1(), ds.ObjectMeta, func(in *api.DatasourceStatus) *api.DatasourceStatus {
+	ds, err := util.UpdateDatasourceStatus(context.TODO(), c.extClient.OpenvizV1alpha1(), ds.ObjectMeta, func(in *api.DatasourceStatus) *api.DatasourceStatus {
 		in.Phase = api.GrafanaPhaseFailed
 		in.Reason = reason
 		in.Conditions = kmapi.SetCondition(in.Conditions, kmapi.Condition{

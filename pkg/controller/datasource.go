@@ -19,40 +19,40 @@ package controller
 import (
 	"context"
 
-	api "go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1"
-	"go.searchlight.dev/grafana-operator/client/clientset/versioned/typed/grafana/v1alpha1/util"
+	api "go.openviz.dev/grafana-operator/apis/openviz/v1alpha1"
+	"go.openviz.dev/grafana-operator/client/clientset/versioned/typed/openviz/v1alpha1/util"
 
-	"github.com/golang/glog"
 	"github.com/grafana-tools/sdk"
 	"github.com/pkg/errors"
 	"gomodules.xyz/pointer"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog/v2"
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/tools/queue"
 )
 
 const (
-	DatasourceFinalizer = "datasource.grafana.searchlight.dev"
+	DatasourceFinalizer = "datasource.openviz.dev"
 )
 
 func (c *GrafanaController) initDatasourceWatcher() {
-	c.datasourceInformer = c.extInformerFactory.Grafana().V1alpha1().Datasources().Informer()
+	c.datasourceInformer = c.extInformerFactory.Openviz().V1alpha1().Datasources().Informer()
 	c.datasourceQueue = queue.New(api.ResourceKindDatasource, c.MaxNumRequeues, c.NumThreads, c.runDatasourceInjector)
 	c.datasourceInformer.AddEventHandler(queue.NewReconcilableHandler(c.datasourceQueue.GetQueue()))
-	c.datasourceLister = c.extInformerFactory.Grafana().V1alpha1().Datasources().Lister()
+	c.datasourceLister = c.extInformerFactory.Openviz().V1alpha1().Datasources().Lister()
 }
 
 func (c *GrafanaController) runDatasourceInjector(key string) error {
 	obj, exists, err := c.datasourceInformer.GetIndexer().GetByKey(key)
 	if err != nil {
-		glog.Errorf("Fetching object with key %s from store failed with %v", key, err)
+		klog.Errorf("Fetching object with key %s from store failed with %v", key, err)
 		return err
 	}
 	if !exists {
-		glog.Warningf("Datasource %s does not exist anymore\n", key)
+		klog.Warningf("Datasource %s does not exist anymore\n", key)
 	} else {
 		ds := obj.(*api.Datasource).DeepCopy()
-		glog.Infof("Sync/Add/Update for Datasource %s/%s\n", ds.Namespace, ds.Name)
+		klog.Infof("Sync/Add/Update for Datasource %s/%s\n", ds.Namespace, ds.Name)
 		err = c.reconcileDatasource(ds)
 		if err != nil {
 			return err
@@ -63,7 +63,7 @@ func (c *GrafanaController) runDatasourceInjector(key string) error {
 
 func (c *GrafanaController) reconcileDatasource(ds *api.Datasource) error {
 	// Update Datasource Status to processing
-	updatedDS, err := util.UpdateDatasourceStatus(context.TODO(), c.extClient.GrafanaV1alpha1(), ds.ObjectMeta, func(st *api.DatasourceStatus) *api.DatasourceStatus {
+	updatedDS, err := util.UpdateDatasourceStatus(context.TODO(), c.extClient.OpenvizV1alpha1(), ds.ObjectMeta, func(st *api.DatasourceStatus) *api.DatasourceStatus {
 		st.Phase = api.GrafanaPhaseProcessing
 		st.Reason = "Started processing Datasource"
 		st.ObservedGeneration = ds.Generation
@@ -85,7 +85,7 @@ func (c *GrafanaController) reconcileDatasource(ds *api.Datasource) error {
 	}
 	if !core_util.HasFinalizer(ds.ObjectMeta, DatasourceFinalizer) {
 		// Add Finalizer
-		updatedDS, _, err := util.PatchDatasource(context.TODO(), c.extClient.GrafanaV1alpha1(), ds, func(up *api.Datasource) *api.Datasource {
+		updatedDS, _, err := util.PatchDatasource(context.TODO(), c.extClient.OpenvizV1alpha1(), ds, func(up *api.Datasource) *api.Datasource {
 			up.ObjectMeta = core_util.AddFinalizer(ds.ObjectMeta, DatasourceFinalizer)
 			return up
 		}, metav1.PatchOptions{})
@@ -128,8 +128,8 @@ func (c *GrafanaController) createOrUpdateDatasource(ds *api.Datasource) error {
 		c.pushDatasourceFailureEvent(ds, err.Error())
 		return err
 	}
-	glog.Infof("Datasource is created with message: %s\n", pointer.String(statusMsg.Message))
-	_, err = util.UpdateDatasourceStatus(context.TODO(), c.extClient.GrafanaV1alpha1(), ds.ObjectMeta, func(st *api.DatasourceStatus) *api.DatasourceStatus {
+	klog.Infof("Datasource is created with message: %s\n", pointer.String(statusMsg.Message))
+	_, err = util.UpdateDatasourceStatus(context.TODO(), c.extClient.OpenvizV1alpha1(), ds.ObjectMeta, func(st *api.DatasourceStatus) *api.DatasourceStatus {
 		st.Phase = api.GrafanaPhaseSuccess
 		st.Reason = "Successfully created Grafana Datasource"
 		st.ObservedGeneration = ds.Generation
@@ -151,9 +151,9 @@ func (c *GrafanaController) updateDatasource(ds *api.Datasource, dataSrc sdk.Dat
 		c.pushDatasourceFailureEvent(ds, err.Error())
 		return err
 	}
-	glog.Infof("Datasource is updated with message: %s\n", pointer.String(statusMsg.Message))
+	klog.Infof("Datasource is updated with message: %s\n", pointer.String(statusMsg.Message))
 	// Update status to Success
-	_, err = util.UpdateDatasourceStatus(context.TODO(), c.extClient.GrafanaV1alpha1(), ds.ObjectMeta, func(st *api.DatasourceStatus) *api.DatasourceStatus {
+	_, err = util.UpdateDatasourceStatus(context.TODO(), c.extClient.OpenvizV1alpha1(), ds.ObjectMeta, func(st *api.DatasourceStatus) *api.DatasourceStatus {
 		st.Phase = api.GrafanaPhaseSuccess
 		st.Reason = "Successfully updated Grafana Datasource"
 		st.ObservedGeneration = ds.Generation
@@ -167,7 +167,7 @@ func (c *GrafanaController) updateDatasource(ds *api.Datasource, dataSrc sdk.Dat
 }
 
 func (c *GrafanaController) runDatasourceFinalizer(ds *api.Datasource) error {
-	newDS, err := util.UpdateDatasourceStatus(context.TODO(), c.extClient.GrafanaV1alpha1(), ds.ObjectMeta, func(st *api.DatasourceStatus) *api.DatasourceStatus {
+	newDS, err := util.UpdateDatasourceStatus(context.TODO(), c.extClient.OpenvizV1alpha1(), ds.ObjectMeta, func(st *api.DatasourceStatus) *api.DatasourceStatus {
 		st.Phase = api.GrafanaPhaseTerminating
 		st.Reason = "Terminating Datasource"
 		st.ObservedGeneration = ds.Generation
@@ -188,10 +188,10 @@ func (c *GrafanaController) runDatasourceFinalizer(ds *api.Datasource) error {
 		c.pushDatasourceFailureEvent(ds, err.Error())
 		return err
 	}
-	glog.Infof("Datasource is deleted with message: %s\n", pointer.String(statusMsg.Message))
+	klog.Infof("Datasource is deleted with message: %s\n", pointer.String(statusMsg.Message))
 
 	// remove Finalizer
-	_, _, err = util.PatchDatasource(context.TODO(), c.extClient.GrafanaV1alpha1(), ds, func(up *api.Datasource) *api.Datasource {
+	_, _, err = util.PatchDatasource(context.TODO(), c.extClient.OpenvizV1alpha1(), ds, func(up *api.Datasource) *api.Datasource {
 		up.ObjectMeta = core_util.RemoveFinalizer(ds.ObjectMeta, DatasourceFinalizer)
 		return up
 	}, metav1.PatchOptions{})

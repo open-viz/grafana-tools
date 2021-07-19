@@ -21,7 +21,7 @@ package internalinterfaces
 import (
 	time "time"
 
-	versioned "go.searchlight.dev/grafana-operator/client/clientset/versioned"
+	versioned "go.openviz.dev/grafana-operator/client/clientset/versioned"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
