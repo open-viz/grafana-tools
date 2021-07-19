@@ -1,0 +1,14 @@
+apiVersion: grafana.searchlight.dev/v1alpha1
+kind: Datasource
+metadata:
+  name: data-source
+  namespace: monitoring
+spec:
+  grafana:
+    name: grafana
+  orgId: 1
+  name: TestDS
+  type: prometheus
+  access: proxy
+  url: http://prometheus-kube-prometheus-prometheus:9090
+  isDefault: false

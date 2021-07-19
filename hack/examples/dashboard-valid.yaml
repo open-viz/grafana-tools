@@ -2,6 +2,7 @@ apiVersion: grafana.searchlight.dev/v1alpha1
 kind: Dashboard
 metadata:
     name: dashboard2-valid
+    namespace: monitoring
 spec:
     grafana:
         name: grafana

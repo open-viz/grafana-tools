@@ -67,6 +67,11 @@ type GrafanaController struct {
 	dashboardInformer cache.SharedIndexInformer
 	dashboardLister   grafana_listers.DashboardLister
 
+	//for DataSource
+	datasourceQueue    *queue.Worker
+	datasourceInformer cache.SharedIndexInformer
+	datasourceLister   grafana_listers.DatasourceLister
+
 	// Grafana client
 	grafanaClient *sdk.Client
 }
@@ -74,6 +79,7 @@ type GrafanaController struct {
 func (c *GrafanaController) ensureCustomResourceDefinitions() error {
 	crds := []*apiextensions.CustomResourceDefinition{
 		api.Dashboard{}.CustomResourceDefinition(),
+		api.Datasource{}.CustomResourceDefinition(),
 		appcat.AppBinding{}.CustomResourceDefinition(),
 	}
 	return apiextensions.RegisterCRDs(c.crdClient, crds)
@@ -110,11 +116,14 @@ func (c *GrafanaController) RunInformers(stopCh <-chan struct{}) {
 	//For Dashboard
 	go c.dashboardQueue.Run(stopCh)
 
+	//For Datasource
+	go c.datasourceQueue.Run(stopCh)
+
 	<-stopCh
 	glog.Info("Stopping Vault operator")
 }
 
-func (c *GrafanaController) pushFailureEvent(dashboard *api.Dashboard, reason string) {
+func (c *GrafanaController) pushDashboardFailureEvent(dashboard *api.Dashboard, reason string) {
 	c.recorder.Eventf(
 		dashboard,
 		core.EventTypeWarning,
@@ -124,7 +133,7 @@ func (c *GrafanaController) pushFailureEvent(dashboard *api.Dashboard, reason st
 		reason,
 	)
 	dashboard, err := util.UpdateDashboardStatus(context.TODO(), c.extClient.GrafanaV1alpha1(), dashboard.ObjectMeta, func(in *api.DashboardStatus) *api.DashboardStatus {
-		in.Phase = api.DashboardPhaseFailed
+		in.Phase = api.GrafanaPhaseFailed
 		in.Reason = reason
 		in.Conditions = kmapi.SetCondition(in.Conditions, kmapi.Condition{
 			Type:    kmapi.ConditionFailed,
@@ -138,6 +147,37 @@ func (c *GrafanaController) pushFailureEvent(dashboard *api.Dashboard, reason st
 	if err != nil {
 		c.recorder.Eventf(
 			dashboard,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToUpdate,
+			err.Error(),
+		)
+	}
+}
+
+func (c *GrafanaController) pushDatasourceFailureEvent(ds *api.Datasource, reason string) {
+	c.recorder.Eventf(
+		ds,
+		core.EventTypeWarning,
+		eventer.EventReasonFailedToStart,
+		`Failed to complete operation for Datasource: "%v". Reason: %v`,
+		ds.Name,
+		reason,
+	)
+	ds, err := util.UpdateDatasourceStatus(context.TODO(), c.extClient.GrafanaV1alpha1(), ds.ObjectMeta, func(in *api.DatasourceStatus) *api.DatasourceStatus {
+		in.Phase = api.GrafanaPhaseFailed
+		in.Reason = reason
+		in.Conditions = kmapi.SetCondition(in.Conditions, kmapi.Condition{
+			Type:    kmapi.ConditionFailed,
+			Status:  core.ConditionTrue,
+			Reason:  reason,
+			Message: reason,
+		})
+		in.ObservedGeneration = ds.Generation
+		return in
+	}, metav1.UpdateOptions{})
+	if err != nil {
+		c.recorder.Eventf(
+			ds,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToUpdate,
 			err.Error(),

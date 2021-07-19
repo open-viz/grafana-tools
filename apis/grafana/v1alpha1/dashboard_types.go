@@ -34,6 +34,8 @@ const (
 
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:path=dashboards,singular=dashboard,categories={grafana,searchlight,appscode}
+// +kubebuilder:printcolumn:name="Status",type="string",JSONPath=".status.phase"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 type Dashboard struct {
 	metav1.TypeMeta   `json:",inline,omitempty"`
@@ -76,15 +78,6 @@ type DashboardList struct {
 	Items           []Dashboard `json:"items,omitempty" protobuf:"bytes,2,rep,name=items"`
 }
 
-type DashboardPhase string
-
-const (
-	DashboardPhaseProcessing  DashboardPhase = "Processing"
-	DashboardPhaseTerminating DashboardPhase = "Terminating"
-	DashboardPhaseSuccess     DashboardPhase = "Success"
-	DashboardPhaseFailed      DashboardPhase = "Failed"
-)
-
 type DashboardStatus struct {
 	// ObservedGeneration is the most recent generation observed for this resource. It corresponds to the
 	// resource's generation, which is updated on mutation by the API Server.
@@ -93,7 +86,7 @@ type DashboardStatus struct {
 
 	// Phase indicates the state this Vault cluster jumps in.
 	// +optional
-	Phase DashboardPhase `json:"phase,omitempty" protobuf:"bytes,2,opt,name=phase,casttype=ClusterPhase"`
+	Phase GrafanaPhase `json:"phase,omitempty" protobuf:"bytes,2,opt,name=phase,casttype=ClusterPhase"`
 
 	// The reason for the current phase
 	// +optional

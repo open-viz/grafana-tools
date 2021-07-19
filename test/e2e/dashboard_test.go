@@ -72,7 +72,7 @@ var _ = Describe("Grafana Operator E2E testing", func() {
 				dashboard, err := f.GetDashboard()
 				Expect(err).NotTo(HaveOccurred())
 
-				return dashboard.Status.Phase == api.DashboardPhaseSuccess || dashboard.Status.Phase == api.DashboardPhaseFailed
+				return dashboard.Status.Phase == api.GrafanaPhaseSuccess || dashboard.Status.Phase == api.GrafanaPhaseFailed
 			}, retryTimeout, 100*time.Millisecond).Should(BeTrue())
 
 		}
@@ -136,7 +136,7 @@ var _ = Describe("Grafana Operator E2E testing", func() {
 				dashboard, err := f.GetDashboard()
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(dashboard.Status.Phase).To(BeEquivalentTo(api.DashboardPhaseSuccess))
+				Expect(dashboard.Status.Phase).To(BeEquivalentTo(api.GrafanaPhaseSuccess))
 
 				Expect(dashboard.Status.Dashboard.ID).NotTo(BeNil())
 				Expect(dashboard.Status.Dashboard.UID).NotTo(BeNil())
@@ -164,7 +164,7 @@ var _ = Describe("Grafana Operator E2E testing", func() {
 			AfterEach(func() {
 				dashboard, err := f.GetDashboard()
 				Expect(err).NotTo(HaveOccurred())
-				Expect(dashboard.Status.Phase).To(BeEquivalentTo(api.DashboardPhaseFailed))
+				Expect(dashboard.Status.Phase).To(BeEquivalentTo(api.GrafanaPhaseFailed))
 				Expect(dashboard.Status.Dashboard).To(BeNil())
 			})
 		})
@@ -184,7 +184,7 @@ var _ = Describe("Grafana Operator E2E testing", func() {
 			AfterEach(func() {
 				dashboard, err := f.GetDashboard()
 				Expect(err).NotTo(HaveOccurred())
-				Expect(dashboard.Status.Phase).To(BeEquivalentTo(api.DashboardPhaseFailed))
+				Expect(dashboard.Status.Phase).To(BeEquivalentTo(api.GrafanaPhaseFailed))
 				Expect(dashboard.Status.Dashboard).To(BeNil())
 			})
 		})

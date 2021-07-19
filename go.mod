@@ -8,7 +8,7 @@ require (
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/glog v0.0.0-20210429001901-424d2337a529
 	github.com/google/gofuzz v1.1.0
-	github.com/grafana-tools/sdk v0.0.0-20210503194727-8250fdba50d0
+	github.com/grafana-tools/sdk v0.0.0-20210630212345-db1192e93802
 	github.com/onsi/ginkgo v1.11.0
 	github.com/onsi/gomega v1.8.1
 	github.com/pkg/errors v0.9.1
