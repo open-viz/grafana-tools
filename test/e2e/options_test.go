@@ -20,7 +20,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"go.searchlight.dev/grafana-operator/pkg/cmds/server"
+	"go.openviz.dev/grafana-operator/pkg/cmds/server"
 
 	"k8s.io/client-go/util/homedir"
 )

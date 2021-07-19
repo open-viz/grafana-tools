@@ -19,9 +19,9 @@ limitations under the License.
 package fake
 
 import (
-	clientset "go.searchlight.dev/grafana-operator/client/clientset/versioned"
-	grafanav1alpha1 "go.searchlight.dev/grafana-operator/client/clientset/versioned/typed/grafana/v1alpha1"
-	fakegrafanav1alpha1 "go.searchlight.dev/grafana-operator/client/clientset/versioned/typed/grafana/v1alpha1/fake"
+	clientset "go.openviz.dev/grafana-operator/client/clientset/versioned"
+	openvizv1alpha1 "go.openviz.dev/grafana-operator/client/clientset/versioned/typed/openviz/v1alpha1"
+	fakeopenvizv1alpha1 "go.openviz.dev/grafana-operator/client/clientset/versioned/typed/openviz/v1alpha1/fake"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
@@ -77,7 +77,7 @@ func (c *Clientset) Tracker() testing.ObjectTracker {
 
 var _ clientset.Interface = &Clientset{}
 
-// GrafanaV1alpha1 retrieves the GrafanaV1alpha1Client
-func (c *Clientset) GrafanaV1alpha1() grafanav1alpha1.GrafanaV1alpha1Interface {
-	return &fakegrafanav1alpha1.FakeGrafanaV1alpha1{Fake: &c.Fake}
+// OpenvizV1alpha1 retrieves the OpenvizV1alpha1Client
+func (c *Clientset) OpenvizV1alpha1() openvizv1alpha1.OpenvizV1alpha1Interface {
+	return &fakeopenvizv1alpha1.FakeOpenvizV1alpha1{Fake: &c.Fake}
 }

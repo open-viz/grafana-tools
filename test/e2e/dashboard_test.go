@@ -22,8 +22,8 @@ import (
 	"os"
 	"time"
 
-	api "go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1"
-	"go.searchlight.dev/grafana-operator/test/e2e/framework"
+	api "go.openviz.dev/grafana-operator/apis/openviz/v1alpha1"
+	"go.openviz.dev/grafana-operator/test/e2e/framework"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

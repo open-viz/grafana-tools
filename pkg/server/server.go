@@ -22,10 +22,10 @@ import (
 	"os"
 	"strings"
 
-	api "go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1"
-	vsadmission "go.searchlight.dev/grafana-operator/pkg/admission"
-	"go.searchlight.dev/grafana-operator/pkg/controller"
-	"go.searchlight.dev/grafana-operator/pkg/eventer"
+	api "go.openviz.dev/grafana-operator/apis/openviz/v1alpha1"
+	vsadmission "go.openviz.dev/grafana-operator/pkg/admission"
+	"go.openviz.dev/grafana-operator/pkg/controller"
+	"go.openviz.dev/grafana-operator/pkg/eventer"
 
 	admission "k8s.io/api/admission/v1beta1"
 	core "k8s.io/api/core/v1"
@@ -38,14 +38,14 @@ import (
 	"k8s.io/apiserver/pkg/registry/rest"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	"k8s.io/client-go/kubernetes"
-	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
+	reg_util "kmodules.xyz/client-go/admissionregistration/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 	hooks "kmodules.xyz/webhook-runtime/admission/v1beta1"
 	admissionreview "kmodules.xyz/webhook-runtime/registry/admissionreview/v1beta1"
 )
 
 const (
-	apiserviceName = "v1alpha1.validators.grafana.searchlight.dev"
+	apiserviceName = "v1alpha1.validators.openviz.dev"
 )
 
 var (

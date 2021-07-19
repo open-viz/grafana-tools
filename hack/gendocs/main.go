@@ -25,7 +25,7 @@ import (
 	"strings"
 	"text/template"
 
-	"go.searchlight.dev/grafana-operator/pkg/cmds"
+	"go.openviz.dev/grafana-operator/pkg/cmds"
 
 	"github.com/spf13/cobra/doc"
 	"gomodules.xyz/runtime"

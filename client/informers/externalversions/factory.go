@@ -23,9 +23,9 @@ import (
 	sync "sync"
 	time "time"
 
-	versioned "go.searchlight.dev/grafana-operator/client/clientset/versioned"
-	grafana "go.searchlight.dev/grafana-operator/client/informers/externalversions/grafana"
-	internalinterfaces "go.searchlight.dev/grafana-operator/client/informers/externalversions/internalinterfaces"
+	versioned "go.openviz.dev/grafana-operator/client/clientset/versioned"
+	internalinterfaces "go.openviz.dev/grafana-operator/client/informers/externalversions/internalinterfaces"
+	openviz "go.openviz.dev/grafana-operator/client/informers/externalversions/openviz"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
@@ -173,9 +173,9 @@ type SharedInformerFactory interface {
 	ForResource(resource schema.GroupVersionResource) (GenericInformer, error)
 	WaitForCacheSync(stopCh <-chan struct{}) map[reflect.Type]bool
 
-	Grafana() grafana.Interface
+	Openviz() openviz.Interface
 }
 
-func (f *sharedInformerFactory) Grafana() grafana.Interface {
-	return grafana.New(f, f.namespace, f.tweakListOptions)
+func (f *sharedInformerFactory) Openviz() openviz.Interface {
+	return openviz.New(f, f.namespace, f.tweakListOptions)
 }

@@ -19,21 +19,21 @@ package framework
 import (
 	"context"
 
-	api "go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1"
+	api "go.openviz.dev/grafana-operator/apis/openviz/v1alpha1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 )
 
 func (f *Framework) GetDashboard() (*api.Dashboard, error) {
-	return f.extClient.GrafanaV1alpha1().Dashboards(f.namespace).Get(context.TODO(), f.name, metav1.GetOptions{})
+	return f.extClient.OpenvizV1alpha1().Dashboards(f.namespace).Get(context.TODO(), f.name, metav1.GetOptions{})
 }
 
 func (f *Framework) CreateDashboard(dashboard *api.Dashboard) error {
-	_, err := f.extClient.GrafanaV1alpha1().Dashboards(dashboard.Namespace).Create(context.TODO(), dashboard, metav1.CreateOptions{})
+	_, err := f.extClient.OpenvizV1alpha1().Dashboards(dashboard.Namespace).Create(context.TODO(), dashboard, metav1.CreateOptions{})
 	return err
 }
 
 func (f *Framework) DeleteDashboard() error {
-	return f.extClient.GrafanaV1alpha1().Dashboards(f.namespace).Delete(context.TODO(), f.name, meta_util.DeleteInForeground())
+	return f.extClient.OpenvizV1alpha1().Dashboards(f.namespace).Delete(context.TODO(), f.name, meta_util.DeleteInForeground())
 }

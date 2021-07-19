@@ -19,9 +19,9 @@ package controller
 import (
 	"time"
 
-	cs "go.searchlight.dev/grafana-operator/client/clientset/versioned"
-	grafanainformers "go.searchlight.dev/grafana-operator/client/informers/externalversions"
-	"go.searchlight.dev/grafana-operator/pkg/eventer"
+	cs "go.openviz.dev/grafana-operator/client/clientset/versioned"
+	grafanainformers "go.openviz.dev/grafana-operator/client/informers/externalversions"
+	"go.openviz.dev/grafana-operator/pkg/eventer"
 
 	pcm "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	core "k8s.io/api/core/v1"
@@ -29,14 +29,14 @@ import (
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
+	reg_util "kmodules.xyz/client-go/admissionregistration/v1"
 	"kmodules.xyz/client-go/discovery"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1"
 )
 
 const (
-	mutatingWebhook   = "mutators.grafana.searchlight.dev"
-	validatingWebhook = "validators.grafana.searchlight.dev"
+	mutatingWebhook   = "mutators.openviz.dev"
+	validatingWebhook = "validators.openviz.dev"
 )
 
 type config struct {

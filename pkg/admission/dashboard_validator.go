@@ -21,8 +21,8 @@ import (
 	"strings"
 	"sync"
 
-	api "go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1"
-	cs "go.searchlight.dev/grafana-operator/client/clientset/versioned"
+	api "go.openviz.dev/grafana-operator/apis/openviz/v1alpha1"
+	cs "go.openviz.dev/grafana-operator/client/clientset/versioned"
 
 	admission "k8s.io/api/admission/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -35,7 +35,7 @@ import (
 )
 
 const (
-	validatorGroup   = "validators.grafana.searchlight.dev"
+	validatorGroup   = "validators.openviz.dev"
 	validatorVersion = "v1alpha1"
 )
 

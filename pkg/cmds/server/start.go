@@ -21,17 +21,19 @@ import (
 	"io"
 	"net"
 
-	"go.searchlight.dev/grafana-operator/pkg/controller"
-	"go.searchlight.dev/grafana-operator/pkg/server"
+	"go.openviz.dev/grafana-operator/pkg/controller"
+	"go.openviz.dev/grafana-operator/pkg/server"
 
 	"github.com/spf13/pflag"
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	"k8s.io/apiserver/pkg/features"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	genericoptions "k8s.io/apiserver/pkg/server/options"
+	"k8s.io/apiserver/pkg/util/feature"
 	"kmodules.xyz/client-go/tools/clientcmd"
 )
 
-const defaultEtcdPathPrefix = "/registry/grafana.searchlight.dev"
+const defaultEtcdPathPrefix = "/registry/openviz.dev"
 
 type DashboardOptions struct {
 	RecommendedOptions *genericoptions.RecommendedOptions
@@ -42,6 +44,7 @@ type DashboardOptions struct {
 }
 
 func NewDashboardOptions(out, errOut io.Writer) *DashboardOptions {
+	_ = feature.DefaultMutableFeatureGate.Set(fmt.Sprintf("%s=false", features.APIPriorityAndFairness))
 	o := &DashboardOptions{
 		// TODO we will nil out the etcd storage options.  This requires a later level of k8s.io/apiserver
 		RecommendedOptions: genericoptions.NewRecommendedOptions(

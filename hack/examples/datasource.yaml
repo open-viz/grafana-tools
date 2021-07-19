@@ -1,4 +1,4 @@
-apiVersion: grafana.searchlight.dev/v1alpha1
+apiVersion: openviz.dev/v1alpha1
 kind: Datasource
 metadata:
   name: data-source

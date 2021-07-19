@@ -19,7 +19,7 @@ limitations under the License.
 package scheme
 
 import (
-	grafanav1alpha1 "go.searchlight.dev/grafana-operator/apis/grafana/v1alpha1"
+	openvizv1alpha1 "go.openviz.dev/grafana-operator/apis/openviz/v1alpha1"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
@@ -32,7 +32,7 @@ var Scheme = runtime.NewScheme()
 var Codecs = serializer.NewCodecFactory(Scheme)
 var ParameterCodec = runtime.NewParameterCodec(Scheme)
 var localSchemeBuilder = runtime.SchemeBuilder{
-	grafanav1alpha1.AddToScheme,
+	openvizv1alpha1.AddToScheme,
 }
 
 // AddToScheme adds all types of this clientset into the given scheme. This allows composition

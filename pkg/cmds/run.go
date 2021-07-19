@@ -19,7 +19,7 @@ package cmds
 import (
 	"io"
 
-	"go.searchlight.dev/grafana-operator/pkg/cmds/server"
+	"go.openviz.dev/grafana-operator/pkg/cmds/server"
 
 	"github.com/spf13/cobra"
 	v "gomodules.xyz/x/version"
@@ -32,7 +32,7 @@ func NewCmdRun(out, errOut io.Writer, stopCh <-chan struct{}) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:               "run",
-		Short:             "Launch Vault operator",
+		Short:             "Launch Grafana operator",
 		DisableAutoGenTag: true,
 		PreRun: func(c *cobra.Command, args []string) {
 			cli.SendPeriodicAnalytics(c, v.Version.Version)
