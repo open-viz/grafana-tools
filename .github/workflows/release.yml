@@ -37,6 +37,7 @@ jobs:
 
       - name: Publish to Docker Registry
         env:
+          SRC_REG: ghcr.io/open-viz
           DOCKER_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           USERNAME: 1gtm
           APPSCODE_ENV: prod

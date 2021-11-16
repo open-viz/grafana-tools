@@ -26,6 +26,7 @@ API_GROUPS           ?= openviz:v1alpha1
 
 # Where to push the docker image.
 REGISTRY ?= searchlight
+SRC_REG  ?=
 
 # This version-strategy uses git tags to set the version string
 git_branch       := $(shell git rev-parse --abbrev-ref HEAD)
@@ -61,8 +62,8 @@ BIN_PLATFORMS    := $(DOCKER_PLATFORMS)
 OS   := $(if $(GOOS),$(GOOS),$(shell go env GOOS))
 ARCH := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH))
 
-BASEIMAGE_PROD   ?= gcr.io/distroless/static:nonroot
-BASEIMAGE_DBG    ?= debian:buster
+BASEIMAGE_PROD   ?= gcr.io/distroless/static-debian11
+BASEIMAGE_DBG    ?= debian:bullseye
 
 IMAGE            := $(REGISTRY)/$(BIN)
 VERSION_PROD     := $(VERSION)
@@ -71,7 +72,7 @@ TAG              := $(VERSION)_$(OS)_$(ARCH)
 TAG_PROD         := $(TAG)
 TAG_DBG          := $(VERSION)-dbg_$(OS)_$(ARCH)
 
-GO_VERSION       ?= 1.16
+GO_VERSION       ?= 1.17
 BUILD_IMAGE      ?= appscode/golang-dev:$(GO_VERSION)
 CHART_TEST_IMAGE ?= quay.io/helmpack/chart-testing:v3.4.0
 
@@ -326,6 +327,7 @@ $(OUTBIN): .go/$(OUTBIN).stamp
 DOTFILE_IMAGE    = $(subst /,_,$(IMAGE))-$(TAG)
 
 container: bin/.container-$(DOTFILE_IMAGE)-PROD bin/.container-$(DOTFILE_IMAGE)-DBG
+ifeq (,$(SRC_REG))
 bin/.container-$(DOTFILE_IMAGE)-%: bin/$(OS)_$(ARCH)/$(BIN) $(DOCKERFILE_%)
 	@echo "container: $(IMAGE):$(TAG_$*)"
 	@sed                                    \
@@ -334,9 +336,15 @@ bin/.container-$(DOTFILE_IMAGE)-%: bin/$(OS)_$(ARCH)/$(BIN) $(DOCKERFILE_%)
 		-e 's|{ARG_OS}|$(OS)|g'             \
 		-e 's|{ARG_FROM}|$(BASEIMAGE_$*)|g' \
 		$(DOCKERFILE_$*) > bin/.dockerfile-$*-$(OS)_$(ARCH)
-	@DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --platform $(OS)/$(ARCH) --load --pull -t $(IMAGE):$(TAG_$*) -f bin/.dockerfile-$*-$(OS)_$(ARCH) .
+	@docker buildx build --platform $(OS)/$(ARCH) --load --pull -t $(IMAGE):$(TAG_$*) -f bin/.dockerfile-$*-$(OS)_$(ARCH) .
 	@docker images -q $(IMAGE):$(TAG_$*) > $@
 	@echo
+else
+bin/.container-$(DOTFILE_IMAGE)-%:
+	@echo "container: $(IMAGE):$(TAG_$*)"
+	@docker tag $(SRC_REG)/$(BIN):$(TAG_$*) $(IMAGE):$(TAG_$*)
+	@echo
+endif
 
 push: bin/.push-$(DOTFILE_IMAGE)-PROD bin/.push-$(DOTFILE_IMAGE)-DBG
 bin/.push-$(DOTFILE_IMAGE)-%: bin/.container-$(DOTFILE_IMAGE)-%
@@ -347,8 +355,8 @@ bin/.push-$(DOTFILE_IMAGE)-%: bin/.container-$(DOTFILE_IMAGE)-%
 .PHONY: docker-manifest
 docker-manifest: docker-manifest-PROD docker-manifest-DBG
 docker-manifest-%:
-	DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create -a $(IMAGE):$(VERSION_$*) $(foreach PLATFORM,$(DOCKER_PLATFORMS),$(IMAGE):$(VERSION_$*)_$(subst /,_,$(PLATFORM)))
-	DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push $(IMAGE):$(VERSION_$*)
+	docker manifest create -a $(IMAGE):$(VERSION_$*) $(foreach PLATFORM,$(DOCKER_PLATFORMS),$(IMAGE):$(VERSION_$*)_$(subst /,_,$(PLATFORM)))
+	docker manifest push $(IMAGE):$(VERSION_$*)
 
 .PHONY: test
 test: unit-tests e2e-tests
