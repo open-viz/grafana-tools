@@ -38,7 +38,7 @@ const (
 func (c *GrafanaController) initDatasourceWatcher() {
 	c.datasourceInformer = c.extInformerFactory.Openviz().V1alpha1().Datasources().Informer()
 	c.datasourceQueue = queue.New(api.ResourceKindDatasource, c.MaxNumRequeues, c.NumThreads, c.runDatasourceInjector)
-	c.datasourceInformer.AddEventHandler(queue.NewReconcilableHandler(c.datasourceQueue.GetQueue()))
+	c.datasourceInformer.AddEventHandler(queue.NewReconcilableHandler(c.datasourceQueue.GetQueue(), metav1.NamespaceAll))
 	c.datasourceLister = c.extInformerFactory.Openviz().V1alpha1().Datasources().Lister()
 }
 

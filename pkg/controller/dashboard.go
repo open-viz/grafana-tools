@@ -49,7 +49,7 @@ const (
 func (c *GrafanaController) initDashboardWatcher() {
 	c.dashboardInformer = c.extInformerFactory.Openviz().V1alpha1().Dashboards().Informer()
 	c.dashboardQueue = queue.New(api.ResourceKindDashboard, c.MaxNumRequeues, c.NumThreads, c.runDashboardInjector)
-	c.dashboardInformer.AddEventHandler(queue.NewReconcilableHandler(c.dashboardQueue.GetQueue()))
+	c.dashboardInformer.AddEventHandler(queue.NewReconcilableHandler(c.dashboardQueue.GetQueue(), metav1.NamespaceAll))
 	c.dashboardLister = c.extInformerFactory.Openviz().V1alpha1().Dashboards().Lister()
 }
 

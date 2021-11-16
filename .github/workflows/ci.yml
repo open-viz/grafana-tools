@@ -13,10 +13,10 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - name: Set up Go 1.16
+      - name: Set up Go 1.17
         uses: actions/setup-go@v1
         with:
-          go-version: 1.16
+          go-version: 1.17
         id: go
 
       - uses: actions/checkout@v2
@@ -55,7 +55,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        k8s: [v1.16.15, v1.18.15, v1.20.2]
+        k8s: [v1.16.15, v1.18.19, v1.20.7, v1.22.0]
     steps:
       - uses: actions/checkout@v2
 
