@@ -25,7 +25,7 @@ CODE_GENERATOR_IMAGE ?= appscode/gengo:release-1.21
 API_GROUPS           ?= openviz:v1alpha1
 
 # Where to push the docker image.
-REGISTRY ?= searchlight
+REGISTRY ?= appscode
 SRC_REG  ?=
 
 # This version-strategy uses git tags to set the version string
