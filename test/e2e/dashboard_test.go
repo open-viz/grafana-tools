@@ -37,7 +37,7 @@ import (
 )
 
 const (
-	retryTimeout = 5 * time.Minute
+	retryTimeout = 1 * time.Minute
 )
 
 var _ = Describe("Grafana Operator E2E testing", func() {
@@ -85,7 +85,7 @@ var _ = Describe("Grafana Operator E2E testing", func() {
 
 			By("Waiting for the dashboard to be terminated")
 			Eventually(func() bool {
-				_, err = f.GetDashboard()
+				_, err := f.GetDashboard()
 				return kerr.IsNotFound(err)
 			}, retryTimeout, 100*time.Millisecond).Should(BeTrue())
 		}
@@ -143,7 +143,6 @@ var _ = Describe("Grafana Operator E2E testing", func() {
 				Expect(dashboard.Status.Dashboard.UID).NotTo(BeNil())
 				Expect(dashboard.Status.Dashboard.Version).To(BeEquivalentTo(pointer.Int64P(dashboard.Status.ObservedGeneration)))
 
-				waitForDashboardToBeTerminated(dashboard)
 			})
 		})
 
@@ -172,32 +171,32 @@ var _ = Describe("Grafana Operator E2E testing", func() {
 			})
 		})
 
-		//Context("Unsuccessful creation of a dashboard resource", func() {
-		//	BeforeEach(func() {
-		//		By("Not providing model data")
-		//		createAppBindingAndSecret()
-		//	})
-		//
-		//	It("should not insert a dashboard into grafana database", func() {
-		//		err := f.CreateDashboard(dashboard)
-		//		Expect(err).NotTo(HaveOccurred())
-		//
-		//	})
-		//
-		//	AfterEach(func() {
-		//		dashboard, err := f.GetDashboard()
-		//		Expect(err).NotTo(HaveOccurred())
-		//		Expect(dashboard.Status.Phase).To(BeEquivalentTo(api.GrafanaPhaseFailed))
-		//		Expect(dashboard.Status.Dashboard).To(BeNil())
-		//	})
-		//})
+		Context("Unsuccessful creation of a dashboard resource", func() {
+			BeforeEach(func() {
+				By("Not providing model data")
+				createAppBindingAndSecret()
+			})
+
+			It("should not insert a dashboard into grafana database", func() {
+				err := f.CreateDashboard(dashboard)
+				Expect(err).NotTo(HaveOccurred())
+
+			})
+
+			AfterEach(func() {
+				dashboard, err := f.GetDashboard()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(dashboard.Status.Phase).To(BeEquivalentTo(api.GrafanaPhaseFailed))
+				Expect(dashboard.Status.Dashboard).To(BeNil())
+			})
+		})
 
 		JustAfterEach(func() {
 			waitForDashboardToGetToFinalPhase()
 		})
 
 		AfterEach(func() {
-			//waitForDashboardToBeTerminated(dashboard)
+			waitForDashboardToBeTerminated(dashboard)
 
 			By("Deleting Secret")
 			err := root.DeleteSecret()
