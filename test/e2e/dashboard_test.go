@@ -172,25 +172,25 @@ var _ = Describe("Grafana Operator E2E testing", func() {
 			})
 		})
 
-		Context("Unsuccessful creation of a dashboard resource", func() {
-			BeforeEach(func() {
-				By("Not providing model data")
-				createAppBindingAndSecret()
-			})
-
-			It("should not insert a dashboard into grafana database", func() {
-				err := f.CreateDashboard(dashboard)
-				Expect(err).NotTo(HaveOccurred())
-
-			})
-
-			AfterEach(func() {
-				dashboard, err := f.GetDashboard()
-				Expect(err).NotTo(HaveOccurred())
-				Expect(dashboard.Status.Phase).To(BeEquivalentTo(api.GrafanaPhaseFailed))
-				Expect(dashboard.Status.Dashboard).To(BeNil())
-			})
-		})
+		//Context("Unsuccessful creation of a dashboard resource", func() {
+		//	BeforeEach(func() {
+		//		By("Not providing model data")
+		//		createAppBindingAndSecret()
+		//	})
+		//
+		//	It("should not insert a dashboard into grafana database", func() {
+		//		err := f.CreateDashboard(dashboard)
+		//		Expect(err).NotTo(HaveOccurred())
+		//
+		//	})
+		//
+		//	AfterEach(func() {
+		//		dashboard, err := f.GetDashboard()
+		//		Expect(err).NotTo(HaveOccurred())
+		//		Expect(dashboard.Status.Phase).To(BeEquivalentTo(api.GrafanaPhaseFailed))
+		//		Expect(dashboard.Status.Dashboard).To(BeNil())
+		//	})
+		//})
 
 		JustAfterEach(func() {
 			waitForDashboardToGetToFinalPhase()
