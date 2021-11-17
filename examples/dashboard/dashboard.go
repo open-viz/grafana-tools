@@ -36,7 +36,7 @@ import (
 var kubeconfig *string
 
 const (
-	ns              = "monitoring"
+	ns              = "demo"
 	SampleDashboard = "sample-dashboard"
 )
 
@@ -50,7 +50,6 @@ func init() {
 }
 
 func CreateDashboard(model runtime.RawExtension) error {
-	ns := "monitoring"
 	dBoard := &api.Dashboard{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      SampleDashboard,
@@ -58,7 +57,7 @@ func CreateDashboard(model runtime.RawExtension) error {
 		},
 		Spec: api.DashboardSpec{
 			Grafana: &api.TargetRef{
-				Name: "grafana",
+				Name: "grafana-apb",
 			},
 			Model:     &model,
 			FolderID:  0,

@@ -34,7 +34,7 @@ import (
 var kubeconfig *string
 
 const (
-	ns               = "monitoring"
+	ns               = "demo"
 	SampleDatasource = "sample-ds"
 )
 
@@ -51,16 +51,17 @@ func CreateDatasource(url string, sourceType api.DatasourceType, accessType api.
 	ds := &api.Datasource{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      SampleDatasource,
-			Namespace: "monitoring",
+			Namespace: "demo",
 		},
 		Spec: api.DatasourceSpec{
 			Grafana: &api.TargetRef{
-				Name: "grafana",
+				Name:       "grafana-apb",
 			},
 			Name:   "some-random-name",
 			Type:   sourceType,
 			Access: accessType,
 			URL:    url,
+			OrgID: 1,
 		},
 	}
 	gClient, err := createClient()
@@ -72,7 +73,7 @@ func CreateDatasource(url string, sourceType api.DatasourceType, accessType api.
 		return err
 	}
 	time.Sleep(5 * time.Second)
-	createdDS, err := gClient.Datasources(ns).Get(context.TODO(), "sample-ds", metav1.GetOptions{})
+	createdDS, err := gClient.Datasources(ns).Get(context.TODO(), SampleDatasource, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -137,7 +138,7 @@ func GetDatasource(name string) (*api.Datasource, error) {
 
 func main() {
 	fmt.Println("=============== Creating Datasource =================")
-	err := CreateDatasource("http://127.0.0.1:9099", api.DatasourceTypePrometheus, api.DatasourceAccessTypeProxy)
+	err := CreateDatasource("http://127.0.0.1:9090", api.DatasourceTypePrometheus, api.DatasourceAccessTypeProxy)
 	if err != nil {
 		panic(err)
 	}
@@ -146,7 +147,7 @@ func main() {
 	fmt.Println("Press any key to continue")
 	fmt.Scanln()
 	fmt.Println("================ Updating Datasource ===================")
-	err = UpdateDatasource(SampleDatasource, "http://127.0.0.1:9001", api.DatasourceTypePrometheus, api.DatasourceAccessTypeProxy)
+	err = UpdateDatasource(SampleDatasource, "http://127.0.0.1:9099", api.DatasourceTypePrometheus, api.DatasourceAccessTypeProxy)
 	if err != nil {
 		panic(err)
 	}
