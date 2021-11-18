@@ -64,7 +64,7 @@ func (f *Framework) CreateGrafanaDeployment() error {
 					Containers: []core.Container{
 						{
 							Name:  f.name,
-							Image: "grafana/grafana",
+							Image: "grafana/grafana:7.5.11",
 							Ports: []core.ContainerPort{
 								{
 									Name:          "grafana",

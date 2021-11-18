@@ -155,7 +155,7 @@ func (c *GrafanaController) runDashboardFinalizer(dashboard *api.Dashboard) erro
 	}
 	dashboard.Status = newDashboard.Status
 
-	if dashboard.Status.Dashboard.UID != nil {
+	if dashboard.Status.Dashboard != nil && dashboard.Status.Dashboard.UID != nil {
 		statusMsg, err := c.grafanaClient.DeleteDashboardByUID(context.TODO(), pointer.String(dashboard.Status.Dashboard.UID))
 		if err != nil {
 			c.recorder.Eventf(
@@ -171,9 +171,15 @@ func (c *GrafanaController) runDashboardFinalizer(dashboard *api.Dashboard) erro
 			return err
 		}
 		klog.Infof("Dashboard is deleted with message: %s\n", pointer.String(statusMsg.Message))
-	} else {
+	} else if dashboard.Status.Phase == api.GrafanaPhaseSuccess {
 		return errors.New("finalizer can't be removed. reason: Dashboard UID is missing")
 	}
+
+	// if .status.DatasourceID is nil and phase is not success
+	// so the remote grafana object is never created.
+	// so the finalizer can be removed.
+
+	// remove Finalizer
 	_, _, err = util.PatchDashboard(context.TODO(), c.extClient.OpenvizV1alpha1(), dashboard, func(in *api.Dashboard) *api.Dashboard {
 		in.ObjectMeta = core_util.RemoveFinalizer(dashboard.ObjectMeta, DashboardFinalizer)
 		return in

@@ -179,16 +179,21 @@ func (c *GrafanaController) runDatasourceFinalizer(ds *api.Datasource) error {
 	}
 	ds.Status = newDS.Status
 
-	if ds.Status.DatasourceID == nil {
+	if ds.Status.DatasourceID != nil {
+		dsID := uint(pointer.Int64(ds.Status.DatasourceID))
+		statusMsg, err := c.grafanaClient.DeleteDatasource(context.TODO(), dsID)
+		if err != nil {
+			c.pushDatasourceFailureEvent(ds, err.Error())
+			return err
+		}
+		klog.Infof("Datasource is deleted with message: %s\n", pointer.String(statusMsg.Message))
+	} else if ds.Status.Phase == api.GrafanaPhaseSuccess {
 		return errors.New("datasource can't be deleted: reason: Datasource ID is missing")
 	}
-	dsID := uint(pointer.Int64(ds.Status.DatasourceID))
-	statusMsg, err := c.grafanaClient.DeleteDatasource(context.TODO(), dsID)
-	if err != nil {
-		c.pushDatasourceFailureEvent(ds, err.Error())
-		return err
-	}
-	klog.Infof("Datasource is deleted with message: %s\n", pointer.String(statusMsg.Message))
+
+	// if .status.DatasourceID is nil and phase is not success
+	// so the remote grafana object is never created.
+	// so the finalizer can be removed.
 
 	// remove Finalizer
 	_, _, err = util.PatchDatasource(context.TODO(), c.extClient.OpenvizV1alpha1(), ds, func(up *api.Datasource) *api.Datasource {

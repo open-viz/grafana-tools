@@ -28,6 +28,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"gomodules.xyz/pointer"
+	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/dynamic"
@@ -36,7 +37,7 @@ import (
 )
 
 const (
-	retryTimeout = 5 * time.Minute
+	retryTimeout = 1 * time.Minute
 )
 
 var _ = Describe("Grafana Operator E2E testing", func() {
@@ -83,10 +84,10 @@ var _ = Describe("Grafana Operator E2E testing", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Waiting for the dashboard to be terminated")
-			Eventually(func() error {
-				_, err = f.GetDashboard()
-				return err
-			}, retryTimeout, 100*time.Millisecond).ShouldNot(BeNil())
+			Eventually(func() bool {
+				_, err := f.GetDashboard()
+				return kerr.IsNotFound(err)
+			}, retryTimeout, 100*time.Millisecond).Should(BeTrue())
 		}
 	)
 
@@ -141,6 +142,7 @@ var _ = Describe("Grafana Operator E2E testing", func() {
 				Expect(dashboard.Status.Dashboard.ID).NotTo(BeNil())
 				Expect(dashboard.Status.Dashboard.UID).NotTo(BeNil())
 				Expect(dashboard.Status.Dashboard.Version).To(BeEquivalentTo(pointer.Int64P(dashboard.Status.ObservedGeneration)))
+
 			})
 		})
 

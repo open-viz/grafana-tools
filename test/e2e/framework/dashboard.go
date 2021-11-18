@@ -22,7 +22,6 @@ import (
 	api "go.openviz.dev/grafana-operator/apis/openviz/v1alpha1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	meta_util "kmodules.xyz/client-go/meta"
 )
 
 func (f *Framework) GetDashboard() (*api.Dashboard, error) {
@@ -35,5 +34,5 @@ func (f *Framework) CreateDashboard(dashboard *api.Dashboard) error {
 }
 
 func (f *Framework) DeleteDashboard() error {
-	return f.extClient.OpenvizV1alpha1().Dashboards(f.namespace).Delete(context.TODO(), f.name, meta_util.DeleteInForeground())
+	return f.extClient.OpenvizV1alpha1().Dashboards(f.namespace).Delete(context.TODO(), f.name, metav1.DeleteOptions{})
 }
