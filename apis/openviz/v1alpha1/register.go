@@ -55,6 +55,7 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&DashboardTemplateList{},
 		&Datasource{},
 		&DatasourceList{},
+		&DatasourceConfiguration{},
 	)
 
 	scheme.AddKnownTypes(SchemeGroupVersion,

@@ -49,9 +49,12 @@ spec:
           spec:
             properties:
               folderId:
+                description: FolderID defines the Grafana folderID
                 format: int64
                 type: integer
               grafana:
+                description: Grafana defines the grafana app binding name for the
+                  Dashboard
                 properties:
                   apiVersion:
                     type: string
@@ -64,7 +67,18 @@ spec:
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
               overwrite:
+                description: Overwrite defines the existing dashboard with the same
+                  name(if any) should be overwritten or not
                 type: boolean
+              templatize:
+                description: Templatize defines the fields which supports templating
+                  in Grafana Dashboard Model json
+                properties:
+                  datasource:
+                    type: boolean
+                  title:
+                    type: boolean
+                type: object
             required:
             - folderId
             - overwrite

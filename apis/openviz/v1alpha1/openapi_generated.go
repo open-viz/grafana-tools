@@ -44,9 +44,11 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"go.openviz.dev/grafana-operator/apis/openviz/v1alpha1.DashboardTemplateReference": schema_grafana_operator_apis_openviz_v1alpha1_DashboardTemplateReference(ref),
 		"go.openviz.dev/grafana-operator/apis/openviz/v1alpha1.DashboardTemplateSpec":      schema_grafana_operator_apis_openviz_v1alpha1_DashboardTemplateSpec(ref),
 		"go.openviz.dev/grafana-operator/apis/openviz/v1alpha1.Datasource":                 schema_grafana_operator_apis_openviz_v1alpha1_Datasource(ref),
+		"go.openviz.dev/grafana-operator/apis/openviz/v1alpha1.DatasourceConfiguration":    schema_grafana_operator_apis_openviz_v1alpha1_DatasourceConfiguration(ref),
 		"go.openviz.dev/grafana-operator/apis/openviz/v1alpha1.DatasourceList":             schema_grafana_operator_apis_openviz_v1alpha1_DatasourceList(ref),
 		"go.openviz.dev/grafana-operator/apis/openviz/v1alpha1.DatasourceSpec":             schema_grafana_operator_apis_openviz_v1alpha1_DatasourceSpec(ref),
 		"go.openviz.dev/grafana-operator/apis/openviz/v1alpha1.DatasourceStatus":           schema_grafana_operator_apis_openviz_v1alpha1_DatasourceStatus(ref),
+		"go.openviz.dev/grafana-operator/apis/openviz/v1alpha1.ModelTemplateConfiguration": schema_grafana_operator_apis_openviz_v1alpha1_ModelTemplateConfiguration(ref),
 		"go.openviz.dev/grafana-operator/apis/openviz/v1alpha1.TargetRef":                  schema_grafana_operator_apis_openviz_v1alpha1_TargetRef(ref),
 		"k8s.io/api/apps/v1.ControllerRevision":                                            schema_k8sio_api_apps_v1_ControllerRevision(ref),
 		"k8s.io/api/apps/v1.ControllerRevisionList":                                        schema_k8sio_api_apps_v1_ControllerRevisionList(ref),
@@ -498,7 +500,8 @@ func schema_grafana_operator_apis_openviz_v1alpha1_DashboardSpec(ref common.Refe
 				Properties: map[string]spec.Schema{
 					"grafana": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("go.openviz.dev/grafana-operator/apis/openviz/v1alpha1.TargetRef"),
+							Description: "Grafana defines the grafana app binding name for the Dashboard",
+							Ref:         ref("go.openviz.dev/grafana-operator/apis/openviz/v1alpha1.TargetRef"),
 						},
 					},
 					"model": {
@@ -508,16 +511,24 @@ func schema_grafana_operator_apis_openviz_v1alpha1_DashboardSpec(ref common.Refe
 					},
 					"folderId": {
 						SchemaProps: spec.SchemaProps{
-							Default: 0,
-							Type:    []string{"integer"},
-							Format:  "int64",
+							Description: "FolderID defines the Grafana folderID",
+							Default:     0,
+							Type:        []string{"integer"},
+							Format:      "int64",
 						},
 					},
 					"overwrite": {
 						SchemaProps: spec.SchemaProps{
-							Default: false,
-							Type:    []string{"boolean"},
-							Format:  "",
+							Description: "Overwrite defines the existing dashboard with the same name(if any) should be overwritten or not",
+							Default:     false,
+							Type:        []string{"boolean"},
+							Format:      "",
+						},
+					},
+					"templatize": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Templatize defines the fields which supports templating in Grafana Dashboard Model json",
+							Ref:         ref("go.openviz.dev/grafana-operator/apis/openviz/v1alpha1.ModelTemplateConfiguration"),
 						},
 					},
 				},
@@ -525,7 +536,7 @@ func schema_grafana_operator_apis_openviz_v1alpha1_DashboardSpec(ref common.Refe
 			},
 		},
 		Dependencies: []string{
-			"go.openviz.dev/grafana-operator/apis/openviz/v1alpha1.TargetRef", "k8s.io/apimachinery/pkg/runtime.RawExtension"},
+			"go.openviz.dev/grafana-operator/apis/openviz/v1alpha1.ModelTemplateConfiguration", "go.openviz.dev/grafana-operator/apis/openviz/v1alpha1.TargetRef", "k8s.io/apimachinery/pkg/runtime.RawExtension"},
 	}
 }
 
@@ -819,6 +830,42 @@ func schema_grafana_operator_apis_openviz_v1alpha1_Datasource(ref common.Referen
 	}
 }
 
+func schema_grafana_operator_apis_openviz_v1alpha1_DatasourceConfiguration(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "DatasourceConfiguration defines a Datasource AppBinding configuration",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"datasource": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Datasource defines the grafana datasource name.",
+							Default:     "",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
+				Required: []string{"datasource"},
+			},
+		},
+	}
+}
+
 func schema_grafana_operator_apis_openviz_v1alpha1_DatasourceList(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
@@ -1024,6 +1071,30 @@ func schema_grafana_operator_apis_openviz_v1alpha1_DatasourceStatus(ref common.R
 		},
 		Dependencies: []string{
 			"kmodules.xyz/client-go/api/v1.Condition"},
+	}
+}
+
+func schema_grafana_operator_apis_openviz_v1alpha1_ModelTemplateConfiguration(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"title": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"boolean"},
+							Format: "",
+						},
+					},
+					"datasource": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"boolean"},
+							Format: "",
+						},
+					},
+				},
+			},
+		},
 	}
 }
 
