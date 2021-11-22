@@ -20,7 +20,7 @@ BIN      := grafana-operator
 COMPRESS ?= no
 
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
-CRD_OPTIONS          ?= "crd:trivialVersions=true,preserveUnknownFields=false,crdVersions={v1}"
+CRD_OPTIONS          ?= "crd:crdVersions={v1}"
 CODE_GENERATOR_IMAGE ?= appscode/gengo:release-1.21
 API_GROUPS           ?= openviz:v1alpha1
 

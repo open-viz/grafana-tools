@@ -25,10 +25,10 @@ require (
 	k8s.io/client-go v0.21.1
 	k8s.io/klog/v2 v2.8.0
 	k8s.io/kube-openapi v0.0.0-20210305001622-591a79e4bda7
-	kmodules.xyz/client-go v0.0.0-20211116191353-a321f503ea3a
+	kmodules.xyz/client-go v0.0.0-20211122091731-6c471b24a4ea
 	kmodules.xyz/crd-schema-fuzz v0.0.0-20210618002152-fae23aef5fb4
-	kmodules.xyz/custom-resources v0.0.0-20211025144742-7ab2db03cce8
-	kmodules.xyz/webhook-runtime v0.0.0-20211025143924-ac7adedbd680
+	kmodules.xyz/custom-resources v0.0.0-20211122142737-3bf3dbd8ac52
+	kmodules.xyz/webhook-runtime v0.0.0-20211116181908-909a755cc9d1
 	sigs.k8s.io/yaml v1.2.0
 )
 
