@@ -28,6 +28,13 @@ const (
 
 // EmbeddedDashboardSpec defines the desired state of EmbeddedDashboard
 type EmbeddedDashboardSpec struct {
+	Dashboard string     `json:"dashboard,omitempty" protobuf:"bytes,1,opt,name=dashboard"`
+	URLs      []PanelURL `json:"urls,omitempty" protobuf:"bytes,2,rep,name=urls"`
+}
+
+type PanelURL struct {
+	Title       string `json:"title,omitempty" protobuf:"bytes,1,opt,name=title"`
+	EmbeddedURL string `json:"embeddedURL,omitempty" protobuf:"bytes,2,opt,name=embeddedURL"`
 }
 
 // EmbeddedDashboardStatus defines the observed state of EmbeddedDashboard
