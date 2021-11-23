@@ -452,7 +452,7 @@ lint: $(BUILD_DIRS)
 $(BUILD_DIRS):
 	@mkdir -p $@
 
-KUBE_NAMESPACE    ?= openviz
+KUBE_NAMESPACE    ?= kubeops
 REGISTRY_SECRET   ?=
 IMAGE_PULL_POLICY	?= IfNotPresent
 
@@ -465,17 +465,24 @@ endif
 .PHONY: install
 install:
 	@cd ../installer; \
-	helm install grafana-tools charts/grafana-tools --wait \
+	helm install grafana-operator charts/grafana-operator --wait \
 		--namespace=$(KUBE_NAMESPACE) --create-namespace \
 		--set operator.registry=$(REGISTRY) \
 		--set operator.tag=$(TAG) \
+		--set imagePullPolicy=$(IMAGE_PULL_POLICY) \
+		$(IMAGE_PULL_SECRETS); \
+	helm install grafana-ui-server charts/grafana-ui-server --wait \
+		--namespace=$(KUBE_NAMESPACE) --create-namespace \
+		--set image.registry=$(REGISTRY) \
+		--set image.tag=$(TAG) \
 		--set imagePullPolicy=$(IMAGE_PULL_POLICY) \
 		$(IMAGE_PULL_SECRETS); \
 
 .PHONY: uninstall
 uninstall:
 	@cd ../installer; \
-	helm uninstall grafana-tools --namespace=$(KUBE_NAMESPACE) || true
+	helm uninstall grafana-ui-server --namespace=$(KUBE_NAMESPACE) || true \
+	helm uninstall grafana-tools --namespace=$(KUBE_NAMESPACE) || true \
 
 .PHONY: purge
 purge: uninstall
