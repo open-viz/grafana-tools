@@ -119,19 +119,59 @@ func (c *GrafanaController) reconcileDashboard(dashboard *api.Dashboard) error {
 	}
 	dashboard.Status = newDashboard.Status
 
+	if dashboard.Spec.Grafana == nil {
+		return errors.New("appBinding for grafana is missing")
+	}
+
 	if err = c.setGrafanaClient(dashboard.Namespace, dashboard.Spec.Grafana); err != nil {
 		return errors.Wrap(err, "failed to set grafana client")
 	}
 
 	var board sdk.Board
-
 	if dashboard.Spec.Model == nil {
 		return errors.New("dashboard model not found")
 	}
-
 	if err := json.Unmarshal(dashboard.Spec.Model.Raw, &board); err != nil {
 		return err
 	}
+
+	//// add labels
+	//labels := make(map[string]string)
+	//labels["meta.dashboard.openviz.dev/appbinding"] = dashboard.Spec.Grafana.Name
+	//dashboard, _, err = util.PatchDashboard(context.TODO(), c.extClient.OpenvizV1alpha1(), dashboard, func(in *api.Dashboard) *api.Dashboard {
+	//	in.ObjectMeta.SetLabels(labels)
+	//	return in
+	//}, metav1.PatchOptions{})
+	//if err != nil {
+	//	return err
+	//}
+
+	if dashboard.Spec.Templatize != nil && dashboard.Spec.Templatize.Datasource {
+		// collect datasource name from app binding
+		appBinding, err := c.appCatalogClient.AppBindings(dashboard.Namespace).Get(context.TODO(), dashboard.Spec.Grafana.Name, metav1.GetOptions{})
+		if err != nil {
+			return errors.Wrap(err, "failed to fetch AppBinding")
+		}
+		dsConfig := &api.DatasourceConfiguration{}
+		if appBinding.Spec.Parameters != nil {
+			err := json.Unmarshal(appBinding.Spec.Parameters.Raw, &dsConfig)
+			if err != nil {
+				return errors.Wrap(err, "failed to unmarshal app binding parameters")
+			}
+		} else {
+			return errors.New("datasource parameter is missing in app binding")
+		}
+		// update panels datasource
+		for idx := range board.Panels {
+			board.Panels[idx].Datasource = &dsConfig.Datasource
+		}
+
+		// update templating list datasource
+		for idx := range board.Templating.List {
+			board.Templating.List[idx].Datasource = &dsConfig.Datasource
+		}
+	}
+
 	if err = c.updateDashboard(dashboard, board); err != nil {
 		return errors.Wrap(err, "failed to update dashboard")
 	}

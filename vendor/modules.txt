@@ -136,7 +136,7 @@ github.com/googleapis/gnostic/openapiv2
 # github.com/gosimple/slug v1.1.1
 ## explicit
 github.com/gosimple/slug
-# github.com/grafana-tools/sdk v0.0.0-20210714133701-11b1efc100c9
+# github.com/grafana-tools/sdk v0.0.0-20211118073920-e7b85bb25aa9
 ## explicit; go 1.13
 github.com/grafana-tools/sdk
 # github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7
