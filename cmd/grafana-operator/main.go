@@ -17,7 +17,7 @@ limitations under the License.
 package main
 
 import (
-	"go.openviz.dev/grafana-operator/pkg/cmds"
+	"go.openviz.dev/grafana-tools/pkg/cmds"
 
 	"gomodules.xyz/logs"
 	"k8s.io/klog/v2"

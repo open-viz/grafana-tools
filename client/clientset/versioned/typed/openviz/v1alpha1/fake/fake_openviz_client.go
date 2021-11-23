@@ -19,7 +19,7 @@ limitations under the License.
 package fake
 
 import (
-	v1alpha1 "go.openviz.dev/grafana-operator/client/clientset/versioned/typed/openviz/v1alpha1"
+	v1alpha1 "go.openviz.dev/grafana-tools/client/clientset/versioned/typed/openviz/v1alpha1"
 
 	rest "k8s.io/client-go/rest"
 	testing "k8s.io/client-go/testing"

@@ -21,7 +21,8 @@ package versioned
 import (
 	"fmt"
 
-	openvizv1alpha1 "go.openviz.dev/grafana-operator/client/clientset/versioned/typed/openviz/v1alpha1"
+	openvizv1alpha1 "go.openviz.dev/grafana-tools/client/clientset/versioned/typed/openviz/v1alpha1"
+	uiv1alpha1 "go.openviz.dev/grafana-tools/client/clientset/versioned/typed/ui/v1alpha1"
 
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
@@ -31,6 +32,7 @@ import (
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
 	OpenvizV1alpha1() openvizv1alpha1.OpenvizV1alpha1Interface
+	UiV1alpha1() uiv1alpha1.UiV1alpha1Interface
 }
 
 // Clientset contains the clients for groups. Each group has exactly one
@@ -38,11 +40,17 @@ type Interface interface {
 type Clientset struct {
 	*discovery.DiscoveryClient
 	openvizV1alpha1 *openvizv1alpha1.OpenvizV1alpha1Client
+	uiV1alpha1      *uiv1alpha1.UiV1alpha1Client
 }
 
 // OpenvizV1alpha1 retrieves the OpenvizV1alpha1Client
 func (c *Clientset) OpenvizV1alpha1() openvizv1alpha1.OpenvizV1alpha1Interface {
 	return c.openvizV1alpha1
+}
+
+// UiV1alpha1 retrieves the UiV1alpha1Client
+func (c *Clientset) UiV1alpha1() uiv1alpha1.UiV1alpha1Interface {
+	return c.uiV1alpha1
 }
 
 // Discovery retrieves the DiscoveryClient
@@ -70,6 +78,10 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 	if err != nil {
 		return nil, err
 	}
+	cs.uiV1alpha1, err = uiv1alpha1.NewForConfig(&configShallowCopy)
+	if err != nil {
+		return nil, err
+	}
 
 	cs.DiscoveryClient, err = discovery.NewDiscoveryClientForConfig(&configShallowCopy)
 	if err != nil {
@@ -83,6 +95,7 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 func NewForConfigOrDie(c *rest.Config) *Clientset {
 	var cs Clientset
 	cs.openvizV1alpha1 = openvizv1alpha1.NewForConfigOrDie(c)
+	cs.uiV1alpha1 = uiv1alpha1.NewForConfigOrDie(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClientForConfigOrDie(c)
 	return &cs
@@ -92,6 +105,7 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
 	cs.openvizV1alpha1 = openvizv1alpha1.New(c)
+	cs.uiV1alpha1 = uiv1alpha1.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)
 	return &cs

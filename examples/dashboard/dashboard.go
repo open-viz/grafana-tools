@@ -24,8 +24,8 @@ import (
 	"path/filepath"
 	"time"
 
-	api "go.openviz.dev/grafana-operator/apis/openviz/v1alpha1"
-	crd_client "go.openviz.dev/grafana-operator/client/clientset/versioned/typed/openviz/v1alpha1"
+	api "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
+	crd_client "go.openviz.dev/grafana-tools/client/clientset/versioned/typed/openviz/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/clientcmd"

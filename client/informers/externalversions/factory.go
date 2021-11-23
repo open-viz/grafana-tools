@@ -23,9 +23,9 @@ import (
 	sync "sync"
 	time "time"
 
-	versioned "go.openviz.dev/grafana-operator/client/clientset/versioned"
-	internalinterfaces "go.openviz.dev/grafana-operator/client/informers/externalversions/internalinterfaces"
-	openviz "go.openviz.dev/grafana-operator/client/informers/externalversions/openviz"
+	versioned "go.openviz.dev/grafana-tools/client/clientset/versioned"
+	internalinterfaces "go.openviz.dev/grafana-tools/client/informers/externalversions/internalinterfaces"
+	openviz "go.openviz.dev/grafana-tools/client/informers/externalversions/openviz"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"

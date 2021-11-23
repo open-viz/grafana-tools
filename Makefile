@@ -16,13 +16,13 @@ SHELL=/bin/bash -o pipefail
 
 GO_PKG   := go.openviz.dev
 REPO     := $(notdir $(shell pwd))
-BIN      := grafana-operator
+BIN      := grafana-tools
 COMPRESS ?= no
 
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS          ?= "crd:crdVersions={v1}"
 CODE_GENERATOR_IMAGE ?= appscode/gengo:release-1.21
-API_GROUPS           ?= openviz:v1alpha1
+API_GROUPS           ?= openviz:v1alpha1 ui:v1alpha1
 
 # Where to push the docker image.
 REGISTRY ?= appscode
@@ -239,7 +239,7 @@ gen-crd-protos-%:
 			--proto-import=$(DOCKER_REPO_ROOT)/vendor    \
 			--proto-import=$(DOCKER_REPO_ROOT)/third_party/protobuf \
 			--apimachinery-packages=-k8s.io/apimachinery/pkg/api/resource,-k8s.io/apimachinery/pkg/apis/meta/v1,-k8s.io/apimachinery/pkg/apis/meta/v1beta1,-k8s.io/apimachinery/pkg/runtime,-k8s.io/apimachinery/pkg/runtime/schema,-k8s.io/apimachinery/pkg/util/intstr \
-			--packages=-k8s.io/api/core/v1,-k8s.io/api/apps/v1,-k8s.io/api/rbac/v1,-kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1,-kmodules.xyz/monitoring-agent-api/api/v1,-kmodules.xyz/offshoot-api/api/v1,-kmodules.xyz/client-go/api/v1,go.openviz.dev/grafana-operator/apis/$(subst _,/,$*)
+			--packages=-k8s.io/api/core/v1,-k8s.io/api/apps/v1,-k8s.io/api/rbac/v1,-kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1,-kmodules.xyz/monitoring-agent-api/api/v1,-kmodules.xyz/offshoot-api/api/v1,-kmodules.xyz/client-go/api/v1,go.openviz.dev/grafana-tools/apis/$(subst _,/,$*)
 
 .PHONY: manifests
 manifests: gen-crds patch-crds label-crds
@@ -465,7 +465,7 @@ endif
 .PHONY: install
 install:
 	@cd ../installer; \
-	helm install grafana-operator charts/grafana-operator --wait \
+	helm install grafana-tools charts/grafana-tools --wait \
 		--namespace=$(KUBE_NAMESPACE) --create-namespace \
 		--set operator.registry=$(REGISTRY) \
 		--set operator.tag=$(TAG) \
@@ -475,7 +475,7 @@ install:
 .PHONY: uninstall
 uninstall:
 	@cd ../installer; \
-	helm uninstall grafana-operator --namespace=$(KUBE_NAMESPACE) || true
+	helm uninstall grafana-tools --namespace=$(KUBE_NAMESPACE) || true
 
 .PHONY: purge
 purge: uninstall
@@ -560,7 +560,7 @@ clean:
 
 .PHONY: run
 run:
-	GO111MODULE=on go run -mod=vendor ./cmd/grafana-operator run \
+	GO111MODULE=on go run -mod=vendor ./cmd/grafana-tools run \
 		--v=3 \
 		--secure-port=8443 \
 		--kubeconfig=$(KUBECONFIG) \

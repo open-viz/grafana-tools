@@ -19,9 +19,11 @@ limitations under the License.
 package fake
 
 import (
-	clientset "go.openviz.dev/grafana-operator/client/clientset/versioned"
-	openvizv1alpha1 "go.openviz.dev/grafana-operator/client/clientset/versioned/typed/openviz/v1alpha1"
-	fakeopenvizv1alpha1 "go.openviz.dev/grafana-operator/client/clientset/versioned/typed/openviz/v1alpha1/fake"
+	clientset "go.openviz.dev/grafana-tools/client/clientset/versioned"
+	openvizv1alpha1 "go.openviz.dev/grafana-tools/client/clientset/versioned/typed/openviz/v1alpha1"
+	fakeopenvizv1alpha1 "go.openviz.dev/grafana-tools/client/clientset/versioned/typed/openviz/v1alpha1/fake"
+	uiv1alpha1 "go.openviz.dev/grafana-tools/client/clientset/versioned/typed/ui/v1alpha1"
+	fakeuiv1alpha1 "go.openviz.dev/grafana-tools/client/clientset/versioned/typed/ui/v1alpha1/fake"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
@@ -80,4 +82,9 @@ var _ clientset.Interface = &Clientset{}
 // OpenvizV1alpha1 retrieves the OpenvizV1alpha1Client
 func (c *Clientset) OpenvizV1alpha1() openvizv1alpha1.OpenvizV1alpha1Interface {
 	return &fakeopenvizv1alpha1.FakeOpenvizV1alpha1{Fake: &c.Fake}
+}
+
+// UiV1alpha1 retrieves the UiV1alpha1Client
+func (c *Clientset) UiV1alpha1() uiv1alpha1.UiV1alpha1Interface {
+	return &fakeuiv1alpha1.FakeUiV1alpha1{Fake: &c.Fake}
 }

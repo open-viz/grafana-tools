@@ -1,4 +1,4 @@
-module go.openviz.dev/grafana-operator
+module go.openviz.dev/grafana-tools
 
 go 1.17
 
@@ -25,10 +25,12 @@ require (
 	k8s.io/client-go v0.21.1
 	k8s.io/klog/v2 v2.8.0
 	k8s.io/kube-openapi v0.0.0-20210305001622-591a79e4bda7
+	kmodules.xyz/authorizer v0.0.0-20211121124031-167d0ef7c671
 	kmodules.xyz/client-go v0.0.0-20211122091731-6c471b24a4ea
 	kmodules.xyz/crd-schema-fuzz v0.0.0-20210618002152-fae23aef5fb4
 	kmodules.xyz/custom-resources v0.0.0-20211122142737-3bf3dbd8ac52
 	kmodules.xyz/webhook-runtime v0.0.0-20211116181908-909a755cc9d1
+	sigs.k8s.io/controller-runtime v0.9.0
 	sigs.k8s.io/yaml v1.2.0
 )
 
@@ -90,7 +92,7 @@ require (
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.47.0 // indirect
 	github.com/prometheus/client_golang v1.11.0 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
-	github.com/prometheus/common v0.18.0 // indirect
+	github.com/prometheus/common v0.26.0 // indirect
 	github.com/prometheus/procfs v0.6.0 // indirect
 	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be // indirect
 	github.com/russross/blackfriday/v2 v2.0.1 // indirect
@@ -123,7 +125,7 @@ require (
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20201110150050-8816d57aaa9a // indirect
 	google.golang.org/grpc v1.27.1 // indirect
-	google.golang.org/protobuf v1.25.0 // indirect
+	google.golang.org/protobuf v1.26.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
@@ -131,10 +133,10 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	k8s.io/cli-runtime v0.21.1 // indirect
 	k8s.io/component-base v0.21.1 // indirect
+	k8s.io/component-helpers v0.21.1 // indirect
 	k8s.io/kube-aggregator v0.21.1 // indirect
 	k8s.io/utils v0.0.0-20210802155522-efc7438f0176 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.15 // indirect
-	sigs.k8s.io/controller-runtime v0.9.0 // indirect
 	sigs.k8s.io/kustomize/api v0.8.8 // indirect
 	sigs.k8s.io/kustomize/kyaml v0.10.17 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.1.2 // indirect

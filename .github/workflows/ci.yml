@@ -102,6 +102,6 @@ jobs:
           echo -n "$TEST_CREDENTIALS" > hack/config/.env
           echo >> hack/config/.env
           echo "GOOGLE_SERVICE_ACCOUNT_JSON_KEY=$(echo $GOOGLE_SERVICE_ACCOUNT_JSON_KEY)" >> hack/config/.env
-          make install || ( kubectl describe deployment -n openviz grafana-operator; kubectl logs -n openviz deployment/grafana-operator; exit 1; )
+          make install || ( kubectl describe deployment -n openviz grafana-tools; kubectl logs -n openviz deployment/grafana-tools; exit 1; )
           echo
           make e2e-tests

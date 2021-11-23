@@ -22,10 +22,10 @@ import (
 	"context"
 	time "time"
 
-	openvizv1alpha1 "go.openviz.dev/grafana-operator/apis/openviz/v1alpha1"
-	versioned "go.openviz.dev/grafana-operator/client/clientset/versioned"
-	internalinterfaces "go.openviz.dev/grafana-operator/client/informers/externalversions/internalinterfaces"
-	v1alpha1 "go.openviz.dev/grafana-operator/client/listers/openviz/v1alpha1"
+	openvizv1alpha1 "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
+	versioned "go.openviz.dev/grafana-tools/client/clientset/versioned"
+	internalinterfaces "go.openviz.dev/grafana-tools/client/informers/externalversions/internalinterfaces"
+	v1alpha1 "go.openviz.dev/grafana-tools/client/listers/openviz/v1alpha1"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"

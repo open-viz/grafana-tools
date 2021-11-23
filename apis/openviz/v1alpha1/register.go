@@ -17,7 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"go.openviz.dev/grafana-operator/apis/openviz"
+	"go.openviz.dev/grafana-tools/apis/openviz"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
