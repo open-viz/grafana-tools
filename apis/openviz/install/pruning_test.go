@@ -19,8 +19,8 @@ package install
 import (
 	"testing"
 
-	"go.openviz.dev/grafana-operator/apis/openviz/fuzzer"
-	"go.openviz.dev/grafana-operator/apis/openviz/v1alpha1"
+	"go.openviz.dev/grafana-tools/apis/openviz/fuzzer"
+	"go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
 
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	crdfuzz "kmodules.xyz/crd-schema-fuzz"

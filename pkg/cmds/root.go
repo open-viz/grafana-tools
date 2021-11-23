@@ -19,30 +19,22 @@ package cmds
 import (
 	"os"
 
-	"go.openviz.dev/grafana-operator/client/clientset/versioned/scheme"
-
 	"github.com/spf13/cobra"
 	v "gomodules.xyz/x/version"
-	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	genericapiserver "k8s.io/apiserver/pkg/server"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	appcatscheme "kmodules.xyz/custom-resources/client/clientset/versioned/scheme"
 )
 
 func NewRootCmd() *cobra.Command {
 	var rootCmd = &cobra.Command{
-		Use:               "grafana-operator [command]",
+		Use:               "grafana-tools [command]",
 		Short:             `Grafana Operator by AppsCode`,
 		DisableAutoGenTag: true,
-		PersistentPreRun: func(c *cobra.Command, args []string) {
-			utilruntime.Must(scheme.AddToScheme(clientsetscheme.Scheme))
-			utilruntime.Must(appcatscheme.AddToScheme(clientsetscheme.Scheme))
-		},
 	}
 
 	rootCmd.AddCommand(v.NewCmdVersion())
-	stopCh := genericapiserver.SetupSignalHandler()
-	rootCmd.AddCommand(NewCmdRun(os.Stdout, os.Stderr, stopCh))
+	ctx := genericapiserver.SetupSignalContext()
+	rootCmd.AddCommand(NewCmdOperator(os.Stdout, os.Stderr, ctx.Done()))
+	rootCmd.AddCommand(NewCmdUIServer(ctx, os.Stdout, os.Stderr))
 
 	return rootCmd
 }

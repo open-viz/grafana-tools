@@ -19,8 +19,8 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1alpha1 "go.openviz.dev/grafana-operator/apis/openviz/v1alpha1"
-	"go.openviz.dev/grafana-operator/client/clientset/versioned/scheme"
+	v1alpha1 "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
+	"go.openviz.dev/grafana-tools/client/clientset/versioned/scheme"
 
 	rest "k8s.io/client-go/rest"
 )

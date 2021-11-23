@@ -19,8 +19,8 @@ limitations under the License.
 package openviz
 
 import (
-	internalinterfaces "go.openviz.dev/grafana-operator/client/informers/externalversions/internalinterfaces"
-	v1alpha1 "go.openviz.dev/grafana-operator/client/informers/externalversions/openviz/v1alpha1"
+	internalinterfaces "go.openviz.dev/grafana-tools/client/informers/externalversions/internalinterfaces"
+	v1alpha1 "go.openviz.dev/grafana-tools/client/informers/externalversions/openviz/v1alpha1"
 )
 
 // Interface provides access to each of this group's versions.

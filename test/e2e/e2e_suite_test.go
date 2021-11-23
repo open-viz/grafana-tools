@@ -20,8 +20,8 @@ import (
 	"testing"
 	"time"
 
-	"go.openviz.dev/grafana-operator/pkg/controller"
-	"go.openviz.dev/grafana-operator/test/e2e/framework"
+	"go.openviz.dev/grafana-tools/pkg/operator/controller"
+	"go.openviz.dev/grafana-tools/test/e2e/framework"
 
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/reporters"

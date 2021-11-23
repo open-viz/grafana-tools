@@ -17,7 +17,7 @@ limitations under the License.
 package framework
 
 import (
-	cs "go.openviz.dev/grafana-operator/client/clientset/versioned"
+	cs "go.openviz.dev/grafana-tools/client/clientset/versioned"
 
 	"gomodules.xyz/x/crypto/rand"
 	"k8s.io/client-go/kubernetes"
@@ -47,7 +47,7 @@ func New(
 		extClient:    extClient,
 		appcatClient: appcatClient,
 
-		name:      rand.WithUniqSuffix("grafana-operator"),
+		name:      rand.WithUniqSuffix("grafana-tools"),
 		namespace: rand.WithUniqSuffix("grafana"),
 	}
 }
@@ -55,7 +55,7 @@ func New(
 func (f *Framework) Invoke() *Invocation {
 	return &Invocation{
 		Framework: f,
-		app:       rand.WithUniqSuffix("grafana-operator-e2e"),
+		app:       rand.WithUniqSuffix("grafana-tools-e2e"),
 	}
 }
 

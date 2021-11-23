@@ -21,8 +21,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"go.openviz.dev/grafana-operator/apis/openviz/install"
-	"go.openviz.dev/grafana-operator/apis/openviz/v1alpha1"
+	"go.openviz.dev/grafana-tools/apis/openviz/install"
+	"go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
 
 	"github.com/go-openapi/spec"
 	gort "gomodules.xyz/runtime"
@@ -69,7 +69,7 @@ func generateSwaggerJson() {
 		klog.Fatal(err)
 	}
 
-	filename := gort.GOPath() + "/src/go.openviz.dev/grafana-operator/openapi/swagger.json"
+	filename := gort.GOPath() + "/src/go.openviz.dev/grafana-tools/openapi/swagger.json"
 	err = os.MkdirAll(filepath.Dir(filename), 0755)
 	if err != nil {
 		klog.Fatal(err)

@@ -19,7 +19,7 @@ package framework
 import (
 	"context"
 
-	api "go.openviz.dev/grafana-operator/apis/openviz/v1alpha1"
+	api "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

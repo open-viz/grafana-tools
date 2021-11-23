@@ -17,7 +17,7 @@ limitations under the License.
 package install
 
 import (
-	"go.openviz.dev/grafana-operator/apis/openviz/v1alpha1"
+	"go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"

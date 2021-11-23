@@ -21,8 +21,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	api "go.openviz.dev/grafana-operator/apis/openviz/v1alpha1"
-	cs "go.openviz.dev/grafana-operator/client/clientset/versioned/typed/openviz/v1alpha1"
+	api "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
+	cs "go.openviz.dev/grafana-tools/client/clientset/versioned/typed/openviz/v1alpha1"
 
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/pkg/errors"
