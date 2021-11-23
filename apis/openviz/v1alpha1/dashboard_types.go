@@ -45,13 +45,26 @@ type Dashboard struct {
 }
 
 type DashboardSpec struct {
+	// Grafana defines the grafana app binding name for the Dashboard
 	Grafana *TargetRef `json:"grafana,omitempty" protobuf:"bytes,1,opt,name=grafana"`
 	// +optional
 	// +kubebuilder:pruning:PreserveUnknownFields
 	Model *runtime.RawExtension `json:"model,omitempty" protobuf:"bytes,2,opt,name=model"`
 
-	FolderID  int64 `json:"folderId" protobuf:"varint,3,opt,name=folderId"`
-	Overwrite bool  `json:"overwrite" protobuf:"varint,4,opt,name=overwrite"`
+	// FolderID defines the Grafana folderID
+	FolderID int64 `json:"folderId" protobuf:"varint,3,opt,name=folderId"`
+
+	// Overwrite defines the existing dashboard with the same name(if any) should be overwritten or not
+	Overwrite bool `json:"overwrite" protobuf:"varint,4,opt,name=overwrite"`
+
+	// Templatize defines the fields which supports templating in Grafana Dashboard Model json
+	// +optional
+	Templatize *ModelTemplateConfiguration `json:"templatize,omitempty" protobuf:"bytes,5,opt,name=templatize"`
+}
+
+type ModelTemplateConfiguration struct {
+	Title      bool `json:"title,omitempty" protobuf:"bytes,1,opt,name=title"`
+	Datasource bool `json:"datasource,omitempty" protobuf:"bytes,2,opt,name=datasource"`
 }
 
 type TargetRef struct {

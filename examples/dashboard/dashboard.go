@@ -62,6 +62,10 @@ func CreateDashboard(model runtime.RawExtension) error {
 			Model:     &model,
 			FolderID:  0,
 			Overwrite: true,
+			Templatize: &api.ModelTemplateConfiguration{
+				Title:      true,
+				Datasource: true,
+			},
 		},
 	}
 	gClient, err := createClient()

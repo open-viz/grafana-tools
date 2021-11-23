@@ -1225,19 +1225,26 @@
       ],
       "properties": {
         "folderId": {
+          "description": "FolderID defines the Grafana folderID",
           "type": "integer",
           "format": "int64",
           "default": 0
         },
         "grafana": {
+          "description": "Grafana defines the grafana app binding name for the Dashboard",
           "$ref": "#/definitions/dev.openviz.go.grafana-operator.apis.openviz.v1alpha1.TargetRef"
         },
         "model": {
           "$ref": "#/definitions/io.k8s.apimachinery.pkg.runtime.RawExtension"
         },
         "overwrite": {
+          "description": "Overwrite defines the existing dashboard with the same name(if any) should be overwritten or not",
           "type": "boolean",
           "default": false
+        },
+        "templatize": {
+          "description": "Templatize defines the fields which supports templating in Grafana Dashboard Model json",
+          "$ref": "#/definitions/dev.openviz.go.grafana-operator.apis.openviz.v1alpha1.ModelTemplateConfiguration"
         }
       }
     },
@@ -1268,6 +1275,17 @@
         "reason": {
           "description": "The reason for the current phase",
           "type": "string"
+        }
+      }
+    },
+    "dev.openviz.go.grafana-operator.apis.openviz.v1alpha1.ModelTemplateConfiguration": {
+      "type": "object",
+      "properties": {
+        "datasource": {
+          "type": "boolean"
+        },
+        "title": {
+          "type": "boolean"
         }
       }
     },

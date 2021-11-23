@@ -7,7 +7,7 @@ require (
 	github.com/go-openapi/spec v0.19.5
 	github.com/gogo/protobuf v1.3.2
 	github.com/google/gofuzz v1.2.0
-	github.com/grafana-tools/sdk v0.0.0-20210714133701-11b1efc100c9
+	github.com/grafana-tools/sdk v0.0.0-20211118073920-e7b85bb25aa9
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.13.0
 	github.com/pkg/errors v0.9.1

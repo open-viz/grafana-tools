@@ -63,15 +63,22 @@ message DashboardReference {
 }
 
 message DashboardSpec {
+  // Grafana defines the grafana app binding name for the Dashboard
   optional TargetRef grafana = 1;
 
   // +optional
   // +kubebuilder:pruning:PreserveUnknownFields
   optional k8s.io.apimachinery.pkg.runtime.RawExtension model = 2;
 
+  // FolderID defines the Grafana folderID
   optional int64 folderId = 3;
 
+  // Overwrite defines the existing dashboard with the same name(if any) should be overwritten or not
   optional bool overwrite = 4;
+
+  // Templatize defines the fields which supports templating in Grafana Dashboard Model json
+  // +optional
+  optional ModelTemplateConfiguration templatize = 5;
 }
 
 message DashboardStatus {
@@ -149,6 +156,12 @@ message Datasource {
   optional DatasourceStatus status = 3;
 }
 
+// DatasourceConfiguration defines a Datasource AppBinding configuration
+message DatasourceConfiguration {
+  // Datasource defines the grafana datasource name.
+  optional string datasource = 1;
+}
+
 message DatasourceList {
   optional k8s.io.apimachinery.pkg.apis.meta.v1.ListMeta metadata = 1;
 
@@ -200,6 +213,12 @@ message DatasourceStatus {
   optional string reason = 4;
 
   repeated kmodules.xyz.client_go.api.v1.Condition conditions = 5;
+}
+
+message ModelTemplateConfiguration {
+  optional bool title = 1;
+
+  optional bool datasource = 2;
 }
 
 message TargetRef {
