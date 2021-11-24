@@ -23,7 +23,6 @@ import (
 	"time"
 
 	openvizv1alpha1 "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
-
 	uiv1alpha1 "go.openviz.dev/grafana-tools/apis/ui/v1alpha1"
 
 	"github.com/grafana-tools/sdk"
