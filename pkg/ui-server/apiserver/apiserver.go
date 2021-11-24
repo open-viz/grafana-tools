@@ -20,10 +20,10 @@ import (
 	"context"
 	"fmt"
 
+	openvizinstall "go.openviz.dev/grafana-tools/apis/openviz/install"
 	"go.openviz.dev/grafana-tools/apis/ui"
 	uiinstall "go.openviz.dev/grafana-tools/apis/ui/install"
 	uiv1alpha1 "go.openviz.dev/grafana-tools/apis/ui/v1alpha1"
-	cs "go.openviz.dev/grafana-tools/client/clientset/versioned"
 	emdashstorage "go.openviz.dev/grafana-tools/pkg/ui-server/registry/ui/embeddedashboard"
 
 	core "k8s.io/api/core/v1"
@@ -56,6 +56,7 @@ var (
 
 func init() {
 	uiinstall.Install(Scheme)
+	openvizinstall.Install(Scheme)
 	_ = clientgoscheme.AddToScheme(Scheme)
 
 	// we need to add the options to empty v1
@@ -169,13 +170,8 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 	{
 		apiGroupInfo := genericapiserver.NewDefaultAPIGroupInfo(ui.GroupName, Scheme, metav1.ParameterCodec, Codecs)
 
-		gc, err := cs.NewForConfig(c.ExtraConfig.ClientConfig)
-		if err != nil {
-			return nil, err
-		}
-
 		v1alpha1storage := map[string]rest.Storage{}
-		v1alpha1storage[uiv1alpha1.ResourceEmbeddedDashboards] = emdashstorage.NewStorage(ctrlClient, rbacAuthorizer, gc)
+		v1alpha1storage[uiv1alpha1.ResourceEmbeddedDashboards] = emdashstorage.NewStorage(ctrlClient, rbacAuthorizer)
 		apiGroupInfo.VersionedResourcesStorageMap["v1alpha1"] = v1alpha1storage
 
 		if err := s.GenericAPIServer.InstallAPIGroup(&apiGroupInfo); err != nil {

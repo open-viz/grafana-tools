@@ -245,7 +245,7 @@ func (c *GrafanaController) updateDashboard(dashboard *api.Dashboard, board sdk.
 	if err != nil {
 		return errors.Wrap(err, "failed to save dashboard in grafana server")
 	}
-	orgId, err := c.grafanaClient.GetAllOrgs(context.Background())
+	orgId, err := c.grafanaClient.GetActualOrg(context.Background())
 	if err != nil {
 		return errors.Wrap(err, "failed to get OrgId")
 	}
@@ -264,7 +264,7 @@ func (c *GrafanaController) updateDashboard(dashboard *api.Dashboard, board sdk.
 				UID:     statusMsg.UID,
 				Slug:    statusMsg.Slug,
 				URL:     statusMsg.URL,
-				OrgID:   pointer.Int64P(int64(orgId[0].ID)),
+				OrgID:   pointer.Int64P(int64(orgId.ID)),
 				Version: pointer.Int64P(int64(pointer.Int(statusMsg.Version))),
 			}
 			if statusMsg.OrgID != nil {
