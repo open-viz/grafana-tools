@@ -38,6 +38,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.EmbeddedDashboardList":   schema_grafana_tools_apis_ui_v1alpha1_EmbeddedDashboardList(ref),
 		"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.EmbeddedDashboardSpec":   schema_grafana_tools_apis_ui_v1alpha1_EmbeddedDashboardSpec(ref),
 		"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.EmbeddedDashboardStatus": schema_grafana_tools_apis_ui_v1alpha1_EmbeddedDashboardStatus(ref),
+		"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.PanelURL":                schema_grafana_tools_apis_ui_v1alpha1_PanelURL(ref),
 		"k8s.io/api/apps/v1.ControllerRevision":                                 schema_k8sio_api_apps_v1_ControllerRevision(ref),
 		"k8s.io/api/apps/v1.ControllerRevisionList":                             schema_k8sio_api_apps_v1_ControllerRevisionList(ref),
 		"k8s.io/api/apps/v1.DaemonSet":                                          schema_k8sio_api_apps_v1_DaemonSet(ref),
@@ -439,8 +440,31 @@ func schema_grafana_tools_apis_ui_v1alpha1_EmbeddedDashboardSpec(ref common.Refe
 			SchemaProps: spec.SchemaProps{
 				Description: "EmbeddedDashboardSpec defines the desired state of EmbeddedDashboard",
 				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"dashboard": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"urls": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref("go.openviz.dev/grafana-tools/apis/ui/v1alpha1.PanelURL"),
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 		},
+		Dependencies: []string{
+			"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.PanelURL"},
 	}
 }
 
@@ -450,6 +474,30 @@ func schema_grafana_tools_apis_ui_v1alpha1_EmbeddedDashboardStatus(ref common.Re
 			SchemaProps: spec.SchemaProps{
 				Description: "EmbeddedDashboardStatus defines the observed state of EmbeddedDashboard",
 				Type:        []string{"object"},
+			},
+		},
+	}
+}
+
+func schema_grafana_tools_apis_ui_v1alpha1_PanelURL(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"title": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"embeddedURL": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+				},
 			},
 		},
 	}

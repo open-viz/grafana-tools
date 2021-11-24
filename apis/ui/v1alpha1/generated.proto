@@ -46,9 +46,18 @@ message EmbeddedDashboardList {
 
 // EmbeddedDashboardSpec defines the desired state of EmbeddedDashboard
 message EmbeddedDashboardSpec {
+  optional string dashboard = 1;
+
+  repeated PanelURL urls = 2;
 }
 
 // EmbeddedDashboardStatus defines the observed state of EmbeddedDashboard
 message EmbeddedDashboardStatus {
+}
+
+message PanelURL {
+  optional string title = 1;
+
+  optional string embeddedURL = 2;
 }
 
