@@ -22,8 +22,7 @@ import (
 	"io"
 	"net"
 
-	identityv1alpha1 "go.openviz.dev/grafana-tools/apis/ui/v1alpha1"
-	uiv1alpha1 "go.openviz.dev/grafana-tools/apis/ui/v1alpha1"
+	uiapi "go.openviz.dev/grafana-tools/apis/ui/v1alpha1"
 	"go.openviz.dev/grafana-tools/pkg/ui-server/apiserver"
 
 	"github.com/spf13/pflag"
@@ -33,9 +32,7 @@ import (
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	genericoptions "k8s.io/apiserver/pkg/server/options"
 	"k8s.io/apiserver/pkg/util/feature"
-	ou "kmodules.xyz/client-go/openapi"
 	"kmodules.xyz/client-go/tools/clientcmd"
-	auditorv1alpha1 "kmodules.xyz/custom-resources/apis/auditor/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
@@ -57,7 +54,7 @@ func NewUIServerOptions(out, errOut io.Writer) *UIServerOptions {
 		RecommendedOptions: genericoptions.NewRecommendedOptions(
 			defaultEtcdPathPrefix,
 			apiserver.Codecs.LegacyCodec(
-				uiv1alpha1.SchemeGroupVersion,
+				uiapi.SchemeGroupVersion,
 			),
 		),
 		StdOut: out,
@@ -99,11 +96,7 @@ func (o *UIServerOptions) Config() (*apiserver.Config, error) {
 	clientcmd.Fix(serverConfig.ClientConfig)
 
 	serverConfig.OpenAPIConfig = genericapiserver.DefaultOpenAPIConfig(
-		ou.GetDefinitions(
-			auditorv1alpha1.GetOpenAPIDefinitions,
-			identityv1alpha1.GetOpenAPIDefinitions,
-			uiv1alpha1.GetOpenAPIDefinitions,
-		),
+		uiapi.GetOpenAPIDefinitions,
 		openapi.NewDefinitionNamer(apiserver.Scheme))
 	serverConfig.OpenAPIConfig.Info.Title = "ui-server"
 	serverConfig.OpenAPIConfig.Info.Version = "v0.0.1"

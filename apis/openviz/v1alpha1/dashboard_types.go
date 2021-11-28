@@ -28,6 +28,11 @@ const (
 	ResourceDashboards    = "dashboards"
 )
 
+const (
+	GrafanaNameKey    = ".grafana.name"
+	DashboardTitleKey = ".dashboard.title"
+)
+
 // +genclient
 // +k8s:openapi-gen=true
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

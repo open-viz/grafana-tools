@@ -23,8 +23,8 @@ import (
 	"fmt"
 	"time"
 
-	openvizv1alpha1 "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
-	uiv1alpha1 "go.openviz.dev/grafana-tools/apis/ui/v1alpha1"
+	openvizapi "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
+	uiapi "go.openviz.dev/grafana-tools/apis/ui/v1alpha1"
 
 	"github.com/grafana-tools/sdk"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -35,7 +35,7 @@ import (
 	"k8s.io/apiserver/pkg/authorization/authorizer"
 	apirequest "k8s.io/apiserver/pkg/endpoints/request"
 	"k8s.io/apiserver/pkg/registry/rest"
-	appcatalogv1alpha1 "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
+	appcatalogapi "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -53,12 +53,12 @@ func NewStorage(kc client.Client, a authorizer.Authorizer) *Storage {
 	return &Storage{
 		kc: kc,
 		a:  a,
-		gr: openvizv1alpha1.Resource(openvizv1alpha1.ResourceDashboards),
+		gr: openvizapi.Resource(openvizapi.ResourceDashboards),
 	}
 }
 
 func (r *Storage) GroupVersionKind(_ schema.GroupVersion) schema.GroupVersionKind {
-	return uiv1alpha1.SchemeGroupVersion.WithKind(uiv1alpha1.ResourceKindEmbeddedDashboard)
+	return uiapi.SchemeGroupVersion.WithKind(uiapi.ResourceKindEmbeddedDashboard)
 }
 
 func (r *Storage) NamespaceScoped() bool {
@@ -66,7 +66,7 @@ func (r *Storage) NamespaceScoped() bool {
 }
 
 func (r *Storage) New() runtime.Object {
-	return &uiv1alpha1.EmbeddedDashboard{}
+	return &uiapi.EmbeddedDashboard{}
 }
 
 func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.ValidateObjectFunc, _ *metav1.CreateOptions) (runtime.Object, error) {
@@ -75,27 +75,27 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 		return nil, apierrors.NewBadRequest("missing namespace")
 	}
 
-	in := obj.(*uiv1alpha1.EmbeddedDashboard)
+	in := obj.(*uiapi.EmbeddedDashboard)
 	if in.Request == nil {
 		return nil, apierrors.NewBadRequest("missing apirequest")
 	}
 
-	var dashboard openvizv1alpha1.Dashboard
+	var dashboard openvizapi.Dashboard
 	if in.Request.Ref.Name != nil {
 		err := r.kc.Get(ctx, client.ObjectKey{Namespace: ns, Name: *in.Request.Ref.Name}, &dashboard)
 		if err != nil {
 			return nil, err
 		}
 	} else if in.Request.Ref.Selector != nil {
-		var dashboardList openvizv1alpha1.DashboardList
+		var dashboardList openvizapi.DashboardList
 		if err := r.kc.List(ctx, &dashboardList, client.InNamespace(ns), client.MatchingFields{
-			uiv1alpha1.GrafanaNameKey:    in.Request.Ref.Selector.GrafanaName,
-			uiv1alpha1.DashboardTitleKey: in.Request.Ref.Selector.DashboardTitle,
+			openvizapi.GrafanaNameKey:    in.Request.Ref.Selector.GrafanaName,
+			openvizapi.DashboardTitleKey: in.Request.Ref.Selector.DashboardTitle,
 		}); err != nil {
 			return nil, err
 		}
 		if len(dashboardList.Items) == 0 {
-			return nil, apierrors.NewNotFound(openvizv1alpha1.Resource(openvizv1alpha1.ResourceDashboards), fmt.Sprintf("%+v", in.Request.Ref.Selector))
+			return nil, apierrors.NewNotFound(openvizapi.Resource(openvizapi.ResourceDashboards), fmt.Sprintf("%+v", in.Request.Ref.Selector))
 		} else if len(dashboardList.Items) > 1 {
 			return nil, apierrors.NewBadRequest(fmt.Sprintf("%+v selects multiple dashboards", in.Request.Ref.Selector))
 		}
@@ -126,7 +126,7 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 	if dashboard.Spec.Grafana == nil {
 		return nil, apierrors.NewBadRequest(fmt.Sprintf("Dashboard %s/%s is missing a Grafana ref", dashboard.Namespace, dashboard.Name))
 	}
-	var ab appcatalogv1alpha1.AppBinding
+	var ab appcatalogapi.AppBinding
 	abKey := client.ObjectKey{Namespace: dashboard.Namespace, Name: dashboard.Spec.Grafana.Name}
 	err = r.kc.Get(ctx, abKey, &ab)
 	if err != nil {
@@ -146,7 +146,7 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 		return nil, fmt.Errorf("failed to unmarshal model for Dashboard %s/%s, reason: %v", dashboard.Namespace, dashboard.Name, err)
 	}
 
-	in.Response = &uiv1alpha1.EmbeddedDashboardResponse{}
+	in.Response = &uiapi.EmbeddedDashboardResponse{}
 	requestedPanels := sets.NewString(in.Request.PanelTitles...)
 	now := time.Now().Unix()
 	for _, p := range board.Panels {
@@ -159,7 +159,7 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 
 		// url template: "http://{{.URL}}/d-solo/{{.BoardUID}}/{{.DashboardName}}?orgId={{.OrgID}}&from={{.From}}&to={{.To}}&theme={{.Theme}}&panelId="
 		url := fmt.Sprintf("%v/d-solo/%v/%v?orgId=%v&from=%v&to=%v&panelId=%v", grafanaHost, board.UID, *dashboard.Status.Dashboard.Slug, *dashboard.Status.Dashboard.OrgID, now, now, p.ID)
-		panelURL := uiv1alpha1.PanelURL{
+		panelURL := uiapi.PanelURL{
 			Title:       p.Title,
 			EmbeddedURL: url,
 		}

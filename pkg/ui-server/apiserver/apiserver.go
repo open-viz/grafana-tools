@@ -22,10 +22,10 @@ import (
 	"fmt"
 
 	openvizinstall "go.openviz.dev/grafana-tools/apis/openviz/install"
-	"go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
+	openvizapi "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
 	"go.openviz.dev/grafana-tools/apis/ui"
 	uiinstall "go.openviz.dev/grafana-tools/apis/ui/install"
-	uiv1alpha1 "go.openviz.dev/grafana-tools/apis/ui/v1alpha1"
+	uiapi "go.openviz.dev/grafana-tools/apis/ui/v1alpha1"
 	emdashstorage "go.openviz.dev/grafana-tools/pkg/ui-server/registry/ui/embeddedashboard"
 
 	"github.com/grafana-tools/sdk"
@@ -35,6 +35,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/apiserver/pkg/registry/rest"
 	genericapiserver "k8s.io/apiserver/pkg/server"
@@ -44,6 +45,7 @@ import (
 	"k8s.io/klog/v2/klogr"
 	"kmodules.xyz/authorizer/rbac"
 	"kmodules.xyz/custom-resources/apis/appcatalog"
+	appcatalogapi "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -62,7 +64,8 @@ var (
 func init() {
 	uiinstall.Install(Scheme)
 	openvizinstall.Install(Scheme)
-	_ = clientgoscheme.AddToScheme(Scheme)
+	utilruntime.Must(clientgoscheme.AddToScheme(Scheme))
+	utilruntime.Must(appcatalogapi.AddToScheme(Scheme))
 
 	// we need to add the options to empty v1
 	// TODO fix the server code to avoid this
@@ -153,8 +156,8 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 		return reconcile.Result{}, nil
 	})
 
-	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &v1alpha1.Dashboard{}, uiv1alpha1.GrafanaNameKey, func(rawObj client.Object) []string {
-		dashboard := rawObj.(*v1alpha1.Dashboard)
+	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &openvizapi.Dashboard{}, openvizapi.GrafanaNameKey, func(rawObj client.Object) []string {
+		dashboard := rawObj.(*openvizapi.Dashboard)
 		if dashboard.Spec.Grafana == nil {
 			return nil
 		}
@@ -165,8 +168,8 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 	}); err != nil {
 		return nil, err
 	}
-	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &v1alpha1.Dashboard{}, uiv1alpha1.DashboardTitleKey, func(rawObj client.Object) []string {
-		dashboard := rawObj.(*v1alpha1.Dashboard)
+	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &openvizapi.Dashboard{}, openvizapi.DashboardTitleKey, func(rawObj client.Object) []string {
+		dashboard := rawObj.(*openvizapi.Dashboard)
 		var board sdk.Board
 		if dashboard.Spec.Model == nil {
 			return nil
@@ -179,10 +182,7 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 	}); err != nil {
 		return nil, err
 	}
-	if err := builder.ControllerManagedBy(mgr).For(&v1alpha1.Dashboard{}).Complete(r); err != nil {
-		return nil, err
-	}
-	if err := builder.ControllerManagedBy(mgr).For(&v1alpha1.Dashboard{}).Complete(r); err != nil {
+	if err := builder.ControllerManagedBy(mgr).For(&openvizapi.Dashboard{}).Complete(r); err != nil {
 		return nil, err
 	}
 
@@ -209,7 +209,7 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 		apiGroupInfo := genericapiserver.NewDefaultAPIGroupInfo(ui.GroupName, Scheme, metav1.ParameterCodec, Codecs)
 
 		v1alpha1storage := map[string]rest.Storage{}
-		v1alpha1storage[uiv1alpha1.ResourceEmbeddedDashboards] = emdashstorage.NewStorage(ctrlClient, rbacAuthorizer)
+		v1alpha1storage[uiapi.ResourceEmbeddedDashboards] = emdashstorage.NewStorage(ctrlClient, rbacAuthorizer)
 		apiGroupInfo.VersionedResourcesStorageMap["v1alpha1"] = v1alpha1storage
 
 		if err := s.GenericAPIServer.InstallAPIGroup(&apiGroupInfo); err != nil {

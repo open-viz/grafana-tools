@@ -26,11 +26,6 @@ const (
 	ResourceEmbeddedDashboards    = "embeddeddashboards"
 )
 
-var (
-	GrafanaNameKey    = ".grafana.name"
-	DashboardTitleKey = ".dashboard.title"
-)
-
 type EmbeddedDashboardRequest struct {
 	Ref         DashboardRef `json:"ref" protobuf:"bytes,1,opt,name=ref"`
 	PanelTitles []string     `json:"panelTitles,omitempty" protobuf:"bytes,2,rep,name=panelTitles"`
