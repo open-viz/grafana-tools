@@ -1104,7 +1104,7 @@ func schema_grafana_tools_apis_openviz_v1alpha1_TargetRef(ref common.ReferenceCa
 			SchemaProps: spec.SchemaProps{
 				Type: []string{"object"},
 				Properties: map[string]spec.Schema{
-					"apiVersion": {
+					"apiGroup": {
 						SchemaProps: spec.SchemaProps{
 							Type:   []string{"string"},
 							Format: "",

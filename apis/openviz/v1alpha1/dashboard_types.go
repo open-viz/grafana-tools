@@ -68,9 +68,9 @@ type ModelTemplateConfiguration struct {
 }
 
 type TargetRef struct {
-	APIVersion string `json:"apiVersion,omitempty" protobuf:"bytes,1,opt,name=apiVersion"`
-	Kind       string `json:"kind,omitempty" protobuf:"bytes,2,opt,name=kind"`
-	Name       string `json:"name,omitempty" protobuf:"bytes,3,opt,name=name"`
+	APIGroup string `json:"apiGroup,omitempty" protobuf:"bytes,1,opt,name=apiGroup"`
+	Kind     string `json:"kind,omitempty" protobuf:"bytes,2,opt,name=kind"`
+	Name     string `json:"name,omitempty" protobuf:"bytes,3,opt,name=name"`
 }
 
 type DashboardReference struct {

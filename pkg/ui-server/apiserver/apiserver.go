@@ -18,13 +18,17 @@ package apiserver
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
+	openvizinstall "go.openviz.dev/grafana-tools/apis/openviz/install"
+	"go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
 	"go.openviz.dev/grafana-tools/apis/ui"
 	uiinstall "go.openviz.dev/grafana-tools/apis/ui/install"
 	uiv1alpha1 "go.openviz.dev/grafana-tools/apis/ui/v1alpha1"
 	emdashstorage "go.openviz.dev/grafana-tools/pkg/ui-server/registry/ui/embeddedashboard"
 
+	"github.com/grafana-tools/sdk"
 	core "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -36,8 +40,10 @@ import (
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	restclient "k8s.io/client-go/rest"
+	"k8s.io/klog/v2"
 	"k8s.io/klog/v2/klogr"
 	"kmodules.xyz/authorizer/rbac"
+	"kmodules.xyz/custom-resources/apis/appcatalog"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -55,6 +61,7 @@ var (
 
 func init() {
 	uiinstall.Install(Scheme)
+	openvizinstall.Install(Scheme)
 	_ = clientgoscheme.AddToScheme(Scheme)
 
 	// we need to add the options to empty v1
@@ -145,6 +152,39 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 	r := reconcile.Func(func(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 		return reconcile.Result{}, nil
 	})
+
+	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &v1alpha1.Dashboard{}, uiv1alpha1.GrafanaNameKey, func(rawObj client.Object) []string {
+		dashboard := rawObj.(*v1alpha1.Dashboard)
+		if dashboard.Spec.Grafana == nil {
+			return nil
+		}
+		if dashboard.Spec.Grafana.APIGroup != appcatalog.GroupName || dashboard.Spec.Grafana.Kind != "AppBinding" {
+			return nil
+		}
+		return []string{dashboard.Spec.Grafana.Name}
+	}); err != nil {
+		return nil, err
+	}
+	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &v1alpha1.Dashboard{}, uiv1alpha1.DashboardTitleKey, func(rawObj client.Object) []string {
+		dashboard := rawObj.(*v1alpha1.Dashboard)
+		var board sdk.Board
+		if dashboard.Spec.Model == nil {
+			return nil
+		}
+		if err := json.Unmarshal(dashboard.Spec.Model.Raw, &board); err != nil {
+			klog.ErrorS(err, "failed to unmarshal Grafana Dashboard", "name", dashboard.Name, "namespace", dashboard.Namespace)
+			return nil
+		}
+		return []string{board.Title}
+	}); err != nil {
+		return nil, err
+	}
+	if err := builder.ControllerManagedBy(mgr).For(&v1alpha1.Dashboard{}).Complete(r); err != nil {
+		return nil, err
+	}
+	if err := builder.ControllerManagedBy(mgr).For(&v1alpha1.Dashboard{}).Complete(r); err != nil {
+		return nil, err
+	}
 
 	if err := builder.ControllerManagedBy(mgr).For(&rbacv1.ClusterRole{}).Complete(r); err != nil {
 		return nil, err

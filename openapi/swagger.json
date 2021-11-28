@@ -1292,7 +1292,7 @@
     "dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.TargetRef": {
       "type": "object",
       "properties": {
-        "apiVersion": {
+        "apiGroup": {
           "type": "string"
         },
         "kind": {

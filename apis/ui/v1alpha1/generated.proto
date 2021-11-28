@@ -28,27 +28,42 @@ import "k8s.io/apimachinery/pkg/runtime/schema/generated.proto";
 // Package-wide variables from generator "generated".
 option go_package = "v1alpha1";
 
+message DashboardRef {
+  optional string name = 1;
+
+  optional DashboardSelector selector = 2;
+}
+
+message DashboardSelector {
+  optional string grafanaName = 1;
+
+  optional string dashboardTitle = 2;
+}
+
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 message EmbeddedDashboard {
-  optional k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 1;
+  optional EmbeddedDashboardRequest request = 1;
 
-  optional EmbeddedDashboardSpec spec = 2;
-
-  optional EmbeddedDashboardStatus status = 3;
+  optional EmbeddedDashboardResponse response = 2;
 }
 
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-message EmbeddedDashboardList {
-  optional k8s.io.apimachinery.pkg.apis.meta.v1.ListMeta metadata = 1;
+message EmbeddedDashboardRequest {
+  optional DashboardRef ref = 1;
 
-  repeated EmbeddedDashboard items = 2;
+  repeated string panelTitles = 2;
 }
 
-// EmbeddedDashboardSpec defines the desired state of EmbeddedDashboard
-message EmbeddedDashboardSpec {
+message EmbeddedDashboardResponse {
+  repeated PanelURL urls = 1;
 }
 
 // EmbeddedDashboardStatus defines the observed state of EmbeddedDashboard
 message EmbeddedDashboardStatus {
+}
+
+message PanelURL {
+  optional string title = 1;
+
+  optional string embeddedURL = 2;
 }
 

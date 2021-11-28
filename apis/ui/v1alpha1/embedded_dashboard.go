@@ -26,8 +26,33 @@ const (
 	ResourceEmbeddedDashboards    = "embeddeddashboards"
 )
 
-// EmbeddedDashboardSpec defines the desired state of EmbeddedDashboard
-type EmbeddedDashboardSpec struct {
+var (
+	GrafanaNameKey    = ".grafana.name"
+	DashboardTitleKey = ".dashboard.title"
+)
+
+type EmbeddedDashboardRequest struct {
+	Ref         DashboardRef `json:"ref" protobuf:"bytes,1,opt,name=ref"`
+	PanelTitles []string     `json:"panelTitles,omitempty" protobuf:"bytes,2,rep,name=panelTitles"`
+}
+
+type DashboardRef struct {
+	Name     *string            `json:"name,omitempty" protobuf:"bytes,1,opt,name=name"`
+	Selector *DashboardSelector `json:"selector,omitempty" protobuf:"bytes,2,opt,name=selector"`
+}
+
+type DashboardSelector struct {
+	GrafanaName    string `json:"grafanaName,omitempty" protobuf:"bytes,1,opt,name=grafanaName"`
+	DashboardTitle string `json:"dashboardTitle,omitempty" protobuf:"bytes,2,opt,name=dashboardTitle"`
+}
+
+type PanelURL struct {
+	Title       string `json:"title,omitempty" protobuf:"bytes,1,opt,name=title"`
+	EmbeddedURL string `json:"embeddedURL,omitempty" protobuf:"bytes,2,opt,name=embeddedURL"`
+}
+
+type EmbeddedDashboardResponse struct {
+	URLs []PanelURL `json:"urls,omitempty" protobuf:"bytes,1,rep,name=urls"`
 }
 
 // EmbeddedDashboardStatus defines the observed state of EmbeddedDashboard
@@ -38,18 +63,8 @@ type EmbeddedDashboardStatus struct {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type EmbeddedDashboard struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-
-	Spec   EmbeddedDashboardSpec   `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
-	Status EmbeddedDashboardStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
-}
-
-// EmbeddedDashboardList contains a list of EmbeddedDashboard
-
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-type EmbeddedDashboardList struct {
 	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-	Items           []EmbeddedDashboard `json:"items" protobuf:"bytes,2,rep,name=items"`
+
+	Request  *EmbeddedDashboardRequest  `json:"request,omitempty" protobuf:"bytes,1,opt,name=request"`
+	Response *EmbeddedDashboardResponse `json:"response,omitempty" protobuf:"bytes,2,opt,name=response"`
 }

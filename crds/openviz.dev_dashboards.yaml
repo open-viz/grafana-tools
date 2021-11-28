@@ -56,7 +56,7 @@ spec:
                 description: Grafana defines the grafana app binding name for the
                   Dashboard
                 properties:
-                  apiVersion:
+                  apiGroup:
                     type: string
                   kind:
                     type: string

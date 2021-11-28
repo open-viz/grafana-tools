@@ -481,8 +481,9 @@ install:
 .PHONY: uninstall
 uninstall:
 	@cd ../installer; \
-	helm uninstall grafana-ui-server --namespace=$(KUBE_NAMESPACE) || true \
-	helm uninstall grafana-tools --namespace=$(KUBE_NAMESPACE) || true \
+	helm uninstall grafana-ui-server --namespace=$(KUBE_NAMESPACE) || true  \
+
+	helm uninstall grafana-operator --namespace=$(KUBE_NAMESPACE) || true \
 
 .PHONY: purge
 purge: uninstall
