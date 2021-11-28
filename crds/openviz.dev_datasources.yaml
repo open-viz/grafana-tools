@@ -57,7 +57,7 @@ spec:
                 type: boolean
               grafana:
                 properties:
-                  apiVersion:
+                  apiGroup:
                     type: string
                   kind:
                     type: string

@@ -222,7 +222,7 @@ message ModelTemplateConfiguration {
 }
 
 message TargetRef {
-  optional string apiVersion = 1;
+  optional string apiGroup = 1;
 
   optional string kind = 2;
 
