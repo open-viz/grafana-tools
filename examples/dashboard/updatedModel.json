@@ -3,7 +3,7 @@
     "list": [
       {
         "builtIn": 1,
-        "datasource": "-- Grafana --",
+        "grafanadatasource": "-- Grafana --",
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -24,7 +24,7 @@
   "panels": [
     {
       "collapsed": false,
-      "datasource": null,
+      "grafanadatasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -38,7 +38,7 @@
     },
     {
       "cacheTimeout": null,
-      "datasource": "Prometheus",
+      "grafanadatasource": "Prometheus",
       "description": "Postgresql Version",
       "fieldConfig": {
         "defaults": {
@@ -116,7 +116,7 @@
       "type": "stat"
     },
     {
-      "datasource": null,
+      "grafanadatasource": null,
       "description": "Database uptime",
       "fieldConfig": {
         "defaults": {
@@ -177,7 +177,7 @@
       "type": "stat"
     },
     {
-      "datasource": null,
+      "grafanadatasource": null,
       "description": "Total replica count of the Postgres database",
       "fieldConfig": {
         "defaults": {
@@ -241,7 +241,7 @@
       "type": "stat"
     },
     {
-      "datasource": null,
+      "grafanadatasource": null,
       "description": "Represent database status",
       "fieldConfig": {
         "defaults": {
@@ -331,7 +331,7 @@
       "type": "stat"
     },
     {
-      "datasource": null,
+      "grafanadatasource": null,
       "description": "KubeDB Postgres Current SSL Mode",
       "fieldConfig": {
         "defaults": {
@@ -401,7 +401,7 @@
       "type": "stat"
     },
     {
-      "datasource": null,
+      "grafanadatasource": null,
       "description": "KubeDB Postgres Resource terminationPolicy",
       "fieldConfig": {
         "defaults": {
@@ -483,7 +483,7 @@
       "type": "stat"
     },
     {
-      "datasource": null,
+      "grafanadatasource": null,
       "description": "Initial Requested CPU amount by Postgres Instance",
       "fieldConfig": {
         "defaults": {
@@ -544,7 +544,7 @@
       "type": "stat"
     },
     {
-      "datasource": null,
+      "grafanadatasource": null,
       "description": "CPU Limit in core by Postgres instance",
       "fieldConfig": {
         "defaults": {
@@ -604,7 +604,7 @@
       "type": "stat"
     },
     {
-      "datasource": null,
+      "grafanadatasource": null,
       "description": "Initial Requested Memory amount by Postgres Instance",
       "fieldConfig": {
         "defaults": {
@@ -666,7 +666,7 @@
       "type": "stat"
     },
     {
-      "datasource": null,
+      "grafanadatasource": null,
       "description": "KubeDB Postgres Total Memory Limit",
       "fieldConfig": {
         "defaults": {
@@ -727,7 +727,7 @@
       "type": "stat"
     },
     {
-      "datasource": null,
+      "grafanadatasource": null,
       "description": "Intial Storage Request by Postgres Instance when deploying",
       "fieldConfig": {
         "defaults": {
@@ -789,7 +789,7 @@
       "type": "stat"
     },
     {
-      "datasource": null,
+      "grafanadatasource": null,
       "description": "Maximum number of concurrent connections of the Postgres instance",
       "fieldConfig": {
         "defaults": {
@@ -850,7 +850,7 @@
       "type": "stat"
     },
     {
-      "datasource": null,
+      "grafanadatasource": null,
       "description": "The current active line shows the current primary pod",
       "fieldConfig": {
         "defaults": {
@@ -933,7 +933,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": null,
+      "grafanadatasource": null,
       "description": "Postgres connections information in real time",
       "fieldConfig": {
         "defaults": {
@@ -1016,7 +1016,7 @@
     },
     {
       "collapsed": false,
-      "datasource": null,
+      "grafanadatasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1029,7 +1029,7 @@
       "type": "row"
     },
     {
-      "datasource": null,
+      "grafanadatasource": null,
       "description": "CPU Usage by Postgres pods",
       "fieldConfig": {
         "defaults": {
@@ -1110,7 +1110,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": null,
+      "grafanadatasource": null,
       "description": "CPU Quote information in details",
       "fieldConfig": {
         "defaults": {
@@ -1301,7 +1301,7 @@
                   {
                     "targetBlank": false,
                     "title": "Drill down",
-                    "url": "./d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell"
+                    "url": "./d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-grafanadatasource=$grafanadatasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell"
                   }
                 ]
               },
@@ -1398,7 +1398,7 @@
     },
     {
       "collapsed": false,
-      "datasource": null,
+      "grafanadatasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1411,7 +1411,7 @@
       "type": "row"
     },
     {
-      "datasource": null,
+      "grafanadatasource": null,
       "description": "Memory Usage by Postgres pods",
       "fieldConfig": {
         "defaults": {
@@ -1493,7 +1493,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": null,
+      "grafanadatasource": null,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1755,7 +1755,7 @@
                   {
                     "targetBlank": false,
                     "title": "Drill down",
-                    "url": "./d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell"
+                    "url": "./d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-grafanadatasource=$grafanadatasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell"
                   }
                 ]
               },
@@ -1885,7 +1885,7 @@
     },
     {
       "collapsed": false,
-      "datasource": null,
+      "grafanadatasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1898,7 +1898,7 @@
       "type": "row"
     },
     {
-      "datasource": null,
+      "grafanadatasource": null,
       "description": "Disk usage by Postgres pods",
       "fieldConfig": {
         "defaults": {
@@ -1980,7 +1980,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": null,
+      "grafanadatasource": null,
       "description": "System Disk Usage Information",
       "fieldConfig": {
         "defaults": {
@@ -2117,7 +2117,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": null,
+      "grafanadatasource": null,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2207,7 +2207,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": null,
+      "grafanadatasource": null,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2297,7 +2297,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": null,
+      "grafanadatasource": null,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2511,7 +2511,7 @@
                   {
                     "targetBlank": false,
                     "title": "Drill down to pods",
-                    "url": "./d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell"
+                    "url": "./d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-grafanadatasource=$grafanadatasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell"
                   }
                 ]
               },
@@ -2619,7 +2619,7 @@
     },
     {
       "collapsed": false,
-      "datasource": null,
+      "grafanadatasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -2632,7 +2632,7 @@
       "type": "row"
     },
     {
-      "datasource": null,
+      "grafanadatasource": null,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2722,7 +2722,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": null,
+      "grafanadatasource": null,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2829,7 +2829,7 @@
           "text": "demo",
           "value": "demo"
         },
-        "datasource": "Prometheus",
+        "grafanadatasource": "Prometheus",
         "definition": "label_values(namespace)",
         "description": null,
         "error": null,
@@ -2860,7 +2860,7 @@
           "text": "ps-demo",
           "value": "ps-demo"
         },
-        "datasource": "Prometheus",
+        "grafanadatasource": "Prometheus",
         "definition": "query_result(kubedb_postgres_created{namespace=\"$namespace\"})",
         "description": null,
         "error": null,

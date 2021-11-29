@@ -24,15 +24,15 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func (f *Framework) GetDashboard() (*api.Dashboard, error) {
-	return f.extClient.OpenvizV1alpha1().Dashboards(f.namespace).Get(context.TODO(), f.name, metav1.GetOptions{})
+func (f *Framework) GetGrafanaDashboard() (*api.GrafanaDashboard, error) {
+	return f.extClient.OpenvizV1alpha1().GrafanaDashboards(f.namespace).Get(context.TODO(), f.name, metav1.GetOptions{})
 }
 
-func (f *Framework) CreateDashboard(dashboard *api.Dashboard) error {
-	_, err := f.extClient.OpenvizV1alpha1().Dashboards(dashboard.Namespace).Create(context.TODO(), dashboard, metav1.CreateOptions{})
+func (f *Framework) CreateGrafanaDashboard(grafanadashboard *api.GrafanaDashboard) error {
+	_, err := f.extClient.OpenvizV1alpha1().GrafanaDashboards(grafanadashboard.Namespace).Create(context.TODO(), grafanadashboard, metav1.CreateOptions{})
 	return err
 }
 
-func (f *Framework) DeleteDashboard() error {
-	return f.extClient.OpenvizV1alpha1().Dashboards(f.namespace).Delete(context.TODO(), f.name, metav1.DeleteOptions{})
+func (f *Framework) DeleteGrafanaDashboard() error {
+	return f.extClient.OpenvizV1alpha1().GrafanaDashboards(f.namespace).Delete(context.TODO(), f.name, metav1.DeleteOptions{})
 }

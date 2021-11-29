@@ -29,19 +29,19 @@ import (
 func (f *Framework) EventuallyCRD() GomegaAsyncAssertion {
 	return Eventually(
 		func() error {
-			// Check Datasource CRD
-			/*if _, err := f.extClient.OpenvizV1alpha1().Datasources(core.NamespaceAll).List(metav1.ListOptions{}); err != nil {
-				return fmt.Errorf("CRD Dashboard is not ready. Reason: %v", err)
+			// Check GrafanaDatasource CRD
+			/*if _, err := f.extClient.OpenvizV1alpha1().GrafanaDatasources(core.NamespaceAll).List(metav1.ListOptions{}); err != nil {
+				return fmt.Errorf("CRD GrafanaDashboard is not ready. Reason: %v", err)
 			}*/
 
-			// Check Dashboard CRD
-			if _, err := f.extClient.OpenvizV1alpha1().Dashboards(core.NamespaceAll).List(context.TODO(), metav1.ListOptions{}); err != nil {
-				return fmt.Errorf("CRD Dashboard is not ready. Reason: %v", err)
+			// Check GrafanaDashboard CRD
+			if _, err := f.extClient.OpenvizV1alpha1().GrafanaDashboards(core.NamespaceAll).List(context.TODO(), metav1.ListOptions{}); err != nil {
+				return fmt.Errorf("CRD GrafanaDashboard is not ready. Reason: %v", err)
 			}
 
-			// Check DashboardTemplate CRD
-			/*if _, err := f.extClient.OpenvizV1alpha1().DashboardTemplates(core.NamespaceAll).List(metav1.ListOptions{}); err != nil {
-				return fmt.Errorf("CRD Dashboard is not ready. Reason: %v", err)
+			// Check GrafanaDashboardTemplate CRD
+			/*if _, err := f.extClient.OpenvizV1alpha1().GrafanaDashboardTemplates(core.NamespaceAll).List(metav1.ListOptions{}); err != nil {
+				return fmt.Errorf("CRD GrafanaDashboard is not ready. Reason: %v", err)
 			}*/
 			return nil
 		},

@@ -39,25 +39,25 @@ const (
 	validatorVersion = "v1alpha1"
 )
 
-type DashboardValidator struct {
+type GrafanaDashboardValidator struct {
 	client      kubernetes.Interface
 	extClient   cs.Interface
 	lock        sync.RWMutex
 	initialized bool
 }
 
-var _ hookapi.AdmissionHook = &DashboardValidator{}
+var _ hookapi.AdmissionHook = &GrafanaDashboardValidator{}
 
-func (v *DashboardValidator) Resource() (plural schema.GroupVersionResource, singular string) {
+func (v *GrafanaDashboardValidator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
 			Group:    validatorGroup,
 			Version:  validatorVersion,
-			Resource: "dashboardvalidators",
+			Resource: "grafanadashboardvalidators",
 		},
-		"dashboardvalidator"
+		"grafanadashboardvalidator"
 }
 
-func (v *DashboardValidator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {
+func (v *GrafanaDashboardValidator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {
 	v.lock.Lock()
 	defer v.lock.Unlock()
 
@@ -73,13 +73,13 @@ func (v *DashboardValidator) Initialize(config *rest.Config, stopCh <-chan struc
 	return err
 }
 
-func (v *DashboardValidator) Admit(req *admission.AdmissionRequest) *admission.AdmissionResponse {
+func (v *GrafanaDashboardValidator) Admit(req *admission.AdmissionRequest) *admission.AdmissionResponse {
 	status := &admission.AdmissionResponse{}
 
 	if (req.Operation != admission.Create && req.Operation != admission.Update && req.Operation != admission.Delete) ||
 		len(req.SubResource) != 0 ||
 		req.Kind.Group != api.SchemeGroupVersion.Group ||
-		req.Kind.Kind != api.ResourceKindDashboard {
+		req.Kind.Kind != api.ResourceKindGrafanaDashboard {
 		status.Allowed = true
 		return status
 	}
@@ -102,15 +102,15 @@ func (v *DashboardValidator) Admit(req *admission.AdmissionRequest) *admission.A
 				return hookapi.StatusBadRequest(err)
 			}
 
-			vs := obj.(*api.Dashboard).DeepCopy()
-			oldVs := oldObject.(*api.Dashboard).DeepCopy()
+			vs := obj.(*api.GrafanaDashboard).DeepCopy()
+			oldVs := oldObject.(*api.GrafanaDashboard).DeepCopy()
 
 			if err := validateUpdate(vs, oldVs); err != nil {
 				return hookapi.StatusBadRequest(err)
 			}
 		}
-		// validate dashboard specs
-		if err = ValidateDashboard(v.client, v.extClient, obj.(*api.Dashboard)); err != nil {
+		// validate grafanadashboard specs
+		if err = ValidateGrafanaDashboard(v.client, v.extClient, obj.(*api.GrafanaDashboard)); err != nil {
 			return hookapi.StatusForbidden(err)
 		}
 	}
@@ -118,9 +118,9 @@ func (v *DashboardValidator) Admit(req *admission.AdmissionRequest) *admission.A
 	return status
 }
 
-// ValidateDashboard checks if the object satisfies all the requirements.
+// ValidateGrafanaDashboard checks if the object satisfies all the requirements.
 // It is not method of Interface, because it is referenced from controller package too.
-func ValidateDashboard(client kubernetes.Interface, extClient cs.Interface, vs *api.Dashboard) error {
+func ValidateGrafanaDashboard(client kubernetes.Interface, extClient cs.Interface, vs *api.GrafanaDashboard) error {
 	return nil
 }
 

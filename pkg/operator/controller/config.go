@@ -99,11 +99,11 @@ func (c *Config) New() (*GrafanaController, error) {
 		}
 	}
 
-	// For Dashboard
-	ctrl.initDashboardWatcher()
+	// For GrafanaDashboard
+	ctrl.initGrafanaDashboardWatcher()
 
-	// For Datasource
-	ctrl.initDatasourceWatcher()
+	// For GrafanaDatasource
+	ctrl.initGrafanaDatasourceWatcher()
 
 	return ctrl, nil
 }

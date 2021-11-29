@@ -24,12 +24,12 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
-	// Dashboards returns a DashboardInformer.
-	Dashboards() DashboardInformer
-	// DashboardTemplates returns a DashboardTemplateInformer.
-	DashboardTemplates() DashboardTemplateInformer
-	// Datasources returns a DatasourceInformer.
-	Datasources() DatasourceInformer
+	// GrafanaDashboards returns a GrafanaDashboardInformer.
+	GrafanaDashboards() GrafanaDashboardInformer
+	// GrafanaDashboardTemplates returns a GrafanaDashboardTemplateInformer.
+	GrafanaDashboardTemplates() GrafanaDashboardTemplateInformer
+	// GrafanaDatasources returns a GrafanaDatasourceInformer.
+	GrafanaDatasources() GrafanaDatasourceInformer
 }
 
 type version struct {
@@ -43,17 +43,17 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
 }
 
-// Dashboards returns a DashboardInformer.
-func (v *version) Dashboards() DashboardInformer {
-	return &dashboardInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+// GrafanaDashboards returns a GrafanaDashboardInformer.
+func (v *version) GrafanaDashboards() GrafanaDashboardInformer {
+	return &grafanaDashboardInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
-// DashboardTemplates returns a DashboardTemplateInformer.
-func (v *version) DashboardTemplates() DashboardTemplateInformer {
-	return &dashboardTemplateInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+// GrafanaDashboardTemplates returns a GrafanaDashboardTemplateInformer.
+func (v *version) GrafanaDashboardTemplates() GrafanaDashboardTemplateInformer {
+	return &grafanaDashboardTemplateInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
-// Datasources returns a DatasourceInformer.
-func (v *version) Datasources() DatasourceInformer {
-	return &datasourceInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+// GrafanaDatasources returns a GrafanaDatasourceInformer.
+func (v *version) GrafanaDatasources() GrafanaDatasourceInformer {
+	return &grafanaDatasourceInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

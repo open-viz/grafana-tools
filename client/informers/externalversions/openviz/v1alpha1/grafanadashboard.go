@@ -33,59 +33,59 @@ import (
 	cache "k8s.io/client-go/tools/cache"
 )
 
-// DashboardInformer provides access to a shared informer and lister for
-// Dashboards.
-type DashboardInformer interface {
+// GrafanaDashboardInformer provides access to a shared informer and lister for
+// GrafanaDashboards.
+type GrafanaDashboardInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1alpha1.DashboardLister
+	Lister() v1alpha1.GrafanaDashboardLister
 }
 
-type dashboardInformer struct {
+type grafanaDashboardInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
 	namespace        string
 }
 
-// NewDashboardInformer constructs a new informer for Dashboard type.
+// NewGrafanaDashboardInformer constructs a new informer for GrafanaDashboard type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewDashboardInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
-	return NewFilteredDashboardInformer(client, namespace, resyncPeriod, indexers, nil)
+func NewGrafanaDashboardInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+	return NewFilteredGrafanaDashboardInformer(client, namespace, resyncPeriod, indexers, nil)
 }
 
-// NewFilteredDashboardInformer constructs a new informer for Dashboard type.
+// NewFilteredGrafanaDashboardInformer constructs a new informer for GrafanaDashboard type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredDashboardInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredGrafanaDashboardInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.OpenvizV1alpha1().Dashboards(namespace).List(context.TODO(), options)
+				return client.OpenvizV1alpha1().GrafanaDashboards(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.OpenvizV1alpha1().Dashboards(namespace).Watch(context.TODO(), options)
+				return client.OpenvizV1alpha1().GrafanaDashboards(namespace).Watch(context.TODO(), options)
 			},
 		},
-		&openvizv1alpha1.Dashboard{},
+		&openvizv1alpha1.GrafanaDashboard{},
 		resyncPeriod,
 		indexers,
 	)
 }
 
-func (f *dashboardInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredDashboardInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+func (f *grafanaDashboardInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+	return NewFilteredGrafanaDashboardInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
-func (f *dashboardInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&openvizv1alpha1.Dashboard{}, f.defaultInformer)
+func (f *grafanaDashboardInformer) Informer() cache.SharedIndexInformer {
+	return f.factory.InformerFor(&openvizv1alpha1.GrafanaDashboard{}, f.defaultInformer)
 }
 
-func (f *dashboardInformer) Lister() v1alpha1.DashboardLister {
-	return v1alpha1.NewDashboardLister(f.Informer().GetIndexer())
+func (f *grafanaDashboardInformer) Lister() v1alpha1.GrafanaDashboardLister {
+	return v1alpha1.NewGrafanaDashboardLister(f.Informer().GetIndexer())
 }

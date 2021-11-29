@@ -31,7 +31,7 @@ import (
 )
 
 func NewCmdOperator(out, errOut io.Writer, stopCh <-chan struct{}) *cobra.Command {
-	o := server.NewDashboardOptions(out, errOut)
+	o := server.NewGrafanaDashboardOptions(out, errOut)
 
 	cmd := &cobra.Command{
 		Use:               "operator",

@@ -35,7 +35,7 @@ var kubeconfig *string
 
 const (
 	ns               = "demo"
-	SampleDatasource = "sample-ds"
+	SampleGrafanaDatasource = "sample-ds"
 )
 
 func init() {
@@ -47,13 +47,13 @@ func init() {
 	flag.Parse()
 }
 
-func CreateDatasource(url string, sourceType api.DatasourceType, accessType api.DatasourceAccessType) error {
-	ds := &api.Datasource{
+func CreateGrafanaDatasource(url string, sourceType api.GrafanaDatasourceType, accessType api.GrafanaDatasourceAccessType) error {
+	ds := &api.GrafanaDatasource{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      SampleDatasource,
+			Name:      SampleGrafanaDatasource,
 			Namespace: "demo",
 		},
-		Spec: api.DatasourceSpec{
+		Spec: api.GrafanaDatasourceSpec{
 			Grafana: &api.TargetRef{
 				Name:       "grafana-apb",
 			},
@@ -68,12 +68,12 @@ func CreateDatasource(url string, sourceType api.DatasourceType, accessType api.
 	if err != nil {
 		return err
 	}
-	_, err = gClient.Datasources(ns).Create(context.TODO(), ds, metav1.CreateOptions{})
+	_, err = gClient.GrafanaDatasources(ns).Create(context.TODO(), ds, metav1.CreateOptions{})
 	if err != nil {
 		return err
 	}
 	time.Sleep(5 * time.Second)
-	createdDS, err := gClient.Datasources(ns).Get(context.TODO(), SampleDatasource, metav1.GetOptions{})
+	createdDS, err := gClient.GrafanaDatasources(ns).Get(context.TODO(), SampleGrafanaDatasource, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -81,31 +81,31 @@ func CreateDatasource(url string, sourceType api.DatasourceType, accessType api.
 	return nil
 }
 
-func UpdateDatasource(name, url string, sourceType api.DatasourceType, accessType api.DatasourceAccessType) error {
+func UpdateGrafanaDatasource(name, url string, sourceType api.GrafanaDatasourceType, accessType api.GrafanaDatasourceAccessType) error {
 	gClient, err := createClient()
 	if err != nil {
 		return err
 	}
 	retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-		res, getErr := gClient.Datasources(ns).Get(context.TODO(), name, metav1.GetOptions{})
+		res, getErr := gClient.GrafanaDatasources(ns).Get(context.TODO(), name, metav1.GetOptions{})
 		if getErr != nil {
 			return getErr
 		}
 		res.Spec.URL = url
 		res.Spec.Access = accessType
 		res.Spec.Type = sourceType
-		_, updateErr := gClient.Datasources(ns).Update(context.Background(), res, metav1.UpdateOptions{})
+		_, updateErr := gClient.GrafanaDatasources(ns).Update(context.Background(), res, metav1.UpdateOptions{})
 		return updateErr
 	})
 	return retryErr
 }
 
-func DeleteDatasource(name string) error {
+func DeleteGrafanaDatasource(name string) error {
 	gClient, err := createClient()
 	if err != nil {
 		return err
 	}
-	err = gClient.Datasources(ns).Delete(context.Background(), name, metav1.DeleteOptions{})
+	err = gClient.GrafanaDatasources(ns).Delete(context.Background(), name, metav1.DeleteOptions{})
 	if err != nil {
 		return err
 	}
@@ -124,12 +124,12 @@ func createClient() (*crd_client.OpenvizV1alpha1Client, error) {
 	return gClient, nil
 }
 
-func GetDatasource(name string) (*api.Datasource, error) {
+func GetGrafanaDatasource(name string) (*api.GrafanaDatasource, error) {
 	gClient, err := createClient()
 	if err != nil {
 		return nil, err
 	}
-	ds, err := gClient.Datasources(ns).Get(context.Background(), name, metav1.GetOptions{})
+	ds, err := gClient.GrafanaDatasources(ns).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -137,8 +137,8 @@ func GetDatasource(name string) (*api.Datasource, error) {
 }
 
 func main() {
-	fmt.Println("=============== Creating Datasource =================")
-	err := CreateDatasource("http://127.0.0.1:9090", api.DatasourceTypePrometheus, api.DatasourceAccessTypeProxy)
+	fmt.Println("=============== Creating GrafanaDatasource =================")
+	err := CreateGrafanaDatasource("http://127.0.0.1:9090", api.GrafanaDatasourceTypePrometheus, api.GrafanaDatasourceAccessTypeProxy)
 	if err != nil {
 		panic(err)
 	}
@@ -146,18 +146,18 @@ func main() {
 
 	fmt.Println("Press any key to continue")
 	fmt.Scanln()
-	fmt.Println("================ Updating Datasource ===================")
-	err = UpdateDatasource(SampleDatasource, "http://127.0.0.1:9099", api.DatasourceTypePrometheus, api.DatasourceAccessTypeProxy)
+	fmt.Println("================ Updating GrafanaDatasource ===================")
+	err = UpdateGrafanaDatasource(SampleGrafanaDatasource, "http://127.0.0.1:9099", api.GrafanaDatasourceTypePrometheus, api.GrafanaDatasourceAccessTypeProxy)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Successfully updated datasource")
+	fmt.Println("Successfully updated grafanadatasource")
 	fmt.Println()
 
 	fmt.Println("Press any key to continue")
 	fmt.Scanln()
-	fmt.Println("=============== Get datasource after update ==================")
-	ds, err := GetDatasource(SampleDatasource)
+	fmt.Println("=============== Get grafanadatasource after update ==================")
+	ds, err := GetGrafanaDatasource(SampleGrafanaDatasource)
 	if err != nil {
 		panic(err)
 	}
@@ -166,10 +166,10 @@ func main() {
 
 	fmt.Println("Press any key to continue")
 	fmt.Scanln()
-	fmt.Println("================== Deleting Datasource ====================")
-	err = DeleteDatasource(SampleDatasource)
+	fmt.Println("================== Deleting GrafanaDatasource ====================")
+	err = DeleteGrafanaDatasource(SampleGrafanaDatasource)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Datasource successfully deleted")
+	fmt.Println("GrafanaDatasource successfully deleted")
 }

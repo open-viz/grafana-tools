@@ -104,9 +104,9 @@
         }
       }
     },
-    "/apis/openviz.dev/v1alpha1/dashboards": {
+    "/apis/openviz.dev/v1alpha1/grafanadashboards": {
       "get": {
-        "description": "list or watch objects of kind Dashboard",
+        "description": "list or watch objects of kind GrafanaDashboard",
         "consumes": [
           "*/*"
         ],
@@ -123,12 +123,12 @@
         "tags": [
           "openvizDev_v1alpha1"
         ],
-        "operationId": "listOpenvizDevV1alpha1DashboardForAllNamespaces",
+        "operationId": "listOpenvizDevV1alpha1GrafanaDashboardForAllNamespaces",
         "responses": {
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.DashboardList"
+              "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.GrafanaDashboardList"
             }
           }
         },
@@ -136,7 +136,7 @@
         "x-kubernetes-group-version-kind": {
           "group": "openviz.dev",
           "version": "v1alpha1",
-          "kind": "Dashboard"
+          "kind": "GrafanaDashboard"
         }
       },
       "parameters": [
@@ -212,9 +212,9 @@
         }
       ]
     },
-    "/apis/openviz.dev/v1alpha1/namespaces/{namespace}/dashboards": {
+    "/apis/openviz.dev/v1alpha1/namespaces/{namespace}/grafanadashboards": {
       "get": {
-        "description": "list or watch objects of kind Dashboard",
+        "description": "list or watch objects of kind GrafanaDashboard",
         "consumes": [
           "*/*"
         ],
@@ -231,7 +231,7 @@
         "tags": [
           "openvizDev_v1alpha1"
         ],
-        "operationId": "listOpenvizDevV1alpha1NamespacedDashboard",
+        "operationId": "listOpenvizDevV1alpha1NamespacedGrafanaDashboard",
         "parameters": [
           {
             "uniqueItems": true,
@@ -301,7 +301,7 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.DashboardList"
+              "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.GrafanaDashboardList"
             }
           }
         },
@@ -309,11 +309,11 @@
         "x-kubernetes-group-version-kind": {
           "group": "openviz.dev",
           "version": "v1alpha1",
-          "kind": "Dashboard"
+          "kind": "GrafanaDashboard"
         }
       },
       "post": {
-        "description": "create a Dashboard",
+        "description": "create a GrafanaDashboard",
         "consumes": [
           "*/*"
         ],
@@ -328,14 +328,14 @@
         "tags": [
           "openvizDev_v1alpha1"
         ],
-        "operationId": "createOpenvizDevV1alpha1NamespacedDashboard",
+        "operationId": "createOpenvizDevV1alpha1NamespacedGrafanaDashboard",
         "parameters": [
           {
             "name": "body",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.Dashboard"
+              "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.GrafanaDashboard"
             }
           },
           {
@@ -357,19 +357,19 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.Dashboard"
+              "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.GrafanaDashboard"
             }
           },
           "201": {
             "description": "Created",
             "schema": {
-              "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.Dashboard"
+              "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.GrafanaDashboard"
             }
           },
           "202": {
             "description": "Accepted",
             "schema": {
-              "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.Dashboard"
+              "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.GrafanaDashboard"
             }
           }
         },
@@ -377,11 +377,11 @@
         "x-kubernetes-group-version-kind": {
           "group": "openviz.dev",
           "version": "v1alpha1",
-          "kind": "Dashboard"
+          "kind": "GrafanaDashboard"
         }
       },
       "delete": {
-        "description": "delete collection of Dashboard",
+        "description": "delete collection of GrafanaDashboard",
         "consumes": [
           "*/*"
         ],
@@ -396,7 +396,7 @@
         "tags": [
           "openvizDev_v1alpha1"
         ],
-        "operationId": "deleteOpenvizDevV1alpha1CollectionNamespacedDashboard",
+        "operationId": "deleteOpenvizDevV1alpha1CollectionNamespacedGrafanaDashboard",
         "parameters": [
           {
             "name": "body",
@@ -495,7 +495,7 @@
         "x-kubernetes-group-version-kind": {
           "group": "openviz.dev",
           "version": "v1alpha1",
-          "kind": "Dashboard"
+          "kind": "GrafanaDashboard"
         }
       },
       "parameters": [
@@ -516,9 +516,9 @@
         }
       ]
     },
-    "/apis/openviz.dev/v1alpha1/namespaces/{namespace}/dashboards/{name}": {
+    "/apis/openviz.dev/v1alpha1/namespaces/{namespace}/grafanadashboards/{name}": {
       "get": {
-        "description": "read the specified Dashboard",
+        "description": "read the specified GrafanaDashboard",
         "consumes": [
           "*/*"
         ],
@@ -533,12 +533,12 @@
         "tags": [
           "openvizDev_v1alpha1"
         ],
-        "operationId": "readOpenvizDevV1alpha1NamespacedDashboard",
+        "operationId": "readOpenvizDevV1alpha1NamespacedGrafanaDashboard",
         "responses": {
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.Dashboard"
+              "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.GrafanaDashboard"
             }
           }
         },
@@ -546,11 +546,11 @@
         "x-kubernetes-group-version-kind": {
           "group": "openviz.dev",
           "version": "v1alpha1",
-          "kind": "Dashboard"
+          "kind": "GrafanaDashboard"
         }
       },
       "put": {
-        "description": "replace the specified Dashboard",
+        "description": "replace the specified GrafanaDashboard",
         "consumes": [
           "*/*"
         ],
@@ -565,14 +565,14 @@
         "tags": [
           "openvizDev_v1alpha1"
         ],
-        "operationId": "replaceOpenvizDevV1alpha1NamespacedDashboard",
+        "operationId": "replaceOpenvizDevV1alpha1NamespacedGrafanaDashboard",
         "parameters": [
           {
             "name": "body",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.Dashboard"
+              "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.GrafanaDashboard"
             }
           },
           {
@@ -594,13 +594,13 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.Dashboard"
+              "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.GrafanaDashboard"
             }
           },
           "201": {
             "description": "Created",
             "schema": {
-              "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.Dashboard"
+              "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.GrafanaDashboard"
             }
           }
         },
@@ -608,11 +608,11 @@
         "x-kubernetes-group-version-kind": {
           "group": "openviz.dev",
           "version": "v1alpha1",
-          "kind": "Dashboard"
+          "kind": "GrafanaDashboard"
         }
       },
       "delete": {
-        "description": "delete a Dashboard",
+        "description": "delete a GrafanaDashboard",
         "consumes": [
           "*/*"
         ],
@@ -627,7 +627,7 @@
         "tags": [
           "openvizDev_v1alpha1"
         ],
-        "operationId": "deleteOpenvizDevV1alpha1NamespacedDashboard",
+        "operationId": "deleteOpenvizDevV1alpha1NamespacedGrafanaDashboard",
         "parameters": [
           {
             "name": "body",
@@ -683,11 +683,11 @@
         "x-kubernetes-group-version-kind": {
           "group": "openviz.dev",
           "version": "v1alpha1",
-          "kind": "Dashboard"
+          "kind": "GrafanaDashboard"
         }
       },
       "patch": {
-        "description": "partially update the specified Dashboard",
+        "description": "partially update the specified GrafanaDashboard",
         "consumes": [
           "application/json-patch+json",
           "application/merge-patch+json",
@@ -705,7 +705,7 @@
         "tags": [
           "openvizDev_v1alpha1"
         ],
-        "operationId": "patchOpenvizDevV1alpha1NamespacedDashboard",
+        "operationId": "patchOpenvizDevV1alpha1NamespacedGrafanaDashboard",
         "parameters": [
           {
             "name": "body",
@@ -741,7 +741,7 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.Dashboard"
+              "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.GrafanaDashboard"
             }
           }
         },
@@ -749,14 +749,14 @@
         "x-kubernetes-group-version-kind": {
           "group": "openviz.dev",
           "version": "v1alpha1",
-          "kind": "Dashboard"
+          "kind": "GrafanaDashboard"
         }
       },
       "parameters": [
         {
           "uniqueItems": true,
           "type": "string",
-          "description": "name of the Dashboard",
+          "description": "name of the GrafanaDashboard",
           "name": "name",
           "in": "path",
           "required": true
@@ -778,9 +778,9 @@
         }
       ]
     },
-    "/apis/openviz.dev/v1alpha1/watch/dashboards": {
+    "/apis/openviz.dev/v1alpha1/watch/grafanadashboards": {
       "get": {
-        "description": "watch individual changes to a list of Dashboard. deprecated: use the 'watch' parameter with a list operation instead.",
+        "description": "watch individual changes to a list of GrafanaDashboard. deprecated: use the 'watch' parameter with a list operation instead.",
         "consumes": [
           "*/*"
         ],
@@ -797,7 +797,7 @@
         "tags": [
           "openvizDev_v1alpha1"
         ],
-        "operationId": "watchOpenvizDevV1alpha1DashboardListForAllNamespaces",
+        "operationId": "watchOpenvizDevV1alpha1GrafanaDashboardListForAllNamespaces",
         "responses": {
           "200": {
             "description": "OK",
@@ -810,7 +810,7 @@
         "x-kubernetes-group-version-kind": {
           "group": "openviz.dev",
           "version": "v1alpha1",
-          "kind": "Dashboard"
+          "kind": "GrafanaDashboard"
         }
       },
       "parameters": [
@@ -886,9 +886,9 @@
         }
       ]
     },
-    "/apis/openviz.dev/v1alpha1/watch/namespaces/{namespace}/dashboards": {
+    "/apis/openviz.dev/v1alpha1/watch/namespaces/{namespace}/grafanadashboards": {
       "get": {
-        "description": "watch individual changes to a list of Dashboard. deprecated: use the 'watch' parameter with a list operation instead.",
+        "description": "watch individual changes to a list of GrafanaDashboard. deprecated: use the 'watch' parameter with a list operation instead.",
         "consumes": [
           "*/*"
         ],
@@ -905,7 +905,7 @@
         "tags": [
           "openvizDev_v1alpha1"
         ],
-        "operationId": "watchOpenvizDevV1alpha1NamespacedDashboardList",
+        "operationId": "watchOpenvizDevV1alpha1NamespacedGrafanaDashboardList",
         "responses": {
           "200": {
             "description": "OK",
@@ -918,7 +918,7 @@
         "x-kubernetes-group-version-kind": {
           "group": "openviz.dev",
           "version": "v1alpha1",
-          "kind": "Dashboard"
+          "kind": "GrafanaDashboard"
         }
       },
       "parameters": [
@@ -1002,9 +1002,9 @@
         }
       ]
     },
-    "/apis/openviz.dev/v1alpha1/watch/namespaces/{namespace}/dashboards/{name}": {
+    "/apis/openviz.dev/v1alpha1/watch/namespaces/{namespace}/grafanadashboards/{name}": {
       "get": {
-        "description": "watch changes to an object of kind Dashboard. deprecated: use the 'watch' parameter with a list operation instead, filtered to a single item with the 'fieldSelector' parameter.",
+        "description": "watch changes to an object of kind GrafanaDashboard. deprecated: use the 'watch' parameter with a list operation instead, filtered to a single item with the 'fieldSelector' parameter.",
         "consumes": [
           "*/*"
         ],
@@ -1021,7 +1021,7 @@
         "tags": [
           "openvizDev_v1alpha1"
         ],
-        "operationId": "watchOpenvizDevV1alpha1NamespacedDashboard",
+        "operationId": "watchOpenvizDevV1alpha1NamespacedGrafanaDashboard",
         "responses": {
           "200": {
             "description": "OK",
@@ -1034,7 +1034,7 @@
         "x-kubernetes-group-version-kind": {
           "group": "openviz.dev",
           "version": "v1alpha1",
-          "kind": "Dashboard"
+          "kind": "GrafanaDashboard"
         }
       },
       "parameters": [
@@ -1076,7 +1076,7 @@
         {
           "uniqueItems": true,
           "type": "string",
-          "description": "name of the Dashboard",
+          "description": "name of the GrafanaDashboard",
           "name": "name",
           "in": "path",
           "required": true
@@ -1128,7 +1128,7 @@
     }
   },
   "definitions": {
-    "dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.Dashboard": {
+    "dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.GrafanaDashboard": {
       "type": "object",
       "properties": {
         "apiVersion": {
@@ -1145,22 +1145,22 @@
         },
         "spec": {
           "default": {},
-          "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.DashboardSpec"
+          "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.GrafanaDashboardSpec"
         },
         "status": {
           "default": {},
-          "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.DashboardStatus"
+          "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.GrafanaDashboardStatus"
         }
       },
       "x-kubernetes-group-version-kind": [
         {
           "group": "openviz.dev",
-          "kind": "Dashboard",
+          "kind": "GrafanaDashboard",
           "version": "v1alpha1"
         }
       ]
     },
-    "dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.DashboardList": {
+    "dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.GrafanaDashboardList": {
       "type": "object",
       "properties": {
         "apiVersion": {
@@ -1171,7 +1171,7 @@
           "type": "array",
           "items": {
             "default": {},
-            "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.Dashboard"
+            "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.GrafanaDashboard"
           }
         },
         "kind": {
@@ -1186,12 +1186,12 @@
       "x-kubernetes-group-version-kind": [
         {
           "group": "openviz.dev",
-          "kind": "DashboardList",
+          "kind": "GrafanaDashboardList",
           "version": "v1alpha1"
         }
       ]
     },
-    "dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.DashboardReference": {
+    "dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.GrafanaDashboardReference": {
       "type": "object",
       "properties": {
         "id": {
@@ -1217,7 +1217,7 @@
         }
       }
     },
-    "dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.DashboardSpec": {
+    "dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.GrafanaDashboardSpec": {
       "type": "object",
       "properties": {
         "folderID": {
@@ -1226,27 +1226,27 @@
           "format": "int64"
         },
         "grafana": {
-          "description": "Grafana defines the grafana app binding name for the Dashboard",
+          "description": "Grafana defines the grafana app binding name for the GrafanaDashboard",
           "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.TargetRef"
         },
         "model": {
           "$ref": "#/definitions/io.k8s.apimachinery.pkg.runtime.RawExtension"
         },
         "overwrite": {
-          "description": "Overwrite defines the existing dashboard with the same name(if any) should be overwritten or not",
+          "description": "Overwrite defines the existing grafanadashboard with the same name(if any) should be overwritten or not",
           "type": "boolean"
         },
         "templatize": {
-          "description": "Templatize defines the fields which supports templating in Grafana Dashboard Model json",
+          "description": "Templatize defines the fields which supports templating in Grafana GrafanaDashboard Model json",
           "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.ModelTemplateConfiguration"
         }
       }
     },
-    "dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.DashboardStatus": {
+    "dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.GrafanaDashboardStatus": {
       "type": "object",
       "properties": {
         "conditions": {
-          "description": "Represents the latest available observations of a Dashboard current state.",
+          "description": "Represents the latest available observations of a GrafanaDashboard current state.",
           "type": "array",
           "items": {
             "default": {},
@@ -1254,8 +1254,8 @@
           }
         },
         "dashboard": {
-          "description": "Dashboard indicates the updated dashboard database",
-          "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.DashboardReference"
+          "description": "Dashboard indicates the updated grafanadashboard database",
+          "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.GrafanaDashboardReference"
         },
         "observedGeneration": {
           "description": "ObservedGeneration is the most recent generation observed for this resource. It corresponds to the resource's generation, which is updated on mutation by the API Server.",

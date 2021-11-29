@@ -32,7 +32,7 @@
         {
           "aliasColors": {},
           "bars": false,
-          "datasource": "Some Prometheus",
+          "grafanadatasource": "Some Prometheus",
           "editable": false,
           "error": false,
           "fill": 10,
@@ -80,7 +80,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "datasource": "",
+              "grafanadatasource": "",
               "expr": "some_expression",
               "interval": "1m",
               "intervalFactor": 1,
@@ -130,7 +130,7 @@
         {
           "aliasColors": {},
           "bars": false,
-          "datasource": "Some Prometheus",
+          "grafanadatasource": "Some Prometheus",
           "editable": false,
           "error": false,
           "fill": 5,
@@ -178,7 +178,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "datasource": "",
+              "grafanadatasource": "",
               "expr": "some_expression",
               "interval": "1m",
               "intervalFactor": 1,

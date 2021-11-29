@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package embeddedashboard
+package embeddegrafanadashboard
 
 import (
 	"context"
@@ -53,7 +53,7 @@ func NewStorage(kc client.Client, a authorizer.Authorizer) *Storage {
 	return &Storage{
 		kc: kc,
 		a:  a,
-		gr: openvizapi.Resource(openvizapi.ResourceDashboards),
+		gr: openvizapi.Resource(openvizapi.ResourceGrafanaDashboards),
 	}
 }
 
@@ -80,26 +80,26 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 		return nil, apierrors.NewBadRequest("missing apirequest")
 	}
 
-	var dashboard openvizapi.Dashboard
+	var grafanadashboard openvizapi.GrafanaDashboard
 	if in.Request.Ref.Name != nil {
-		err := r.kc.Get(ctx, client.ObjectKey{Namespace: ns, Name: *in.Request.Ref.Name}, &dashboard)
+		err := r.kc.Get(ctx, client.ObjectKey{Namespace: ns, Name: *in.Request.Ref.Name}, &grafanadashboard)
 		if err != nil {
 			return nil, err
 		}
 	} else if in.Request.Ref.Selector != nil {
-		var dashboardList openvizapi.DashboardList
-		if err := r.kc.List(ctx, &dashboardList, client.InNamespace(ns), client.MatchingFields{
-			openvizapi.GrafanaNameKey:    in.Request.Ref.Selector.GrafanaName,
-			openvizapi.DashboardTitleKey: in.Request.Ref.Selector.DashboardTitle,
+		var grafanadashboardList openvizapi.GrafanaDashboardList
+		if err := r.kc.List(ctx, &grafanadashboardList, client.InNamespace(ns), client.MatchingFields{
+			openvizapi.GrafanaNameKey:           in.Request.Ref.Selector.GrafanaName,
+			openvizapi.GrafanaDashboardTitleKey: in.Request.Ref.Selector.DashboardTitle,
 		}); err != nil {
 			return nil, err
 		}
-		if len(dashboardList.Items) == 0 {
-			return nil, apierrors.NewNotFound(openvizapi.Resource(openvizapi.ResourceDashboards), fmt.Sprintf("%+v", in.Request.Ref.Selector))
-		} else if len(dashboardList.Items) > 1 {
-			return nil, apierrors.NewBadRequest(fmt.Sprintf("%+v selects multiple dashboards", in.Request.Ref.Selector))
+		if len(grafanadashboardList.Items) == 0 {
+			return nil, apierrors.NewNotFound(openvizapi.Resource(openvizapi.ResourceGrafanaDashboards), fmt.Sprintf("%+v", in.Request.Ref.Selector))
+		} else if len(grafanadashboardList.Items) > 1 {
+			return nil, apierrors.NewBadRequest(fmt.Sprintf("%+v selects multiple grafanadashboards", in.Request.Ref.Selector))
 		}
-		dashboard = dashboardList.Items[0]
+		grafanadashboard = grafanadashboardList.Items[0]
 	}
 
 	user, ok := apirequest.UserFrom(ctx)
@@ -113,21 +113,21 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 		Namespace: ns,
 		APIGroup:  r.gr.Group,
 		Resource:  r.gr.Resource,
-		Name:      dashboard.Name,
+		Name:      grafanadashboard.Name,
 	}
 	decision, why, err := r.a.Authorize(ctx, attrs)
 	if err != nil {
 		return nil, apierrors.NewInternalError(err)
 	}
 	if decision != authorizer.DecisionAllow {
-		return nil, apierrors.NewForbidden(r.gr, dashboard.Name, errors.New(why))
+		return nil, apierrors.NewForbidden(r.gr, grafanadashboard.Name, errors.New(why))
 	}
 
-	if dashboard.Spec.Grafana == nil {
-		return nil, apierrors.NewBadRequest(fmt.Sprintf("Dashboard %s/%s is missing a Grafana ref", dashboard.Namespace, dashboard.Name))
+	if grafanadashboard.Spec.Grafana == nil {
+		return nil, apierrors.NewBadRequest(fmt.Sprintf("GrafanaDashboard %s/%s is missing a Grafana ref", grafanadashboard.Namespace, grafanadashboard.Name))
 	}
 	var ab appcatalogapi.AppBinding
-	abKey := client.ObjectKey{Namespace: dashboard.Namespace, Name: dashboard.Spec.Grafana.Name}
+	abKey := client.ObjectKey{Namespace: grafanadashboard.Namespace, Name: grafanadashboard.Spec.Grafana.Name}
 	err = r.kc.Get(ctx, abKey, &ab)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch AppBinding %s, reason: %v", abKey, err)
@@ -137,13 +137,13 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 		return nil, err
 	}
 
-	if dashboard.Spec.Model == nil {
-		return nil, apierrors.NewBadRequest(fmt.Sprintf("Dashboard %s/%s is missing a model", dashboard.Namespace, dashboard.Name))
+	if grafanadashboard.Spec.Model == nil {
+		return nil, apierrors.NewBadRequest(fmt.Sprintf("GrafanaDashboard %s/%s is missing a model", grafanadashboard.Namespace, grafanadashboard.Name))
 	}
 	board := &sdk.Board{}
-	err = json.Unmarshal(dashboard.Spec.Model.Raw, board)
+	err = json.Unmarshal(grafanadashboard.Spec.Model.Raw, board)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal model for Dashboard %s/%s, reason: %v", dashboard.Namespace, dashboard.Name, err)
+		return nil, fmt.Errorf("failed to unmarshal model for GrafanaDashboard %s/%s, reason: %v", grafanadashboard.Namespace, grafanadashboard.Name, err)
 	}
 
 	in.Response = &uiapi.EmbeddedDashboardResponse{}
@@ -157,8 +157,8 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 			continue
 		}
 
-		// url template: "http://{{.URL}}/d-solo/{{.BoardUID}}/{{.DashboardName}}?orgId={{.OrgID}}&from={{.From}}&to={{.To}}&theme={{.Theme}}&panelId="
-		url := fmt.Sprintf("%v/d-solo/%v/%v?orgId=%v&from=%v&to=%v&panelId=%v", grafanaHost, board.UID, *dashboard.Status.Dashboard.Slug, *dashboard.Status.Dashboard.OrgID, now, now, p.ID)
+		// url template: "http://{{.URL}}/d-solo/{{.BoardUID}}/{{.GrafanaDashboardName}}?orgId={{.OrgID}}&from={{.From}}&to={{.To}}&theme={{.Theme}}&panelId="
+		url := fmt.Sprintf("%v/d-solo/%v/%v?orgId=%v&from=%v&to=%v&panelId=%v", grafanaHost, board.UID, *grafanadashboard.Status.Dashboard.Slug, *grafanadashboard.Status.Dashboard.OrgID, now, now, p.ID)
 		panelURL := uiapi.PanelURL{
 			Title:       p.Title,
 			EmbeddedURL: url,

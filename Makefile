@@ -204,7 +204,7 @@ gen-crds:
 			paths="./apis/..."              \
 			output:crd:artifacts:config=crds
 
-crds_to_patch := openviz.dev_dashboards.yaml
+crds_to_patch := openviz.dev_grafanadashboards.yaml
 
 .PHONY: patch-crds
 patch-crds: $(addprefix patch-crd-, $(crds_to_patch))

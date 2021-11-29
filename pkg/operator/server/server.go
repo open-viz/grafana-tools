@@ -126,12 +126,12 @@ func (c completedConfig) New() (*GrafanaOperator, error) {
 	var admissionHooks []hooks.AdmissionHook
 	if c.ExtraConfig.EnableValidatingWebhook {
 		admissionHooks = append(admissionHooks,
-			&admission2.DashboardValidator{},
+			&admission2.GrafanaDashboardValidator{},
 		)
 	}
 	if c.ExtraConfig.EnableMutatingWebhook {
 		admissionHooks = append(admissionHooks,
-			&admission2.DashboardMutator{},
+			&admission2.GrafanaDashboardMutator{},
 		)
 	}
 
@@ -193,16 +193,16 @@ func (c completedConfig) New() (*GrafanaOperator, error) {
 		s.GenericAPIServer.AddPostStartHookOrDie("validating-webhook-xray",
 			func(ctx genericapiserver.PostStartHookContext) error {
 				go func() {
-					xray := reg_util.NewCreateValidatingWebhookXray(c.ExtraConfig.ClientConfig, apiserviceName, &api.Dashboard{
+					xray := reg_util.NewCreateValidatingWebhookXray(c.ExtraConfig.ClientConfig, apiserviceName, &api.GrafanaDashboard{
 						TypeMeta: metav1.TypeMeta{
 							APIVersion: api.SchemeGroupVersion.String(),
-							Kind:       api.ResourceKindDashboard,
+							Kind:       api.ResourceKindGrafanaDashboard,
 						},
 						ObjectMeta: metav1.ObjectMeta{
-							Name:      "test-dashboard-for-webhook-xray",
+							Name:      "test-grafanadashboard-for-webhook-xray",
 							Namespace: "default",
 						},
-						Spec: api.DashboardSpec{},
+						Spec: api.GrafanaDashboardSpec{},
 					}, ctx.StopCh)
 					if err := xray.IsActive(context.TODO()); err != nil {
 						w, _, e2 := dynamic_util.DetectWorkload(

@@ -54,12 +54,12 @@ func (f *genericInformer) Lister() cache.GenericLister {
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
 	// Group=openviz.dev, Version=v1alpha1
-	case v1alpha1.SchemeGroupVersion.WithResource("dashboards"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Openviz().V1alpha1().Dashboards().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("dashboardtemplates"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Openviz().V1alpha1().DashboardTemplates().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("datasources"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Openviz().V1alpha1().Datasources().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("grafanadashboards"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Openviz().V1alpha1().GrafanaDashboards().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("grafanadashboardtemplates"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Openviz().V1alpha1().GrafanaDashboardTemplates().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("grafanadatasources"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Openviz().V1alpha1().GrafanaDatasources().Informer()}, nil
 
 	}
 

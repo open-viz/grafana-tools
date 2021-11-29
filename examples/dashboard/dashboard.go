@@ -37,7 +37,7 @@ var kubeconfig *string
 
 const (
 	ns              = "demo"
-	SampleDashboard = "sample-dashboard"
+	SampleGrafanaDashboard = "sample-grafanadashboard"
 )
 
 func init() {
@@ -49,13 +49,13 @@ func init() {
 	flag.Parse()
 }
 
-func CreateDashboard(model runtime.RawExtension) error {
-	dBoard := &api.Dashboard{
+func CreateGrafanaDashboard(model runtime.RawExtension) error {
+	dBoard := &api.GrafanaDashboard{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      SampleDashboard,
+			Name:      SampleGrafanaDashboard,
 			Namespace: ns,
 		},
-		Spec: api.DashboardSpec{
+		Spec: api.GrafanaDashboardSpec{
 			Grafana: &api.TargetRef{
 				Name: "grafana-apb",
 			},
@@ -72,12 +72,12 @@ func CreateDashboard(model runtime.RawExtension) error {
 	if err != nil {
 		return err
 	}
-	_, err = gClient.Dashboards(ns).Create(context.Background(), dBoard, metav1.CreateOptions{})
+	_, err = gClient.GrafanaDashboards(ns).Create(context.Background(), dBoard, metav1.CreateOptions{})
 	if err != nil {
 		return err
 	}
 	time.Sleep(5 * time.Second)
-	createdBoard, err := gClient.Dashboards(ns).Get(context.Background(), dBoard.Name, metav1.GetOptions{})
+	createdBoard, err := gClient.GrafanaDashboards(ns).Get(context.Background(), dBoard.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -85,43 +85,43 @@ func CreateDashboard(model runtime.RawExtension) error {
 	return nil
 }
 
-func DeleteDashboard(name string) error {
+func DeleteGrafanaDashboard(name string) error {
 	gClient, err := createClient()
 	if err != nil {
 		return err
 	}
-	err = gClient.Dashboards(ns).Delete(context.Background(), name, metav1.DeleteOptions{})
+	err = gClient.GrafanaDashboards(ns).Delete(context.Background(), name, metav1.DeleteOptions{})
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func GetDashboard(name string) (*api.Dashboard, error) {
+func GetGrafanaDashboard(name string) (*api.GrafanaDashboard, error) {
 	gClient, err := createClient()
 	if err != nil {
 		return nil, err
 	}
-	dsBoard, err := gClient.Dashboards(ns).Get(context.Background(), name, metav1.GetOptions{})
+	dsBoard, err := gClient.GrafanaDashboards(ns).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 	return dsBoard, nil
 }
 
-func UpdateDashboard(name string, model runtime.RawExtension) error {
+func UpdateGrafanaDashboard(name string, model runtime.RawExtension) error {
 	gClient, err := createClient()
 	if err != nil {
 		return err
 	}
 
 	retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-		res, getErr := gClient.Dashboards(ns).Get(context.Background(), name, metav1.GetOptions{})
+		res, getErr := gClient.GrafanaDashboards(ns).Get(context.Background(), name, metav1.GetOptions{})
 		if getErr != nil {
 			return getErr
 		}
 		res.Spec.Model = &model
-		_, updateErr := gClient.Dashboards(ns).Update(context.Background(), res, metav1.UpdateOptions{})
+		_, updateErr := gClient.GrafanaDashboards(ns).Update(context.Background(), res, metav1.UpdateOptions{})
 		return updateErr
 	})
 	return retryErr
@@ -137,8 +137,8 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Println("================== Creating Dashboard ===================")
-	err = CreateDashboard(runtime.RawExtension{Raw: model})
+	fmt.Println("================== Creating GrafanaDashboard ===================")
+	err = CreateGrafanaDashboard(runtime.RawExtension{Raw: model})
 	if err != nil {
 		panic(err)
 	}
@@ -146,18 +146,18 @@ func main() {
 
 	fmt.Println("Press any key to continue")
 	fmt.Scanln()
-	fmt.Println("================= Updating dashboard ===================")
-	err = UpdateDashboard(SampleDashboard, runtime.RawExtension{Raw: updatedModel})
+	fmt.Println("================= Updating grafanadashboard ===================")
+	err = UpdateGrafanaDashboard(SampleGrafanaDashboard, runtime.RawExtension{Raw: updatedModel})
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Successfully updated dashboard")
+	fmt.Println("Successfully updated grafanadashboard")
 	fmt.Println()
 
 	fmt.Println("Press any key to continue")
 	fmt.Scanln()
-	fmt.Println("================== Get Dashboard after updating ===================")
-	dsBoard, err := GetDashboard(SampleDashboard)
+	fmt.Println("================== Get GrafanaDashboard after updating ===================")
+	dsBoard, err := GetGrafanaDashboard(SampleGrafanaDashboard)
 	if err != nil {
 		panic(err)
 	}
@@ -166,12 +166,12 @@ func main() {
 
 	fmt.Println("Press any key to continue")
 	fmt.Scanln()
-	fmt.Println("================= Deleting dashboard ==================")
-	err = DeleteDashboard("sample-dashboard")
+	fmt.Println("================= Deleting grafanadashboard ==================")
+	err = DeleteGrafanaDashboard("sample-grafanadashboard")
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Successfully deleted dashboard")
+	fmt.Println("Successfully deleted grafanadashboard")
 }
 
 func createClient() (*crd_client.OpenvizV1alpha1Client, error) {

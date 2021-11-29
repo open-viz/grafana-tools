@@ -1,5 +1,5 @@
 apiVersion: openviz.dev/v1alpha1
-kind: Datasource
+kind: GrafanaDatasource
 metadata:
   name: data-source
   namespace: monitoring

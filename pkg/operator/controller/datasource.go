@@ -32,28 +32,28 @@ import (
 )
 
 const (
-	DatasourceFinalizer = "datasource.openviz.dev"
+	GrafanaDatasourceFinalizer = "grafanadatasource.openviz.dev"
 )
 
-func (c *GrafanaController) initDatasourceWatcher() {
-	c.datasourceInformer = c.extInformerFactory.Openviz().V1alpha1().Datasources().Informer()
-	c.datasourceQueue = queue.New(api.ResourceKindDatasource, c.MaxNumRequeues, c.NumThreads, c.runDatasourceInjector)
-	c.datasourceInformer.AddEventHandler(queue.NewReconcilableHandler(c.datasourceQueue.GetQueue(), metav1.NamespaceAll))
-	c.datasourceLister = c.extInformerFactory.Openviz().V1alpha1().Datasources().Lister()
+func (c *GrafanaController) initGrafanaDatasourceWatcher() {
+	c.grafanadatasourceInformer = c.extInformerFactory.Openviz().V1alpha1().GrafanaDatasources().Informer()
+	c.grafanadatasourceQueue = queue.New(api.ResourceKindGrafanaDatasource, c.MaxNumRequeues, c.NumThreads, c.runGrafanaDatasourceInjector)
+	c.grafanadatasourceInformer.AddEventHandler(queue.NewReconcilableHandler(c.grafanadatasourceQueue.GetQueue(), metav1.NamespaceAll))
+	c.grafanadatasourceLister = c.extInformerFactory.Openviz().V1alpha1().GrafanaDatasources().Lister()
 }
 
-func (c *GrafanaController) runDatasourceInjector(key string) error {
-	obj, exists, err := c.datasourceInformer.GetIndexer().GetByKey(key)
+func (c *GrafanaController) runGrafanaDatasourceInjector(key string) error {
+	obj, exists, err := c.grafanadatasourceInformer.GetIndexer().GetByKey(key)
 	if err != nil {
 		klog.Errorf("Fetching object with key %s from store failed with %v", key, err)
 		return err
 	}
 	if !exists {
-		klog.Warningf("Datasource %s does not exist anymore\n", key)
+		klog.Warningf("GrafanaDatasource %s does not exist anymore\n", key)
 	} else {
-		ds := obj.(*api.Datasource).DeepCopy()
-		klog.Infof("Sync/Add/Update for Datasource %s/%s\n", ds.Namespace, ds.Name)
-		err = c.reconcileDatasource(ds)
+		ds := obj.(*api.GrafanaDatasource).DeepCopy()
+		klog.Infof("Sync/Add/Update for GrafanaDatasource %s/%s\n", ds.Namespace, ds.Name)
+		err = c.reconcileGrafanaDatasource(ds)
 		if err != nil {
 			return err
 		}
@@ -61,32 +61,32 @@ func (c *GrafanaController) runDatasourceInjector(key string) error {
 	return nil
 }
 
-func (c *GrafanaController) reconcileDatasource(ds *api.Datasource) error {
-	// Update Datasource Status to processing
-	updatedDS, err := util.UpdateDatasourceStatus(context.TODO(), c.extClient.OpenvizV1alpha1(), ds.ObjectMeta, func(st *api.DatasourceStatus) *api.DatasourceStatus {
+func (c *GrafanaController) reconcileGrafanaDatasource(ds *api.GrafanaDatasource) error {
+	// Update GrafanaDatasource Status to processing
+	updatedDS, err := util.UpdateGrafanaDatasourceStatus(context.TODO(), c.extClient.OpenvizV1alpha1(), ds.ObjectMeta, func(st *api.GrafanaDatasourceStatus) *api.GrafanaDatasourceStatus {
 		st.Phase = api.GrafanaPhaseProcessing
-		st.Reason = "Started processing Datasource"
+		st.Reason = "Started processing GrafanaDatasource"
 		st.ObservedGeneration = ds.Generation
 		return st
 	}, metav1.UpdateOptions{})
 	if err != nil {
-		return errors.Wrapf(err, "failed to update Datasource phase to %q\n", api.GrafanaPhaseProcessing)
+		return errors.Wrapf(err, "failed to update GrafanaDatasource phase to %q\n", api.GrafanaPhaseProcessing)
 	}
 	ds.Status = updatedDS.Status
 
 	if ds.DeletionTimestamp != nil {
-		if core_util.HasFinalizer(ds.ObjectMeta, DatasourceFinalizer) {
-			err := c.runDatasourceFinalizer(ds)
+		if core_util.HasFinalizer(ds.ObjectMeta, GrafanaDatasourceFinalizer) {
+			err := c.runGrafanaDatasourceFinalizer(ds)
 			if err != nil {
 				return err
 			}
 		}
 		return nil
 	}
-	if !core_util.HasFinalizer(ds.ObjectMeta, DatasourceFinalizer) {
+	if !core_util.HasFinalizer(ds.ObjectMeta, GrafanaDatasourceFinalizer) {
 		// Add Finalizer
-		updatedDS, _, err := util.PatchDatasource(context.TODO(), c.extClient.OpenvizV1alpha1(), ds, func(up *api.Datasource) *api.Datasource {
-			up.ObjectMeta = core_util.AddFinalizer(ds.ObjectMeta, DatasourceFinalizer)
+		updatedDS, _, err := util.PatchGrafanaDatasource(context.TODO(), c.extClient.OpenvizV1alpha1(), ds, func(up *api.GrafanaDatasource) *api.GrafanaDatasource {
+			up.ObjectMeta = core_util.AddFinalizer(ds.ObjectMeta, GrafanaDatasourceFinalizer)
 			return up
 		}, metav1.PatchOptions{})
 		if err != nil {
@@ -94,14 +94,14 @@ func (c *GrafanaController) reconcileDatasource(ds *api.Datasource) error {
 		}
 		ds = updatedDS
 	}
-	err = c.createOrUpdateDatasource(ds)
+	err = c.createOrUpdateGrafanaDatasource(ds)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (c *GrafanaController) createOrUpdateDatasource(ds *api.Datasource) error {
+func (c *GrafanaController) createOrUpdateGrafanaDatasource(ds *api.GrafanaDatasource) error {
 	dataSrc := sdk.Datasource{
 		OrgID:     uint(ds.Spec.OrgID),
 		Name:      ds.Spec.Name,
@@ -116,88 +116,88 @@ func (c *GrafanaController) createOrUpdateDatasource(ds *api.Datasource) error {
 		return err
 	}
 
-	if ds.Status.DatasourceID != nil {
-		err := c.updateDatasource(ds, dataSrc)
+	if ds.Status.GrafanaDatasourceID != nil {
+		err := c.updateGrafanaDatasource(ds, dataSrc)
 		if err != nil {
-			return errors.Wrapf(err, "can't update Datasource, reason: %v", err)
+			return errors.Wrapf(err, "can't update GrafanaDatasource, reason: %v", err)
 		}
 		return nil
 	}
 	statusMsg, err := c.grafanaClient.CreateDatasource(context.TODO(), dataSrc)
 	if err != nil {
-		c.pushDatasourceFailureEvent(ds, err.Error())
+		c.pushGrafanaDatasourceFailureEvent(ds, err.Error())
 		return err
 	}
-	klog.Infof("Datasource is created with message: %s\n", pointer.String(statusMsg.Message))
-	_, err = util.UpdateDatasourceStatus(context.TODO(), c.extClient.OpenvizV1alpha1(), ds.ObjectMeta, func(st *api.DatasourceStatus) *api.DatasourceStatus {
+	klog.Infof("GrafanaDatasource is created with message: %s\n", pointer.String(statusMsg.Message))
+	_, err = util.UpdateGrafanaDatasourceStatus(context.TODO(), c.extClient.OpenvizV1alpha1(), ds.ObjectMeta, func(st *api.GrafanaDatasourceStatus) *api.GrafanaDatasourceStatus {
 		st.Phase = api.GrafanaPhaseSuccess
-		st.Reason = "Successfully created Grafana Datasource"
+		st.Reason = "Successfully created Grafana GrafanaDatasource"
 		st.ObservedGeneration = ds.Generation
-		st.DatasourceID = pointer.Int64P(int64(pointer.Uint(statusMsg.ID)))
+		st.GrafanaDatasourceID = pointer.Int64P(int64(pointer.Uint(statusMsg.ID)))
 
 		return st
 	}, metav1.UpdateOptions{})
 	if err != nil {
-		return errors.Wrapf(err, "failed to update Datasource phase to %q\n", api.GrafanaPhaseSuccess)
+		return errors.Wrapf(err, "failed to update GrafanaDatasource phase to %q\n", api.GrafanaPhaseSuccess)
 	}
 	return nil
 }
 
-func (c *GrafanaController) updateDatasource(ds *api.Datasource, dataSrc sdk.Datasource) error {
-	dataSrc.ID = uint(pointer.Int64(ds.Status.DatasourceID))
+func (c *GrafanaController) updateGrafanaDatasource(ds *api.GrafanaDatasource, dataSrc sdk.Datasource) error {
+	dataSrc.ID = uint(pointer.Int64(ds.Status.GrafanaDatasourceID))
 
 	statusMsg, err := c.grafanaClient.UpdateDatasource(context.TODO(), dataSrc)
 	if err != nil {
-		c.pushDatasourceFailureEvent(ds, err.Error())
+		c.pushGrafanaDatasourceFailureEvent(ds, err.Error())
 		return err
 	}
-	klog.Infof("Datasource is updated with message: %s\n", pointer.String(statusMsg.Message))
+	klog.Infof("GrafanaDatasource is updated with message: %s\n", pointer.String(statusMsg.Message))
 	// Update status to Success
-	_, err = util.UpdateDatasourceStatus(context.TODO(), c.extClient.OpenvizV1alpha1(), ds.ObjectMeta, func(st *api.DatasourceStatus) *api.DatasourceStatus {
+	_, err = util.UpdateGrafanaDatasourceStatus(context.TODO(), c.extClient.OpenvizV1alpha1(), ds.ObjectMeta, func(st *api.GrafanaDatasourceStatus) *api.GrafanaDatasourceStatus {
 		st.Phase = api.GrafanaPhaseSuccess
-		st.Reason = "Successfully updated Grafana Datasource"
+		st.Reason = "Successfully updated Grafana GrafanaDatasource"
 		st.ObservedGeneration = ds.Generation
 
 		return st
 	}, metav1.UpdateOptions{})
 	if err != nil {
-		return errors.Wrapf(err, "failed to update Datasource phase to %q\n", api.GrafanaPhaseSuccess)
+		return errors.Wrapf(err, "failed to update GrafanaDatasource phase to %q\n", api.GrafanaPhaseSuccess)
 	}
 	return nil
 }
 
-func (c *GrafanaController) runDatasourceFinalizer(ds *api.Datasource) error {
-	newDS, err := util.UpdateDatasourceStatus(context.TODO(), c.extClient.OpenvizV1alpha1(), ds.ObjectMeta, func(st *api.DatasourceStatus) *api.DatasourceStatus {
+func (c *GrafanaController) runGrafanaDatasourceFinalizer(ds *api.GrafanaDatasource) error {
+	newDS, err := util.UpdateGrafanaDatasourceStatus(context.TODO(), c.extClient.OpenvizV1alpha1(), ds.ObjectMeta, func(st *api.GrafanaDatasourceStatus) *api.GrafanaDatasourceStatus {
 		st.Phase = api.GrafanaPhaseTerminating
-		st.Reason = "Terminating Datasource"
+		st.Reason = "Terminating GrafanaDatasource"
 		st.ObservedGeneration = ds.Generation
 
 		return st
 	}, metav1.UpdateOptions{})
 	if err != nil {
-		return errors.Wrapf(err, "failed to update Datasource phase to %q\n", api.GrafanaPhaseTerminating)
+		return errors.Wrapf(err, "failed to update GrafanaDatasource phase to %q\n", api.GrafanaPhaseTerminating)
 	}
 	ds.Status = newDS.Status
 
-	if ds.Status.DatasourceID != nil {
-		dsID := uint(pointer.Int64(ds.Status.DatasourceID))
+	if ds.Status.GrafanaDatasourceID != nil {
+		dsID := uint(pointer.Int64(ds.Status.GrafanaDatasourceID))
 		statusMsg, err := c.grafanaClient.DeleteDatasource(context.TODO(), dsID)
 		if err != nil {
-			c.pushDatasourceFailureEvent(ds, err.Error())
+			c.pushGrafanaDatasourceFailureEvent(ds, err.Error())
 			return err
 		}
-		klog.Infof("Datasource is deleted with message: %s\n", pointer.String(statusMsg.Message))
+		klog.Infof("GrafanaDatasource is deleted with message: %s\n", pointer.String(statusMsg.Message))
 	} else if ds.Status.Phase == api.GrafanaPhaseSuccess {
-		return errors.New("datasource can't be deleted: reason: Datasource ID is missing")
+		return errors.New("grafanadatasource can't be deleted: reason: GrafanaDatasource ID is missing")
 	}
 
-	// if .status.DatasourceID is nil and phase is not success
+	// if .status.GrafanaDatasourceID is nil and phase is not success
 	// so the remote grafana object is never created.
 	// so the finalizer can be removed.
 
 	// remove Finalizer
-	_, _, err = util.PatchDatasource(context.TODO(), c.extClient.OpenvizV1alpha1(), ds, func(up *api.Datasource) *api.Datasource {
-		up.ObjectMeta = core_util.RemoveFinalizer(ds.ObjectMeta, DatasourceFinalizer)
+	_, _, err = util.PatchGrafanaDatasource(context.TODO(), c.extClient.OpenvizV1alpha1(), ds, func(up *api.GrafanaDatasource) *api.GrafanaDatasource {
+		up.ObjectMeta = core_util.RemoveFinalizer(ds.ObjectMeta, GrafanaDatasourceFinalizer)
 		return up
 	}, metav1.PatchOptions{})
 	if err != nil {

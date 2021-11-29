@@ -24,11 +24,11 @@ const (
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// DatasourceConfiguration defines a Datasource AppBinding configuration
+// DatasourceConfiguration defines a GrafanaDatasource AppBinding configuration
 type DatasourceConfiguration struct {
 	metav1.TypeMeta `json:",inline,omitempty"`
 
-	// Datasource defines the grafana datasource name.
+	// Datasource defines the grafana grafanadatasource name.
 	// +optional
 	Datasource string `json:"datasource,omitempty" protobuf:"bytes,1,opt,name=datasource"`
 

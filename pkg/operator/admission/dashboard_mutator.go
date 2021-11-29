@@ -33,23 +33,23 @@ const (
 	mutatorVersion = "v1alpha1"
 )
 
-type DashboardMutator struct {
+type GrafanaDashboardMutator struct {
 	lock        sync.RWMutex
 	initialized bool
 }
 
-var _ hookapi.AdmissionHook = &DashboardMutator{}
+var _ hookapi.AdmissionHook = &GrafanaDashboardMutator{}
 
-func (v *DashboardMutator) Resource() (plural schema.GroupVersionResource, singular string) {
+func (v *GrafanaDashboardMutator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
 			Group:    mutatorGroup,
 			Version:  mutatorVersion,
-			Resource: "dashboardmutators",
+			Resource: "grafanadashboardmutators",
 		},
-		"dashboardmutator"
+		"grafanadashboardmutator"
 }
 
-func (v *DashboardMutator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {
+func (v *GrafanaDashboardMutator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {
 	v.lock.Lock()
 	defer v.lock.Unlock()
 
@@ -57,13 +57,13 @@ func (v *DashboardMutator) Initialize(config *rest.Config, stopCh <-chan struct{
 	return nil
 }
 
-func (v *DashboardMutator) Admit(req *admission.AdmissionRequest) *admission.AdmissionResponse {
+func (v *GrafanaDashboardMutator) Admit(req *admission.AdmissionRequest) *admission.AdmissionResponse {
 	status := &admission.AdmissionResponse{}
 
 	if (req.Operation != admission.Create && req.Operation != admission.Update) ||
 		len(req.SubResource) != 0 ||
 		req.Kind.Group != api.SchemeGroupVersion.Group ||
-		req.Kind.Kind != api.ResourceKindDashboard {
+		req.Kind.Kind != api.ResourceKindGrafanaDashboard {
 		status.Allowed = true
 		return status
 	}
@@ -78,7 +78,7 @@ func (v *DashboardMutator) Admit(req *admission.AdmissionRequest) *admission.Adm
 	if err != nil {
 		return hookapi.StatusBadRequest(err)
 	}
-	mod := setDashboardDefaultValues(obj.(*api.Dashboard).DeepCopy())
+	mod := setGrafanaDashboardDefaultValues(obj.(*api.GrafanaDashboard).DeepCopy())
 	patch, err := meta_util.CreateJSONPatch(req.Object.Raw, mod)
 	if err != nil {
 		return hookapi.StatusInternalServerError(err)
@@ -91,6 +91,6 @@ func (v *DashboardMutator) Admit(req *admission.AdmissionRequest) *admission.Adm
 	return status
 }
 
-func setDashboardDefaultValues(vs *api.Dashboard) *api.Dashboard {
+func setGrafanaDashboardDefaultValues(vs *api.GrafanaDashboard) *api.GrafanaDashboard {
 	return vs
 }

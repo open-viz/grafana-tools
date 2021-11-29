@@ -43,290 +43,10 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-func (m *Dashboard) Reset()      { *m = Dashboard{} }
-func (*Dashboard) ProtoMessage() {}
-func (*Dashboard) Descriptor() ([]byte, []int) {
-	return fileDescriptor_6da6927a53116833, []int{0}
-}
-func (m *Dashboard) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *Dashboard) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	b = b[:cap(b)]
-	n, err := m.MarshalToSizedBuffer(b)
-	if err != nil {
-		return nil, err
-	}
-	return b[:n], nil
-}
-func (m *Dashboard) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Dashboard.Merge(m, src)
-}
-func (m *Dashboard) XXX_Size() int {
-	return m.Size()
-}
-func (m *Dashboard) XXX_DiscardUnknown() {
-	xxx_messageInfo_Dashboard.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Dashboard proto.InternalMessageInfo
-
-func (m *DashboardList) Reset()      { *m = DashboardList{} }
-func (*DashboardList) ProtoMessage() {}
-func (*DashboardList) Descriptor() ([]byte, []int) {
-	return fileDescriptor_6da6927a53116833, []int{1}
-}
-func (m *DashboardList) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *DashboardList) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	b = b[:cap(b)]
-	n, err := m.MarshalToSizedBuffer(b)
-	if err != nil {
-		return nil, err
-	}
-	return b[:n], nil
-}
-func (m *DashboardList) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DashboardList.Merge(m, src)
-}
-func (m *DashboardList) XXX_Size() int {
-	return m.Size()
-}
-func (m *DashboardList) XXX_DiscardUnknown() {
-	xxx_messageInfo_DashboardList.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_DashboardList proto.InternalMessageInfo
-
-func (m *DashboardReference) Reset()      { *m = DashboardReference{} }
-func (*DashboardReference) ProtoMessage() {}
-func (*DashboardReference) Descriptor() ([]byte, []int) {
-	return fileDescriptor_6da6927a53116833, []int{2}
-}
-func (m *DashboardReference) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *DashboardReference) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	b = b[:cap(b)]
-	n, err := m.MarshalToSizedBuffer(b)
-	if err != nil {
-		return nil, err
-	}
-	return b[:n], nil
-}
-func (m *DashboardReference) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DashboardReference.Merge(m, src)
-}
-func (m *DashboardReference) XXX_Size() int {
-	return m.Size()
-}
-func (m *DashboardReference) XXX_DiscardUnknown() {
-	xxx_messageInfo_DashboardReference.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_DashboardReference proto.InternalMessageInfo
-
-func (m *DashboardSpec) Reset()      { *m = DashboardSpec{} }
-func (*DashboardSpec) ProtoMessage() {}
-func (*DashboardSpec) Descriptor() ([]byte, []int) {
-	return fileDescriptor_6da6927a53116833, []int{3}
-}
-func (m *DashboardSpec) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *DashboardSpec) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	b = b[:cap(b)]
-	n, err := m.MarshalToSizedBuffer(b)
-	if err != nil {
-		return nil, err
-	}
-	return b[:n], nil
-}
-func (m *DashboardSpec) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DashboardSpec.Merge(m, src)
-}
-func (m *DashboardSpec) XXX_Size() int {
-	return m.Size()
-}
-func (m *DashboardSpec) XXX_DiscardUnknown() {
-	xxx_messageInfo_DashboardSpec.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_DashboardSpec proto.InternalMessageInfo
-
-func (m *DashboardStatus) Reset()      { *m = DashboardStatus{} }
-func (*DashboardStatus) ProtoMessage() {}
-func (*DashboardStatus) Descriptor() ([]byte, []int) {
-	return fileDescriptor_6da6927a53116833, []int{4}
-}
-func (m *DashboardStatus) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *DashboardStatus) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	b = b[:cap(b)]
-	n, err := m.MarshalToSizedBuffer(b)
-	if err != nil {
-		return nil, err
-	}
-	return b[:n], nil
-}
-func (m *DashboardStatus) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DashboardStatus.Merge(m, src)
-}
-func (m *DashboardStatus) XXX_Size() int {
-	return m.Size()
-}
-func (m *DashboardStatus) XXX_DiscardUnknown() {
-	xxx_messageInfo_DashboardStatus.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_DashboardStatus proto.InternalMessageInfo
-
-func (m *DashboardTemplate) Reset()      { *m = DashboardTemplate{} }
-func (*DashboardTemplate) ProtoMessage() {}
-func (*DashboardTemplate) Descriptor() ([]byte, []int) {
-	return fileDescriptor_6da6927a53116833, []int{5}
-}
-func (m *DashboardTemplate) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *DashboardTemplate) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	b = b[:cap(b)]
-	n, err := m.MarshalToSizedBuffer(b)
-	if err != nil {
-		return nil, err
-	}
-	return b[:n], nil
-}
-func (m *DashboardTemplate) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DashboardTemplate.Merge(m, src)
-}
-func (m *DashboardTemplate) XXX_Size() int {
-	return m.Size()
-}
-func (m *DashboardTemplate) XXX_DiscardUnknown() {
-	xxx_messageInfo_DashboardTemplate.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_DashboardTemplate proto.InternalMessageInfo
-
-func (m *DashboardTemplateList) Reset()      { *m = DashboardTemplateList{} }
-func (*DashboardTemplateList) ProtoMessage() {}
-func (*DashboardTemplateList) Descriptor() ([]byte, []int) {
-	return fileDescriptor_6da6927a53116833, []int{6}
-}
-func (m *DashboardTemplateList) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *DashboardTemplateList) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	b = b[:cap(b)]
-	n, err := m.MarshalToSizedBuffer(b)
-	if err != nil {
-		return nil, err
-	}
-	return b[:n], nil
-}
-func (m *DashboardTemplateList) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DashboardTemplateList.Merge(m, src)
-}
-func (m *DashboardTemplateList) XXX_Size() int {
-	return m.Size()
-}
-func (m *DashboardTemplateList) XXX_DiscardUnknown() {
-	xxx_messageInfo_DashboardTemplateList.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_DashboardTemplateList proto.InternalMessageInfo
-
-func (m *DashboardTemplateReference) Reset()      { *m = DashboardTemplateReference{} }
-func (*DashboardTemplateReference) ProtoMessage() {}
-func (*DashboardTemplateReference) Descriptor() ([]byte, []int) {
-	return fileDescriptor_6da6927a53116833, []int{7}
-}
-func (m *DashboardTemplateReference) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *DashboardTemplateReference) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	b = b[:cap(b)]
-	n, err := m.MarshalToSizedBuffer(b)
-	if err != nil {
-		return nil, err
-	}
-	return b[:n], nil
-}
-func (m *DashboardTemplateReference) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DashboardTemplateReference.Merge(m, src)
-}
-func (m *DashboardTemplateReference) XXX_Size() int {
-	return m.Size()
-}
-func (m *DashboardTemplateReference) XXX_DiscardUnknown() {
-	xxx_messageInfo_DashboardTemplateReference.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_DashboardTemplateReference proto.InternalMessageInfo
-
-func (m *DashboardTemplateSpec) Reset()      { *m = DashboardTemplateSpec{} }
-func (*DashboardTemplateSpec) ProtoMessage() {}
-func (*DashboardTemplateSpec) Descriptor() ([]byte, []int) {
-	return fileDescriptor_6da6927a53116833, []int{8}
-}
-func (m *DashboardTemplateSpec) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *DashboardTemplateSpec) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	b = b[:cap(b)]
-	n, err := m.MarshalToSizedBuffer(b)
-	if err != nil {
-		return nil, err
-	}
-	return b[:n], nil
-}
-func (m *DashboardTemplateSpec) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DashboardTemplateSpec.Merge(m, src)
-}
-func (m *DashboardTemplateSpec) XXX_Size() int {
-	return m.Size()
-}
-func (m *DashboardTemplateSpec) XXX_DiscardUnknown() {
-	xxx_messageInfo_DashboardTemplateSpec.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_DashboardTemplateSpec proto.InternalMessageInfo
-
-func (m *Datasource) Reset()      { *m = Datasource{} }
-func (*Datasource) ProtoMessage() {}
-func (*Datasource) Descriptor() ([]byte, []int) {
-	return fileDescriptor_6da6927a53116833, []int{9}
-}
-func (m *Datasource) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *Datasource) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	b = b[:cap(b)]
-	n, err := m.MarshalToSizedBuffer(b)
-	if err != nil {
-		return nil, err
-	}
-	return b[:n], nil
-}
-func (m *Datasource) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Datasource.Merge(m, src)
-}
-func (m *Datasource) XXX_Size() int {
-	return m.Size()
-}
-func (m *Datasource) XXX_DiscardUnknown() {
-	xxx_messageInfo_Datasource.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Datasource proto.InternalMessageInfo
-
 func (m *DatasourceConfiguration) Reset()      { *m = DatasourceConfiguration{} }
 func (*DatasourceConfiguration) ProtoMessage() {}
 func (*DatasourceConfiguration) Descriptor() ([]byte, []int) {
-	return fileDescriptor_6da6927a53116833, []int{10}
+	return fileDescriptor_6da6927a53116833, []int{0}
 }
 func (m *DatasourceConfiguration) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -351,15 +71,295 @@ func (m *DatasourceConfiguration) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_DatasourceConfiguration proto.InternalMessageInfo
 
-func (m *DatasourceList) Reset()      { *m = DatasourceList{} }
-func (*DatasourceList) ProtoMessage() {}
-func (*DatasourceList) Descriptor() ([]byte, []int) {
+func (m *GrafanaDashboard) Reset()      { *m = GrafanaDashboard{} }
+func (*GrafanaDashboard) ProtoMessage() {}
+func (*GrafanaDashboard) Descriptor() ([]byte, []int) {
+	return fileDescriptor_6da6927a53116833, []int{1}
+}
+func (m *GrafanaDashboard) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *GrafanaDashboard) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	b = b[:cap(b)]
+	n, err := m.MarshalToSizedBuffer(b)
+	if err != nil {
+		return nil, err
+	}
+	return b[:n], nil
+}
+func (m *GrafanaDashboard) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GrafanaDashboard.Merge(m, src)
+}
+func (m *GrafanaDashboard) XXX_Size() int {
+	return m.Size()
+}
+func (m *GrafanaDashboard) XXX_DiscardUnknown() {
+	xxx_messageInfo_GrafanaDashboard.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GrafanaDashboard proto.InternalMessageInfo
+
+func (m *GrafanaDashboardList) Reset()      { *m = GrafanaDashboardList{} }
+func (*GrafanaDashboardList) ProtoMessage() {}
+func (*GrafanaDashboardList) Descriptor() ([]byte, []int) {
+	return fileDescriptor_6da6927a53116833, []int{2}
+}
+func (m *GrafanaDashboardList) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *GrafanaDashboardList) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	b = b[:cap(b)]
+	n, err := m.MarshalToSizedBuffer(b)
+	if err != nil {
+		return nil, err
+	}
+	return b[:n], nil
+}
+func (m *GrafanaDashboardList) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GrafanaDashboardList.Merge(m, src)
+}
+func (m *GrafanaDashboardList) XXX_Size() int {
+	return m.Size()
+}
+func (m *GrafanaDashboardList) XXX_DiscardUnknown() {
+	xxx_messageInfo_GrafanaDashboardList.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GrafanaDashboardList proto.InternalMessageInfo
+
+func (m *GrafanaDashboardReference) Reset()      { *m = GrafanaDashboardReference{} }
+func (*GrafanaDashboardReference) ProtoMessage() {}
+func (*GrafanaDashboardReference) Descriptor() ([]byte, []int) {
+	return fileDescriptor_6da6927a53116833, []int{3}
+}
+func (m *GrafanaDashboardReference) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *GrafanaDashboardReference) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	b = b[:cap(b)]
+	n, err := m.MarshalToSizedBuffer(b)
+	if err != nil {
+		return nil, err
+	}
+	return b[:n], nil
+}
+func (m *GrafanaDashboardReference) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GrafanaDashboardReference.Merge(m, src)
+}
+func (m *GrafanaDashboardReference) XXX_Size() int {
+	return m.Size()
+}
+func (m *GrafanaDashboardReference) XXX_DiscardUnknown() {
+	xxx_messageInfo_GrafanaDashboardReference.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GrafanaDashboardReference proto.InternalMessageInfo
+
+func (m *GrafanaDashboardSpec) Reset()      { *m = GrafanaDashboardSpec{} }
+func (*GrafanaDashboardSpec) ProtoMessage() {}
+func (*GrafanaDashboardSpec) Descriptor() ([]byte, []int) {
+	return fileDescriptor_6da6927a53116833, []int{4}
+}
+func (m *GrafanaDashboardSpec) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *GrafanaDashboardSpec) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	b = b[:cap(b)]
+	n, err := m.MarshalToSizedBuffer(b)
+	if err != nil {
+		return nil, err
+	}
+	return b[:n], nil
+}
+func (m *GrafanaDashboardSpec) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GrafanaDashboardSpec.Merge(m, src)
+}
+func (m *GrafanaDashboardSpec) XXX_Size() int {
+	return m.Size()
+}
+func (m *GrafanaDashboardSpec) XXX_DiscardUnknown() {
+	xxx_messageInfo_GrafanaDashboardSpec.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GrafanaDashboardSpec proto.InternalMessageInfo
+
+func (m *GrafanaDashboardStatus) Reset()      { *m = GrafanaDashboardStatus{} }
+func (*GrafanaDashboardStatus) ProtoMessage() {}
+func (*GrafanaDashboardStatus) Descriptor() ([]byte, []int) {
+	return fileDescriptor_6da6927a53116833, []int{5}
+}
+func (m *GrafanaDashboardStatus) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *GrafanaDashboardStatus) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	b = b[:cap(b)]
+	n, err := m.MarshalToSizedBuffer(b)
+	if err != nil {
+		return nil, err
+	}
+	return b[:n], nil
+}
+func (m *GrafanaDashboardStatus) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GrafanaDashboardStatus.Merge(m, src)
+}
+func (m *GrafanaDashboardStatus) XXX_Size() int {
+	return m.Size()
+}
+func (m *GrafanaDashboardStatus) XXX_DiscardUnknown() {
+	xxx_messageInfo_GrafanaDashboardStatus.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GrafanaDashboardStatus proto.InternalMessageInfo
+
+func (m *GrafanaDashboardTemplate) Reset()      { *m = GrafanaDashboardTemplate{} }
+func (*GrafanaDashboardTemplate) ProtoMessage() {}
+func (*GrafanaDashboardTemplate) Descriptor() ([]byte, []int) {
+	return fileDescriptor_6da6927a53116833, []int{6}
+}
+func (m *GrafanaDashboardTemplate) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *GrafanaDashboardTemplate) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	b = b[:cap(b)]
+	n, err := m.MarshalToSizedBuffer(b)
+	if err != nil {
+		return nil, err
+	}
+	return b[:n], nil
+}
+func (m *GrafanaDashboardTemplate) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GrafanaDashboardTemplate.Merge(m, src)
+}
+func (m *GrafanaDashboardTemplate) XXX_Size() int {
+	return m.Size()
+}
+func (m *GrafanaDashboardTemplate) XXX_DiscardUnknown() {
+	xxx_messageInfo_GrafanaDashboardTemplate.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GrafanaDashboardTemplate proto.InternalMessageInfo
+
+func (m *GrafanaDashboardTemplateList) Reset()      { *m = GrafanaDashboardTemplateList{} }
+func (*GrafanaDashboardTemplateList) ProtoMessage() {}
+func (*GrafanaDashboardTemplateList) Descriptor() ([]byte, []int) {
+	return fileDescriptor_6da6927a53116833, []int{7}
+}
+func (m *GrafanaDashboardTemplateList) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *GrafanaDashboardTemplateList) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	b = b[:cap(b)]
+	n, err := m.MarshalToSizedBuffer(b)
+	if err != nil {
+		return nil, err
+	}
+	return b[:n], nil
+}
+func (m *GrafanaDashboardTemplateList) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GrafanaDashboardTemplateList.Merge(m, src)
+}
+func (m *GrafanaDashboardTemplateList) XXX_Size() int {
+	return m.Size()
+}
+func (m *GrafanaDashboardTemplateList) XXX_DiscardUnknown() {
+	xxx_messageInfo_GrafanaDashboardTemplateList.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GrafanaDashboardTemplateList proto.InternalMessageInfo
+
+func (m *GrafanaDashboardTemplateReference) Reset()      { *m = GrafanaDashboardTemplateReference{} }
+func (*GrafanaDashboardTemplateReference) ProtoMessage() {}
+func (*GrafanaDashboardTemplateReference) Descriptor() ([]byte, []int) {
+	return fileDescriptor_6da6927a53116833, []int{8}
+}
+func (m *GrafanaDashboardTemplateReference) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *GrafanaDashboardTemplateReference) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	b = b[:cap(b)]
+	n, err := m.MarshalToSizedBuffer(b)
+	if err != nil {
+		return nil, err
+	}
+	return b[:n], nil
+}
+func (m *GrafanaDashboardTemplateReference) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GrafanaDashboardTemplateReference.Merge(m, src)
+}
+func (m *GrafanaDashboardTemplateReference) XXX_Size() int {
+	return m.Size()
+}
+func (m *GrafanaDashboardTemplateReference) XXX_DiscardUnknown() {
+	xxx_messageInfo_GrafanaDashboardTemplateReference.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GrafanaDashboardTemplateReference proto.InternalMessageInfo
+
+func (m *GrafanaDashboardTemplateSpec) Reset()      { *m = GrafanaDashboardTemplateSpec{} }
+func (*GrafanaDashboardTemplateSpec) ProtoMessage() {}
+func (*GrafanaDashboardTemplateSpec) Descriptor() ([]byte, []int) {
+	return fileDescriptor_6da6927a53116833, []int{9}
+}
+func (m *GrafanaDashboardTemplateSpec) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *GrafanaDashboardTemplateSpec) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	b = b[:cap(b)]
+	n, err := m.MarshalToSizedBuffer(b)
+	if err != nil {
+		return nil, err
+	}
+	return b[:n], nil
+}
+func (m *GrafanaDashboardTemplateSpec) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GrafanaDashboardTemplateSpec.Merge(m, src)
+}
+func (m *GrafanaDashboardTemplateSpec) XXX_Size() int {
+	return m.Size()
+}
+func (m *GrafanaDashboardTemplateSpec) XXX_DiscardUnknown() {
+	xxx_messageInfo_GrafanaDashboardTemplateSpec.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GrafanaDashboardTemplateSpec proto.InternalMessageInfo
+
+func (m *GrafanaDatasource) Reset()      { *m = GrafanaDatasource{} }
+func (*GrafanaDatasource) ProtoMessage() {}
+func (*GrafanaDatasource) Descriptor() ([]byte, []int) {
+	return fileDescriptor_6da6927a53116833, []int{10}
+}
+func (m *GrafanaDatasource) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *GrafanaDatasource) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	b = b[:cap(b)]
+	n, err := m.MarshalToSizedBuffer(b)
+	if err != nil {
+		return nil, err
+	}
+	return b[:n], nil
+}
+func (m *GrafanaDatasource) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GrafanaDatasource.Merge(m, src)
+}
+func (m *GrafanaDatasource) XXX_Size() int {
+	return m.Size()
+}
+func (m *GrafanaDatasource) XXX_DiscardUnknown() {
+	xxx_messageInfo_GrafanaDatasource.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GrafanaDatasource proto.InternalMessageInfo
+
+func (m *GrafanaDatasourceList) Reset()      { *m = GrafanaDatasourceList{} }
+func (*GrafanaDatasourceList) ProtoMessage() {}
+func (*GrafanaDatasourceList) Descriptor() ([]byte, []int) {
 	return fileDescriptor_6da6927a53116833, []int{11}
 }
-func (m *DatasourceList) XXX_Unmarshal(b []byte) error {
+func (m *GrafanaDatasourceList) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *DatasourceList) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *GrafanaDatasourceList) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	b = b[:cap(b)]
 	n, err := m.MarshalToSizedBuffer(b)
 	if err != nil {
@@ -367,27 +367,27 @@ func (m *DatasourceList) XXX_Marshal(b []byte, deterministic bool) ([]byte, erro
 	}
 	return b[:n], nil
 }
-func (m *DatasourceList) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DatasourceList.Merge(m, src)
+func (m *GrafanaDatasourceList) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GrafanaDatasourceList.Merge(m, src)
 }
-func (m *DatasourceList) XXX_Size() int {
+func (m *GrafanaDatasourceList) XXX_Size() int {
 	return m.Size()
 }
-func (m *DatasourceList) XXX_DiscardUnknown() {
-	xxx_messageInfo_DatasourceList.DiscardUnknown(m)
+func (m *GrafanaDatasourceList) XXX_DiscardUnknown() {
+	xxx_messageInfo_GrafanaDatasourceList.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_DatasourceList proto.InternalMessageInfo
+var xxx_messageInfo_GrafanaDatasourceList proto.InternalMessageInfo
 
-func (m *DatasourceSpec) Reset()      { *m = DatasourceSpec{} }
-func (*DatasourceSpec) ProtoMessage() {}
-func (*DatasourceSpec) Descriptor() ([]byte, []int) {
+func (m *GrafanaDatasourceSpec) Reset()      { *m = GrafanaDatasourceSpec{} }
+func (*GrafanaDatasourceSpec) ProtoMessage() {}
+func (*GrafanaDatasourceSpec) Descriptor() ([]byte, []int) {
 	return fileDescriptor_6da6927a53116833, []int{12}
 }
-func (m *DatasourceSpec) XXX_Unmarshal(b []byte) error {
+func (m *GrafanaDatasourceSpec) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *DatasourceSpec) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *GrafanaDatasourceSpec) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	b = b[:cap(b)]
 	n, err := m.MarshalToSizedBuffer(b)
 	if err != nil {
@@ -395,27 +395,27 @@ func (m *DatasourceSpec) XXX_Marshal(b []byte, deterministic bool) ([]byte, erro
 	}
 	return b[:n], nil
 }
-func (m *DatasourceSpec) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DatasourceSpec.Merge(m, src)
+func (m *GrafanaDatasourceSpec) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GrafanaDatasourceSpec.Merge(m, src)
 }
-func (m *DatasourceSpec) XXX_Size() int {
+func (m *GrafanaDatasourceSpec) XXX_Size() int {
 	return m.Size()
 }
-func (m *DatasourceSpec) XXX_DiscardUnknown() {
-	xxx_messageInfo_DatasourceSpec.DiscardUnknown(m)
+func (m *GrafanaDatasourceSpec) XXX_DiscardUnknown() {
+	xxx_messageInfo_GrafanaDatasourceSpec.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_DatasourceSpec proto.InternalMessageInfo
+var xxx_messageInfo_GrafanaDatasourceSpec proto.InternalMessageInfo
 
-func (m *DatasourceStatus) Reset()      { *m = DatasourceStatus{} }
-func (*DatasourceStatus) ProtoMessage() {}
-func (*DatasourceStatus) Descriptor() ([]byte, []int) {
+func (m *GrafanaDatasourceStatus) Reset()      { *m = GrafanaDatasourceStatus{} }
+func (*GrafanaDatasourceStatus) ProtoMessage() {}
+func (*GrafanaDatasourceStatus) Descriptor() ([]byte, []int) {
 	return fileDescriptor_6da6927a53116833, []int{13}
 }
-func (m *DatasourceStatus) XXX_Unmarshal(b []byte) error {
+func (m *GrafanaDatasourceStatus) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *DatasourceStatus) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *GrafanaDatasourceStatus) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	b = b[:cap(b)]
 	n, err := m.MarshalToSizedBuffer(b)
 	if err != nil {
@@ -423,17 +423,17 @@ func (m *DatasourceStatus) XXX_Marshal(b []byte, deterministic bool) ([]byte, er
 	}
 	return b[:n], nil
 }
-func (m *DatasourceStatus) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DatasourceStatus.Merge(m, src)
+func (m *GrafanaDatasourceStatus) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GrafanaDatasourceStatus.Merge(m, src)
 }
-func (m *DatasourceStatus) XXX_Size() int {
+func (m *GrafanaDatasourceStatus) XXX_Size() int {
 	return m.Size()
 }
-func (m *DatasourceStatus) XXX_DiscardUnknown() {
-	xxx_messageInfo_DatasourceStatus.DiscardUnknown(m)
+func (m *GrafanaDatasourceStatus) XXX_DiscardUnknown() {
+	xxx_messageInfo_GrafanaDatasourceStatus.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_DatasourceStatus proto.InternalMessageInfo
+var xxx_messageInfo_GrafanaDatasourceStatus proto.InternalMessageInfo
 
 func (m *ModelTemplateConfiguration) Reset()      { *m = ModelTemplateConfiguration{} }
 func (*ModelTemplateConfiguration) ProtoMessage() {}
@@ -492,20 +492,20 @@ func (m *TargetRef) XXX_DiscardUnknown() {
 var xxx_messageInfo_TargetRef proto.InternalMessageInfo
 
 func init() {
-	proto.RegisterType((*Dashboard)(nil), "go.openviz.dev.grafana_tools.apis.openviz.v1alpha1.Dashboard")
-	proto.RegisterType((*DashboardList)(nil), "go.openviz.dev.grafana_tools.apis.openviz.v1alpha1.DashboardList")
-	proto.RegisterType((*DashboardReference)(nil), "go.openviz.dev.grafana_tools.apis.openviz.v1alpha1.DashboardReference")
-	proto.RegisterType((*DashboardSpec)(nil), "go.openviz.dev.grafana_tools.apis.openviz.v1alpha1.DashboardSpec")
-	proto.RegisterType((*DashboardStatus)(nil), "go.openviz.dev.grafana_tools.apis.openviz.v1alpha1.DashboardStatus")
-	proto.RegisterType((*DashboardTemplate)(nil), "go.openviz.dev.grafana_tools.apis.openviz.v1alpha1.DashboardTemplate")
-	proto.RegisterType((*DashboardTemplateList)(nil), "go.openviz.dev.grafana_tools.apis.openviz.v1alpha1.DashboardTemplateList")
-	proto.RegisterType((*DashboardTemplateReference)(nil), "go.openviz.dev.grafana_tools.apis.openviz.v1alpha1.DashboardTemplateReference")
-	proto.RegisterType((*DashboardTemplateSpec)(nil), "go.openviz.dev.grafana_tools.apis.openviz.v1alpha1.DashboardTemplateSpec")
-	proto.RegisterType((*Datasource)(nil), "go.openviz.dev.grafana_tools.apis.openviz.v1alpha1.Datasource")
 	proto.RegisterType((*DatasourceConfiguration)(nil), "go.openviz.dev.grafana_tools.apis.openviz.v1alpha1.DatasourceConfiguration")
-	proto.RegisterType((*DatasourceList)(nil), "go.openviz.dev.grafana_tools.apis.openviz.v1alpha1.DatasourceList")
-	proto.RegisterType((*DatasourceSpec)(nil), "go.openviz.dev.grafana_tools.apis.openviz.v1alpha1.DatasourceSpec")
-	proto.RegisterType((*DatasourceStatus)(nil), "go.openviz.dev.grafana_tools.apis.openviz.v1alpha1.DatasourceStatus")
+	proto.RegisterType((*GrafanaDashboard)(nil), "go.openviz.dev.grafana_tools.apis.openviz.v1alpha1.GrafanaDashboard")
+	proto.RegisterType((*GrafanaDashboardList)(nil), "go.openviz.dev.grafana_tools.apis.openviz.v1alpha1.GrafanaDashboardList")
+	proto.RegisterType((*GrafanaDashboardReference)(nil), "go.openviz.dev.grafana_tools.apis.openviz.v1alpha1.GrafanaDashboardReference")
+	proto.RegisterType((*GrafanaDashboardSpec)(nil), "go.openviz.dev.grafana_tools.apis.openviz.v1alpha1.GrafanaDashboardSpec")
+	proto.RegisterType((*GrafanaDashboardStatus)(nil), "go.openviz.dev.grafana_tools.apis.openviz.v1alpha1.GrafanaDashboardStatus")
+	proto.RegisterType((*GrafanaDashboardTemplate)(nil), "go.openviz.dev.grafana_tools.apis.openviz.v1alpha1.GrafanaDashboardTemplate")
+	proto.RegisterType((*GrafanaDashboardTemplateList)(nil), "go.openviz.dev.grafana_tools.apis.openviz.v1alpha1.GrafanaDashboardTemplateList")
+	proto.RegisterType((*GrafanaDashboardTemplateReference)(nil), "go.openviz.dev.grafana_tools.apis.openviz.v1alpha1.GrafanaDashboardTemplateReference")
+	proto.RegisterType((*GrafanaDashboardTemplateSpec)(nil), "go.openviz.dev.grafana_tools.apis.openviz.v1alpha1.GrafanaDashboardTemplateSpec")
+	proto.RegisterType((*GrafanaDatasource)(nil), "go.openviz.dev.grafana_tools.apis.openviz.v1alpha1.GrafanaDatasource")
+	proto.RegisterType((*GrafanaDatasourceList)(nil), "go.openviz.dev.grafana_tools.apis.openviz.v1alpha1.GrafanaDatasourceList")
+	proto.RegisterType((*GrafanaDatasourceSpec)(nil), "go.openviz.dev.grafana_tools.apis.openviz.v1alpha1.GrafanaDatasourceSpec")
+	proto.RegisterType((*GrafanaDatasourceStatus)(nil), "go.openviz.dev.grafana_tools.apis.openviz.v1alpha1.GrafanaDatasourceStatus")
 	proto.RegisterType((*ModelTemplateConfiguration)(nil), "go.openviz.dev.grafana_tools.apis.openviz.v1alpha1.ModelTemplateConfiguration")
 	proto.RegisterType((*TargetRef)(nil), "go.openviz.dev.grafana_tools.apis.openviz.v1alpha1.TargetRef")
 }
@@ -515,103 +515,105 @@ func init() {
 }
 
 var fileDescriptor_6da6927a53116833 = []byte{
-	// 1483 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x57, 0x5d, 0x6f, 0x13, 0x47,
-	0x17, 0xce, 0xfa, 0x23, 0xb1, 0x27, 0x1f, 0x90, 0xd1, 0xcb, 0xfb, 0x2e, 0xd1, 0x8b, 0x1d, 0x19,
-	0x15, 0x51, 0x89, 0xac, 0x4b, 0x8a, 0xaa, 0x4a, 0x55, 0x91, 0xb2, 0x18, 0xa2, 0xb4, 0x90, 0xa0,
-	0x21, 0x70, 0x51, 0x21, 0xd1, 0xf1, 0xee, 0x64, 0xbd, 0xd8, 0xde, 0x5d, 0xed, 0xcc, 0x1a, 0x92,
-	0xaa, 0x15, 0x7f, 0xa0, 0x12, 0x77, 0xfd, 0x03, 0xbd, 0xe8, 0xbf, 0xa8, 0xd4, 0x2b, 0xd4, 0x9b,
-	0x52, 0xf5, 0x86, 0x2b, 0xab, 0x71, 0xff, 0x05, 0x57, 0xd5, 0xcc, 0xce, 0xce, 0xee, 0xc6, 0x31,
-	0x94, 0x98, 0xe6, 0xce, 0x7b, 0xe6, 0x39, 0x1f, 0x73, 0xce, 0x99, 0xe7, 0x1c, 0x03, 0xd3, 0xf1,
-	0x0d, 0x3f, 0x20, 0xde, 0xc0, 0x3d, 0x30, 0x6c, 0x32, 0x68, 0x3a, 0x21, 0xde, 0xc3, 0x1e, 0x5e,
-	0x63, 0xbe, 0xdf, 0xa3, 0x4d, 0x1c, 0xb8, 0xb4, 0x29, 0x8f, 0x9b, 0x83, 0xab, 0xb8, 0x17, 0x74,
-	0xf0, 0xd5, 0xa6, 0x43, 0x3c, 0x12, 0x62, 0x46, 0x6c, 0x23, 0x08, 0x7d, 0xe6, 0xc3, 0xf5, 0xbc,
-	0x0d, 0x43, 0xda, 0x78, 0x24, 0x6c, 0x18, 0xdc, 0x86, 0x3a, 0x4e, 0x6c, 0xac, 0xac, 0x39, 0x2e,
-	0xeb, 0x44, 0x6d, 0xc3, 0xf2, 0xfb, 0x4d, 0xc7, 0x77, 0xfc, 0xa6, 0x30, 0xd5, 0x8e, 0xf6, 0xc4,
-	0x97, 0xf8, 0x10, 0xbf, 0x62, 0x17, 0x2b, 0xd7, 0xba, 0x9f, 0x52, 0xc3, 0xf5, 0x79, 0x40, 0x7d,
-	0x6c, 0x75, 0x5c, 0x8f, 0x84, 0xfb, 0xcd, 0xa0, 0xeb, 0xc4, 0x11, 0xf6, 0x09, 0xc3, 0xcd, 0xc1,
-	0x58, 0x60, 0x2b, 0xcd, 0x49, 0x5a, 0x61, 0xe4, 0x31, 0xb7, 0x4f, 0xc6, 0x14, 0x3e, 0x79, 0x9b,
-	0x02, 0xb5, 0x3a, 0xa4, 0x8f, 0xc7, 0xf4, 0xd6, 0xba, 0x7d, 0xdf, 0x8e, 0x7a, 0x84, 0x1a, 0x4f,
-	0xf7, 0x0f, 0x9a, 0x56, 0xcf, 0x25, 0x1e, 0x5b, 0x73, 0x84, 0x9d, 0x63, 0xe2, 0x6a, 0xfc, 0x5c,
-	0x00, 0xd5, 0x16, 0xa6, 0x9d, 0xb6, 0x8f, 0x43, 0x1b, 0x7e, 0x0d, 0x2a, 0xfc, 0x02, 0x36, 0x66,
-	0x58, 0xd7, 0x56, 0xb5, 0xcb, 0xf3, 0xeb, 0x1f, 0x19, 0x71, 0x1c, 0x46, 0x36, 0x0e, 0x23, 0xe8,
-	0x3a, 0x71, 0x32, 0x39, 0xda, 0x18, 0x5c, 0x35, 0x76, 0xda, 0x8f, 0x89, 0xc5, 0xee, 0x10, 0x86,
-	0x4d, 0xf8, 0x62, 0x58, 0x9f, 0x19, 0x0d, 0xeb, 0x20, 0x95, 0x21, 0x65, 0x15, 0x5a, 0xa0, 0x44,
-	0x03, 0x62, 0xe9, 0x05, 0x61, 0x7d, 0xc3, 0x78, 0xf7, 0x7a, 0x19, 0x2a, 0xdc, 0x7b, 0x01, 0xb1,
-	0xcc, 0x05, 0xe9, 0xae, 0xc4, 0xbf, 0x90, 0x30, 0x0e, 0xbb, 0x60, 0x96, 0x32, 0xcc, 0x22, 0xaa,
-	0x17, 0x85, 0x9b, 0x1b, 0xd3, 0xb9, 0x11, 0xa6, 0xcc, 0x25, 0xe9, 0x68, 0x36, 0xfe, 0x46, 0xd2,
-	0x45, 0xe3, 0x77, 0x0d, 0x2c, 0x2a, 0xec, 0x6d, 0x97, 0x32, 0xf8, 0x70, 0x2c, 0x8b, 0xc6, 0x3f,
-	0xcb, 0x22, 0xd7, 0x16, 0x39, 0x3c, 0x2b, 0x7d, 0x55, 0x12, 0x49, 0x26, 0x83, 0x6d, 0x50, 0x76,
-	0x19, 0xe9, 0x53, 0xbd, 0xb0, 0x5a, 0xbc, 0x3c, 0xbf, 0xfe, 0xf9, 0x54, 0x77, 0x33, 0x17, 0xa5,
-	0xa7, 0xf2, 0x16, 0xb7, 0x89, 0x62, 0xd3, 0x8d, 0x5f, 0x35, 0x00, 0x15, 0x06, 0x91, 0x3d, 0x12,
-	0x12, 0xcf, 0x22, 0xf0, 0xbf, 0xa0, 0xe0, 0xda, 0xe2, 0x4a, 0x45, 0x73, 0x76, 0x34, 0xac, 0x17,
-	0xb6, 0x5a, 0xa8, 0xe0, 0xda, 0xf0, 0x3c, 0x28, 0x46, 0xae, 0x2d, 0x6a, 0x5a, 0x35, 0xe7, 0x46,
-	0xc3, 0x7a, 0xf1, 0xfe, 0x56, 0x0b, 0x71, 0x19, 0xac, 0x83, 0xb2, 0x1f, 0x3a, 0x5b, 0x2d, 0x51,
-	0x89, 0xa2, 0x59, 0xe5, 0xae, 0x76, 0xb8, 0x00, 0xc5, 0x72, 0x58, 0x03, 0x65, 0xe6, 0xb2, 0x1e,
-	0xd1, 0x4b, 0x42, 0xbb, 0x22, 0x4a, 0xd9, 0x8b, 0x1c, 0x14, 0x8b, 0x85, 0xed, 0xb0, 0xa7, 0x97,
-	0x33, 0xb6, 0xd1, 0x6d, 0xc4, 0x65, 0xf0, 0x03, 0x30, 0x37, 0x20, 0x21, 0x75, 0x7d, 0x4f, 0x9f,
-	0x15, 0xd6, 0xe7, 0x47, 0xc3, 0xfa, 0xdc, 0x83, 0x58, 0x84, 0x92, 0xb3, 0xc6, 0x8f, 0xc5, 0x4c,
-	0x81, 0x78, 0x97, 0x40, 0x1b, 0xcc, 0xc9, 0x2c, 0xc9, 0xfa, 0x9c, 0x28, 0x89, 0xbb, 0x38, 0x74,
-	0x08, 0x43, 0x64, 0x2f, 0xf6, 0xbb, 0x19, 0xab, 0xa0, 0xc4, 0x34, 0xdc, 0x06, 0xe5, 0xbe, 0x6f,
-	0x93, 0x9e, 0xec, 0xf5, 0xb5, 0x89, 0x3d, 0x20, 0x5f, 0xb4, 0x81, 0xf0, 0x93, 0x9b, 0x4f, 0x19,
-	0xf1, 0x78, 0xd4, 0x71, 0xa6, 0xee, 0x70, 0x7d, 0x14, 0x9b, 0x81, 0x57, 0x40, 0x65, 0xcf, 0xef,
-	0xd9, 0x24, 0x54, 0xd9, 0x54, 0x6d, 0x72, 0x4b, 0xca, 0x91, 0x42, 0xc0, 0x26, 0xa8, 0xfa, 0x03,
-	0x12, 0x3e, 0x09, 0x5d, 0x16, 0xe7, 0xb6, 0x62, 0x2e, 0x4b, 0x78, 0x75, 0x27, 0x39, 0x40, 0x29,
-	0x06, 0x7e, 0x07, 0x00, 0x23, 0xfd, 0xa0, 0x87, 0x99, 0x7b, 0x40, 0x44, 0xbe, 0xe7, 0xd7, 0xb7,
-	0x4f, 0x92, 0x17, 0x11, 0xf4, 0x6e, 0x6c, 0x8a, 0xdc, 0xf0, 0xbd, 0x3d, 0xd7, 0x89, 0x42, 0xcc,
-	0xf8, 0xa5, 0x96, 0x38, 0x2f, 0xec, 0x2a, 0x2f, 0x28, 0xe3, 0xb1, 0xf1, 0x7d, 0x11, 0x9c, 0x39,
-	0xf2, 0xe6, 0xe0, 0x17, 0x00, 0xfa, 0x6d, 0x4a, 0xc2, 0x01, 0xb1, 0x37, 0x63, 0xe2, 0xe2, 0xc5,
-	0x8e, 0x1b, 0x70, 0x45, 0xde, 0x06, 0xee, 0x8c, 0x21, 0xd0, 0x31, 0x5a, 0xf0, 0x63, 0x50, 0x0e,
-	0x3a, 0x98, 0x12, 0xd9, 0xa6, 0x17, 0x92, 0xc6, 0xbf, 0xcb, 0x85, 0xaf, 0x87, 0xf5, 0x05, 0x59,
-	0x40, 0xf1, 0x8d, 0x62, 0x2c, 0xbc, 0x04, 0x66, 0x43, 0x82, 0xa9, 0xef, 0x89, 0x8c, 0x57, 0x53,
-	0x12, 0x40, 0x42, 0x8a, 0xe4, 0x29, 0xa4, 0xa0, 0x6a, 0x27, 0xb1, 0x8b, 0x6c, 0xcf, 0xaf, 0xdf,
-	0x9a, 0xea, 0x61, 0xaa, 0x47, 0x67, 0x2e, 0xf2, 0x8a, 0xa5, 0xf2, 0xd4, 0x0f, 0x7c, 0x08, 0x80,
-	0xe5, 0x7b, 0xb6, 0xcb, 0xaf, 0x47, 0xf5, 0xb2, 0xa0, 0x83, 0xcb, 0x46, 0x96, 0xff, 0x8d, 0x98,
-	0xff, 0x1f, 0x39, 0xa2, 0xeb, 0x38, 0xc5, 0xdc, 0x48, 0x14, 0x52, 0x9e, 0x56, 0x22, 0x8a, 0x32,
-	0xf6, 0x1a, 0x23, 0x0d, 0x2c, 0x2b, 0xb7, 0x49, 0x39, 0x4f, 0x61, 0x42, 0x74, 0x73, 0x13, 0x62,
-	0x6b, 0xaa, 0x2c, 0x26, 0x61, 0x4f, 0x9a, 0x14, 0x8d, 0x43, 0x0d, 0x9c, 0x1b, 0x43, 0x9f, 0x02,
-	0x89, 0x3f, 0xce, 0x93, 0xf8, 0xcd, 0xf7, 0x72, 0xcb, 0x09, 0x64, 0xfe, 0x53, 0x01, 0xac, 0x8c,
-	0x61, 0xa7, 0x22, 0xf5, 0x8b, 0x09, 0x67, 0xc7, 0x8f, 0x42, 0xb9, 0xdd, 0xe5, 0xc2, 0x84, 0xb8,
-	0xff, 0x0f, 0x4a, 0x0c, 0x3b, 0x54, 0x2f, 0xad, 0x16, 0x13, 0x5e, 0xdf, 0xc5, 0x0e, 0x45, 0x42,
-	0xca, 0xc9, 0x8c, 0x73, 0xde, 0x81, 0xef, 0x11, 0xc9, 0xed, 0x2a, 0x5d, 0xbb, 0x52, 0x8e, 0x14,
-	0x02, 0x7e, 0x06, 0x16, 0xe3, 0x75, 0xe7, 0x41, 0x8e, 0xef, 0xcf, 0x49, 0x95, 0xc5, 0x7b, 0xd9,
-	0x43, 0x94, 0xc7, 0xc2, 0x0f, 0xd3, 0x31, 0x31, 0x27, 0xd4, 0xce, 0x48, 0xb5, 0xf1, 0x51, 0xf1,
-	0xbc, 0x70, 0x4c, 0x3b, 0x88, 0x91, 0xf1, 0x83, 0x06, 0x96, 0xd5, 0xcb, 0x93, 0xac, 0x45, 0x64,
-	0x63, 0x6c, 0xbf, 0x97, 0xea, 0xa5, 0x2f, 0xfe, 0xbc, 0x8c, 0x6f, 0xfc, 0xf9, 0xa1, 0xf1, 0x18,
-	0x72, 0x63, 0xa1, 0xf0, 0x6e, 0x63, 0xa1, 0xf8, 0xf6, 0xb1, 0xd0, 0xf8, 0xa5, 0x00, 0x40, 0x0b,
-	0x33, 0x4c, 0xfd, 0x28, 0xb4, 0x4e, 0xe3, 0xfd, 0xdb, 0xb9, 0xf7, 0x6f, 0x9e, 0x2c, 0xb7, 0x49,
-	0xbc, 0x13, 0x57, 0xc4, 0xde, 0x91, 0x15, 0xb1, 0x35, 0xa5, 0x9f, 0x37, 0xef, 0x88, 0xdf, 0x80,
-	0xff, 0xa5, 0xd8, 0xdc, 0x48, 0x84, 0xeb, 0x00, 0xd8, 0xea, 0x48, 0xa4, 0xb4, 0x9a, 0x26, 0x28,
-	0x55, 0x42, 0x19, 0xd4, 0xbb, 0x95, 0xbc, 0xf1, 0x87, 0x06, 0x96, 0x52, 0x43, 0xa7, 0x40, 0x6e,
-	0x56, 0x9e, 0xdc, 0xae, 0x4f, 0x97, 0xda, 0x09, 0xac, 0xf6, 0x6c, 0x36, 0x7b, 0xab, 0x53, 0x5c,
-	0xeb, 0x56, 0x04, 0x5f, 0xc6, 0x69, 0x07, 0x32, 0xb4, 0x84, 0x33, 0x2f, 0xc6, 0xdb, 0xae, 0x2d,
-	0xf7, 0x33, 0x15, 0x79, 0x66, 0xe3, 0xb5, 0xe1, 0x2a, 0x28, 0x79, 0xb8, 0x9f, 0x2c, 0xbc, 0xaa,
-	0x39, 0xb7, 0x71, 0x9f, 0x20, 0x71, 0x02, 0xd7, 0x41, 0x89, 0xed, 0x07, 0x09, 0x31, 0xd6, 0x12,
-	0xc4, 0xee, 0x7e, 0xc0, 0x17, 0x95, 0xcc, 0xb5, 0xb9, 0x04, 0x09, 0x2c, 0xbc, 0x0e, 0x66, 0xb1,
-	0x65, 0x11, 0x4a, 0x05, 0x37, 0x56, 0xcd, 0x4b, 0x49, 0x2b, 0x6e, 0x08, 0xe9, 0xeb, 0x61, 0xfd,
-	0x3f, 0xa9, 0x5e, 0x2c, 0x13, 0xda, 0x52, 0x0b, 0x5e, 0x88, 0xf7, 0xec, 0x39, 0xa1, 0x3c, 0x2f,
-	0x95, 0xd3, 0x5d, 0xfb, 0x0a, 0xa8, 0x04, 0x98, 0xd2, 0x27, 0x7e, 0x68, 0xeb, 0x95, 0x3c, 0x5f,
-	0xdf, 0x95, 0x72, 0xa4, 0x10, 0xfc, 0x8a, 0x11, 0x25, 0xa1, 0x5e, 0xcd, 0x5f, 0xf1, 0x3e, 0x25,
-	0x21, 0x12, 0x27, 0xdc, 0x1e, 0xef, 0x95, 0x36, 0x5f, 0xc8, 0x40, 0xde, 0x5e, 0x4b, 0xca, 0x91,
-	0x42, 0x70, 0xd6, 0x6a, 0x63, 0xea, 0x5a, 0x1b, 0x11, 0xeb, 0xe8, 0xf3, 0x79, 0xd6, 0x32, 0x93,
-	0x03, 0x94, 0x62, 0xf8, 0xc0, 0x50, 0x1f, 0xdc, 0xab, 0xbe, 0x20, 0x7c, 0xa8, 0x81, 0x61, 0x66,
-	0x0f, 0x51, 0x1e, 0x0b, 0x37, 0xc1, 0xb2, 0x12, 0x24, 0x97, 0xd3, 0x17, 0x85, 0x01, 0x45, 0xcd,
-	0xe6, 0x51, 0x00, 0x1a, 0xd7, 0xe1, 0x61, 0xbb, 0xb4, 0x45, 0xf6, 0x70, 0xd4, 0x63, 0xfa, 0x52,
-	0x3e, 0xec, 0xad, 0xe4, 0x00, 0xa5, 0x18, 0x9e, 0x15, 0x62, 0xbb, 0x0c, 0xb7, 0x7b, 0x44, 0x3f,
-	0x23, 0xf0, 0x2a, 0x2b, 0x37, 0xa5, 0x1c, 0x29, 0x44, 0xe3, 0xb7, 0x02, 0x38, 0x7b, 0x94, 0x82,
-	0xde, 0xeb, 0xca, 0x7c, 0x0d, 0x2c, 0xa4, 0xac, 0x93, 0x72, 0xcd, 0x68, 0x58, 0x5f, 0x68, 0x65,
-	0xe4, 0x28, 0x87, 0x4a, 0x17, 0xed, 0xe2, 0x89, 0x16, 0xed, 0xd2, 0x1b, 0x17, 0xed, 0x7f, 0x77,
-	0xe7, 0x8d, 0xc0, 0xca, 0xe4, 0x7f, 0x2f, 0xe9, 0xda, 0xa3, 0x89, 0xd2, 0x1c, 0xbf, 0xf6, 0xe4,
-	0xf9, 0xbc, 0x20, 0x90, 0x6f, 0xe1, 0xf3, 0xc6, 0xb7, 0xa0, 0xaa, 0x58, 0x87, 0xf7, 0x00, 0x0e,
-	0xdc, 0xcd, 0xd0, 0x8f, 0x02, 0x39, 0x0e, 0x54, 0x0f, 0x6c, 0xdc, 0xdd, 0x12, 0x72, 0xa4, 0x10,
-	0xfc, 0xa5, 0x75, 0x5d, 0x2f, 0x59, 0xd3, 0xd4, 0x4b, 0xfb, 0xd2, 0xf5, 0x6c, 0x24, 0x4e, 0x14,
-	0xdd, 0x14, 0x27, 0xd1, 0x8d, 0x69, 0xbc, 0x38, 0xac, 0xcd, 0xbc, 0x3c, 0xac, 0xcd, 0xbc, 0x3a,
-	0xac, 0xcd, 0x3c, 0x1b, 0xd5, 0xb4, 0x17, 0xa3, 0x9a, 0xf6, 0x72, 0x54, 0xd3, 0x5e, 0x8d, 0x6a,
-	0xda, 0x9f, 0xa3, 0x9a, 0xf6, 0xfc, 0xaf, 0xda, 0xcc, 0x57, 0x95, 0x84, 0x21, 0xff, 0x0e, 0x00,
-	0x00, 0xff, 0xff, 0x5f, 0x79, 0x35, 0x09, 0xa9, 0x13, 0x00, 0x00,
+	// 1518 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x58, 0x4f, 0x6f, 0xdb, 0xc6,
+	0x12, 0x37, 0x45, 0xc9, 0x96, 0x56, 0x71, 0x12, 0x6f, 0x5e, 0x12, 0xc6, 0x2f, 0x91, 0xfc, 0x14,
+	0xe4, 0xc1, 0x05, 0x62, 0xaa, 0x71, 0x8b, 0xa2, 0x45, 0xd1, 0x43, 0x18, 0xb9, 0xae, 0xf2, 0xcf,
+	0xc6, 0xc6, 0xc9, 0xa1, 0x08, 0x90, 0xae, 0xc4, 0x15, 0xc5, 0x58, 0x22, 0x59, 0x2e, 0xa9, 0xc4,
+	0x2e, 0x5a, 0xf4, 0x23, 0xf4, 0xd2, 0x53, 0x3f, 0x42, 0x0f, 0x3d, 0xe4, 0x4b, 0xe4, 0x98, 0x02,
+	0x05, 0x9a, 0x93, 0x5a, 0xab, 0xc7, 0x1e, 0xda, 0x73, 0x4e, 0xc5, 0x2e, 0x97, 0x4b, 0xd1, 0x32,
+	0xe3, 0x26, 0x51, 0x7c, 0x33, 0xe7, 0xcf, 0x6f, 0x66, 0x67, 0x76, 0x7f, 0x33, 0x16, 0x30, 0x2c,
+	0x57, 0x77, 0x3d, 0xe2, 0x0c, 0xec, 0x5d, 0xdd, 0x24, 0x83, 0xba, 0xe5, 0xe3, 0x0e, 0x76, 0xf0,
+	0x4a, 0xe0, 0xba, 0x3d, 0x5a, 0xc7, 0x9e, 0x4d, 0xeb, 0x42, 0x5d, 0x1f, 0x5c, 0xc1, 0x3d, 0xaf,
+	0x8b, 0xaf, 0xd4, 0x2d, 0xe2, 0x10, 0x1f, 0x07, 0xc4, 0xd4, 0x3d, 0xdf, 0x0d, 0x5c, 0xb8, 0x9a,
+	0xc6, 0xd0, 0x05, 0xc6, 0x03, 0x8e, 0xa1, 0x33, 0x0c, 0xa9, 0x8e, 0x31, 0x16, 0x57, 0x2c, 0x3b,
+	0xe8, 0x86, 0x2d, 0xbd, 0xed, 0xf6, 0xeb, 0x96, 0x6b, 0xb9, 0x75, 0x0e, 0xd5, 0x0a, 0x3b, 0xfc,
+	0x8b, 0x7f, 0xf0, 0xbf, 0xa2, 0x10, 0x8b, 0xef, 0x6f, 0x7f, 0x48, 0x75, 0xdb, 0x65, 0x09, 0xf5,
+	0x71, 0xbb, 0x6b, 0x3b, 0xc4, 0xdf, 0xa9, 0x7b, 0xdb, 0x56, 0x94, 0x61, 0x9f, 0x04, 0xb8, 0x3e,
+	0x98, 0x48, 0x6c, 0xb1, 0x9e, 0xe5, 0xe5, 0x87, 0x4e, 0x60, 0xf7, 0xc9, 0x84, 0xc3, 0x07, 0x87,
+	0x39, 0xd0, 0x76, 0x97, 0xf4, 0xf1, 0x84, 0xdf, 0xca, 0x76, 0xdf, 0x35, 0xc3, 0x1e, 0xa1, 0xfa,
+	0xe3, 0x9d, 0xdd, 0x7a, 0xbb, 0x67, 0x13, 0x27, 0x58, 0xb1, 0x38, 0xce, 0x01, 0x79, 0xd5, 0xbe,
+	0x02, 0x67, 0x1b, 0x38, 0xc0, 0xd4, 0x0d, 0xfd, 0x36, 0xb9, 0xe6, 0x3a, 0x1d, 0xdb, 0x0a, 0x7d,
+	0x1c, 0xd8, 0xae, 0x03, 0x57, 0x01, 0x30, 0xa5, 0x4a, 0x53, 0x96, 0x94, 0xe5, 0x92, 0x01, 0x9f,
+	0x0e, 0xab, 0x33, 0xa3, 0x61, 0x15, 0x24, 0x4e, 0x68, 0xcc, 0x0a, 0x5e, 0x06, 0xc5, 0x8e, 0xdb,
+	0x33, 0x89, 0xdf, 0x6c, 0x68, 0xb9, 0x25, 0x65, 0x59, 0x35, 0x4e, 0x0a, 0x8f, 0xe2, 0xa7, 0x42,
+	0x8e, 0xa4, 0x45, 0xed, 0x97, 0x1c, 0x38, 0xb9, 0x1e, 0x75, 0xa8, 0x81, 0x69, 0xb7, 0xe5, 0x62,
+	0xdf, 0x84, 0x5f, 0x80, 0x22, 0x2b, 0x22, 0x03, 0xe5, 0x41, 0xcb, 0xab, 0xef, 0xea, 0x51, 0x2d,
+	0xf4, 0xf1, 0x5a, 0xe8, 0xde, 0xb6, 0x15, 0x35, 0x94, 0x59, 0xeb, 0x83, 0x2b, 0xfa, 0x46, 0xeb,
+	0x21, 0x69, 0x07, 0xb7, 0x48, 0x80, 0x93, 0x34, 0x13, 0x19, 0x92, 0xa8, 0xf0, 0x21, 0xc8, 0x53,
+	0x8f, 0xb4, 0x79, 0x82, 0xe5, 0xd5, 0xcf, 0xf4, 0x57, 0xbf, 0x33, 0xfa, 0xfe, 0xac, 0xef, 0x78,
+	0xa4, 0x6d, 0x1c, 0x13, 0x51, 0xf3, 0xec, 0x0b, 0xf1, 0x18, 0xd0, 0x07, 0xb3, 0x34, 0xc0, 0x41,
+	0x48, 0x35, 0x95, 0x47, 0xbb, 0x3e, 0x95, 0x68, 0x1c, 0xd1, 0x38, 0x2e, 0xe2, 0xcd, 0x46, 0xdf,
+	0x48, 0x44, 0xaa, 0xfd, 0xa6, 0x80, 0xff, 0xec, 0x77, 0xb9, 0x69, 0xd3, 0x00, 0xde, 0x9f, 0x28,
+	0xad, 0xfe, 0xef, 0x4a, 0xcb, 0xbc, 0x79, 0x61, 0x65, 0x37, 0x63, 0xc9, 0x58, 0x59, 0x6d, 0x50,
+	0xb0, 0x03, 0xd2, 0xa7, 0x5a, 0x6e, 0x49, 0x5d, 0x2e, 0xaf, 0x36, 0xa6, 0x71, 0x52, 0x63, 0x5e,
+	0x04, 0x2c, 0x34, 0x19, 0x34, 0x8a, 0x22, 0xd4, 0x7e, 0x56, 0xc0, 0xb9, 0xfd, 0xa6, 0x88, 0x74,
+	0x88, 0x4f, 0x9c, 0x36, 0x81, 0x67, 0x40, 0xce, 0x36, 0xf9, 0x01, 0x55, 0x63, 0x76, 0x34, 0xac,
+	0xe6, 0x9a, 0x0d, 0x94, 0xb3, 0x4d, 0x78, 0x0e, 0xa8, 0xa1, 0x6d, 0xf2, 0xb6, 0x97, 0x8c, 0xb9,
+	0xd1, 0xb0, 0xaa, 0xde, 0x6d, 0x36, 0x10, 0x93, 0xc1, 0x2a, 0x28, 0xb8, 0xbe, 0xd5, 0x6c, 0xf0,
+	0x2e, 0xa9, 0x46, 0x89, 0x45, 0xdc, 0x60, 0x02, 0x14, 0xc9, 0x61, 0x05, 0x14, 0x02, 0x3b, 0xe8,
+	0x11, 0x2d, 0xcf, 0xbd, 0x8b, 0xbc, 0xcd, 0xbd, 0xd0, 0x42, 0x91, 0x98, 0x63, 0xfb, 0x3d, 0xad,
+	0x30, 0x86, 0x8d, 0x6e, 0x22, 0x26, 0x83, 0x97, 0xc0, 0xdc, 0x80, 0xf8, 0xd4, 0x76, 0x1d, 0x6d,
+	0x96, 0xa3, 0x97, 0x47, 0xc3, 0xea, 0xdc, 0xbd, 0x48, 0x84, 0x62, 0x5d, 0xed, 0x47, 0x75, 0xb2,
+	0x6b, 0xec, 0x22, 0x41, 0x13, 0xcc, 0x89, 0xd2, 0x89, 0xa6, 0x7d, 0xf2, 0x3a, 0x95, 0xdd, 0xc2,
+	0xbe, 0x45, 0x02, 0x44, 0x3a, 0x51, 0x78, 0x11, 0x09, 0xc5, 0xd0, 0xf0, 0x36, 0x28, 0xf4, 0x5d,
+	0x93, 0xf4, 0xc4, 0xab, 0x58, 0xc9, 0xbc, 0x18, 0x82, 0x7f, 0x74, 0x84, 0x1f, 0xad, 0x3d, 0x0e,
+	0x88, 0xc3, 0x92, 0x8f, 0x0a, 0x76, 0x8b, 0xf9, 0xa3, 0x08, 0x26, 0xc5, 0x04, 0xea, 0x61, 0x4c,
+	0x00, 0xeb, 0xa0, 0xe4, 0x0e, 0x88, 0xff, 0xc8, 0xb7, 0x83, 0xa8, 0xc4, 0x45, 0x63, 0x41, 0x98,
+	0x97, 0x36, 0x62, 0x05, 0x4a, 0x6c, 0xe0, 0x37, 0x00, 0x04, 0xa4, 0xef, 0xf5, 0x70, 0x60, 0xef,
+	0x12, 0x5e, 0xf6, 0xf2, 0xea, 0xed, 0xd7, 0xa9, 0x0b, 0x4f, 0x7a, 0x2b, 0x82, 0x4a, 0x13, 0xa0,
+	0x71, 0x9c, 0x31, 0xc8, 0x96, 0x8c, 0x82, 0xc6, 0x22, 0xd6, 0x7e, 0x50, 0xc1, 0x99, 0x83, 0x9f,
+	0x25, 0xbc, 0x0e, 0xa0, 0xdb, 0xa2, 0xc4, 0x1f, 0x10, 0x73, 0x3d, 0x62, 0x5b, 0xd6, 0xfa, 0xe8,
+	0x3a, 0x2e, 0x8a, 0x43, 0xc1, 0x8d, 0x09, 0x0b, 0x74, 0x80, 0x17, 0x7c, 0x0f, 0x14, 0xbc, 0x2e,
+	0xa6, 0x44, 0x5c, 0xda, 0x0b, 0xf1, 0x6b, 0xd8, 0x64, 0xc2, 0x17, 0xc3, 0xea, 0x31, 0x91, 0x03,
+	0xff, 0x46, 0x91, 0x2d, 0xfc, 0x3f, 0x98, 0xf5, 0x09, 0xa6, 0xae, 0xc3, 0x0b, 0x5f, 0x4a, 0x78,
+	0x02, 0x71, 0x29, 0x12, 0x5a, 0xb8, 0x0b, 0x4a, 0x66, 0x9c, 0x3b, 0x2f, 0x7a, 0x79, 0xf5, 0xd6,
+	0x34, 0x1e, 0xad, 0x7c, 0x89, 0xc6, 0x3c, 0xeb, 0x5f, 0x22, 0x4f, 0xc2, 0xc1, 0xfb, 0x00, 0xb4,
+	0x5d, 0xc7, 0xb4, 0xd9, 0x29, 0xa9, 0x56, 0xe0, 0x8c, 0xb1, 0xac, 0x8f, 0xcf, 0x2e, 0x3d, 0x9a,
+	0x5d, 0x0f, 0x2c, 0x7e, 0x07, 0x19, 0x0b, 0x5d, 0x8b, 0x1d, 0x12, 0x7e, 0x97, 0x22, 0x8a, 0xc6,
+	0xf0, 0x6a, 0x7f, 0x2b, 0x40, 0xdb, 0x9f, 0x55, 0xdc, 0xe3, 0x23, 0x18, 0x30, 0x7e, 0x6a, 0xc0,
+	0x6c, 0x4e, 0xa3, 0xa6, 0x71, 0xf6, 0x59, 0x83, 0xa6, 0xf6, 0x97, 0x02, 0xce, 0x67, 0x39, 0x1d,
+	0x01, 0xf9, 0x7f, 0x99, 0x26, 0xff, 0x9b, 0xd3, 0x3c, 0x73, 0xc6, 0x10, 0xf8, 0x29, 0x07, 0xfe,
+	0x97, 0xe5, 0xf2, 0x46, 0xc3, 0xe0, 0x62, 0xcc, 0xf5, 0xd1, 0xf3, 0x91, 0xd1, 0xb7, 0x98, 0x30,
+	0x26, 0xfc, 0xf3, 0x20, 0x1f, 0x60, 0x8b, 0x6a, 0xf9, 0x25, 0x35, 0x9e, 0x07, 0x5b, 0xd8, 0xa2,
+	0x88, 0x4b, 0x19, 0xfb, 0x31, 0x92, 0xdc, 0x75, 0x1d, 0x22, 0x66, 0x82, 0x2c, 0xde, 0x96, 0x90,
+	0x23, 0x69, 0x01, 0x3f, 0x06, 0xf3, 0xd1, 0x36, 0x77, 0x2f, 0x35, 0x27, 0x4e, 0x0b, 0x97, 0xf9,
+	0x3b, 0xe3, 0x4a, 0x94, 0xb6, 0x85, 0xef, 0x24, 0xe3, 0x65, 0x8e, 0xbb, 0x9d, 0x10, 0x6e, 0x93,
+	0x23, 0xe6, 0x49, 0x2e, 0xfb, 0x8e, 0xf0, 0x51, 0xf3, 0x44, 0x01, 0x9a, 0xe8, 0x94, 0x7c, 0xaa,
+	0x82, 0xf4, 0x88, 0xb8, 0x34, 0x77, 0xa7, 0xd9, 0xd9, 0x84, 0x29, 0x96, 0x44, 0xd2, 0x99, 0xcf,
+	0x16, 0x65, 0x26, 0xf6, 0x6a, 0x4b, 0x67, 0x7a, 0xd4, 0xa8, 0x87, 0x8f, 0x9a, 0xda, 0xaf, 0x39,
+	0xb0, 0x20, 0xb3, 0x92, 0x9b, 0xee, 0xdb, 0x67, 0x91, 0xed, 0x14, 0x8b, 0x34, 0xdf, 0xa8, 0xee,
+	0x71, 0xda, 0x99, 0x7b, 0x2a, 0xdd, 0xb7, 0xa7, 0xde, 0x98, 0x4e, 0xb8, 0x97, 0x2f, 0xaa, 0x7b,
+	0x0a, 0x38, 0x3d, 0xe1, 0x73, 0x04, 0x64, 0xf5, 0x30, 0x4d, 0x56, 0x6b, 0x53, 0x39, 0x6b, 0x06,
+	0x4b, 0x7d, 0x3f, 0x7b, 0xc0, 0x19, 0x8f, 0x70, 0xaf, 0x5b, 0xe4, 0xfc, 0x17, 0x3d, 0x0b, 0x20,
+	0x32, 0x8c, 0x39, 0xf0, 0x62, 0xb4, 0xf5, 0x9a, 0x62, 0x41, 0x93, 0x07, 0x18, 0xdb, 0x7c, 0x4d,
+	0xb8, 0x04, 0xf2, 0x0e, 0xee, 0xc7, 0x8b, 0xaf, 0xbc, 0x3b, 0xb7, 0x71, 0x9f, 0x20, 0xae, 0x81,
+	0x1f, 0x81, 0x7c, 0xb0, 0xe3, 0xc5, 0x44, 0x77, 0x29, 0xb6, 0xd8, 0xda, 0xf1, 0xd8, 0x8a, 0x32,
+	0x79, 0x7a, 0xa6, 0x40, 0xdc, 0x05, 0xae, 0x81, 0x59, 0xdc, 0x6e, 0x13, 0x4a, 0x39, 0xe5, 0x95,
+	0x8c, 0x95, 0xf8, 0xa6, 0x5c, 0xe5, 0xd2, 0x17, 0xc3, 0xea, 0x7f, 0x27, 0xdc, 0x23, 0x15, 0x07,
+	0x11, 0xce, 0xf0, 0x42, 0xb4, 0x7d, 0xcf, 0x71, 0x8c, 0xb2, 0xc0, 0x48, 0x36, 0xf0, 0xcb, 0xa0,
+	0xe8, 0x61, 0x4a, 0x1f, 0xb9, 0xbe, 0xa9, 0x15, 0xd3, 0x6c, 0xbc, 0x29, 0xe4, 0x48, 0x5a, 0xb0,
+	0x03, 0x87, 0x94, 0xf8, 0x5a, 0x29, 0x7d, 0xe0, 0xbb, 0x94, 0xf8, 0x88, 0x6b, 0x18, 0x1e, 0xbb,
+	0x47, 0x2d, 0xb6, 0x98, 0x81, 0x34, 0x5e, 0x43, 0xc8, 0x91, 0xb4, 0x60, 0x84, 0xd3, 0xc2, 0xd4,
+	0x6e, 0x5f, 0x0d, 0x83, 0xae, 0x56, 0x4e, 0x13, 0x8e, 0x11, 0x2b, 0x50, 0x62, 0xc3, 0xc6, 0x81,
+	0xfc, 0x60, 0x51, 0xb5, 0x63, 0x3c, 0x86, 0x1c, 0x07, 0xc6, 0xb8, 0x12, 0xa5, 0x6d, 0xe1, 0x3a,
+	0x58, 0x90, 0x82, 0xf8, 0x70, 0xda, 0x3c, 0x07, 0x38, 0x27, 0x00, 0x16, 0x8c, 0xfd, 0x06, 0x68,
+	0xd2, 0x87, 0xa5, 0x6d, 0xd3, 0x06, 0xe9, 0xe0, 0xb0, 0x17, 0x68, 0xc7, 0xd3, 0x69, 0x37, 0x63,
+	0x05, 0x4a, 0x6c, 0x58, 0x55, 0x88, 0x69, 0x07, 0xb8, 0xd5, 0x23, 0xda, 0x09, 0x6e, 0x2f, 0xab,
+	0xb2, 0x26, 0xe4, 0x48, 0x5a, 0xd4, 0xfe, 0xcc, 0x81, 0xb3, 0x19, 0x7c, 0x31, 0xd5, 0x0d, 0xba,
+	0x09, 0x4e, 0xc9, 0xc1, 0x11, 0x87, 0x91, 0x73, 0xe2, 0xec, 0x68, 0x58, 0x3d, 0x35, 0x91, 0x45,
+	0xb3, 0x81, 0x0e, 0xf2, 0x49, 0x96, 0x71, 0xf5, 0xb5, 0x96, 0xf1, 0xfc, 0x4b, 0x97, 0xf1, 0xb7,
+	0xbb, 0x10, 0x87, 0x60, 0x31, 0xfb, 0x1f, 0x9d, 0x64, 0xe1, 0x51, 0x78, 0xdb, 0x0e, 0x5e, 0x78,
+	0xd2, 0x3f, 0x07, 0xe5, 0xb8, 0xe5, 0x21, 0x3f, 0x07, 0xd5, 0xbe, 0x06, 0x25, 0xc9, 0x4f, 0xec,
+	0x7e, 0x60, 0xcf, 0x5e, 0xf7, 0xdd, 0xd0, 0x13, 0xbf, 0x26, 0xc9, 0xfb, 0x71, 0x75, 0xb3, 0xc9,
+	0xe5, 0x48, 0x5a, 0xb0, 0x57, 0xb8, 0x6d, 0x3b, 0xf1, 0x82, 0x26, 0x5f, 0xe1, 0x0d, 0xdb, 0x31,
+	0x11, 0xd7, 0x48, 0x62, 0x52, 0xb3, 0x88, 0xc9, 0xd0, 0x9f, 0xee, 0x55, 0x66, 0x9e, 0xed, 0x55,
+	0x66, 0x9e, 0xef, 0x55, 0x66, 0xbe, 0x1d, 0x55, 0x94, 0xa7, 0xa3, 0x8a, 0xf2, 0x6c, 0x54, 0x51,
+	0x9e, 0x8f, 0x2a, 0xca, 0xef, 0xa3, 0x8a, 0xf2, 0xdd, 0x1f, 0x95, 0x99, 0xcf, 0x8b, 0x31, 0x97,
+	0xfe, 0x13, 0x00, 0x00, 0xff, 0xff, 0x31, 0xcb, 0x57, 0xc0, 0x82, 0x14, 0x00, 0x00,
 }
 
-func (m *Dashboard) Marshal() (dAtA []byte, err error) {
+func (m *DatasourceConfiguration) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -621,12 +623,43 @@ func (m *Dashboard) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *Dashboard) MarshalTo(dAtA []byte) (int, error) {
+func (m *DatasourceConfiguration) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *Dashboard) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *DatasourceConfiguration) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	i = encodeVarintGenerated(dAtA, i, uint64(m.FolderID))
+	i--
+	dAtA[i] = 0x10
+	i -= len(m.Datasource)
+	copy(dAtA[i:], m.Datasource)
+	i = encodeVarintGenerated(dAtA, i, uint64(len(m.Datasource)))
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *GrafanaDashboard) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *GrafanaDashboard) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *GrafanaDashboard) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -664,7 +697,7 @@ func (m *Dashboard) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *DashboardList) Marshal() (dAtA []byte, err error) {
+func (m *GrafanaDashboardList) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -674,12 +707,12 @@ func (m *DashboardList) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *DashboardList) MarshalTo(dAtA []byte) (int, error) {
+func (m *GrafanaDashboardList) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *DashboardList) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *GrafanaDashboardList) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -711,7 +744,7 @@ func (m *DashboardList) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *DashboardReference) Marshal() (dAtA []byte, err error) {
+func (m *GrafanaDashboardReference) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -721,12 +754,12 @@ func (m *DashboardReference) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *DashboardReference) MarshalTo(dAtA []byte) (int, error) {
+func (m *GrafanaDashboardReference) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *DashboardReference) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *GrafanaDashboardReference) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -770,7 +803,7 @@ func (m *DashboardReference) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *DashboardSpec) Marshal() (dAtA []byte, err error) {
+func (m *GrafanaDashboardSpec) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -780,12 +813,12 @@ func (m *DashboardSpec) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *DashboardSpec) MarshalTo(dAtA []byte) (int, error) {
+func (m *GrafanaDashboardSpec) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *DashboardSpec) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *GrafanaDashboardSpec) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -840,7 +873,7 @@ func (m *DashboardSpec) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *DashboardStatus) Marshal() (dAtA []byte, err error) {
+func (m *GrafanaDashboardStatus) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -850,12 +883,12 @@ func (m *DashboardStatus) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *DashboardStatus) MarshalTo(dAtA []byte) (int, error) {
+func (m *GrafanaDashboardStatus) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *DashboardStatus) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *GrafanaDashboardStatus) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -902,7 +935,7 @@ func (m *DashboardStatus) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *DashboardTemplate) Marshal() (dAtA []byte, err error) {
+func (m *GrafanaDashboardTemplate) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -912,12 +945,12 @@ func (m *DashboardTemplate) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *DashboardTemplate) MarshalTo(dAtA []byte) (int, error) {
+func (m *GrafanaDashboardTemplate) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *DashboardTemplate) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *GrafanaDashboardTemplate) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -945,7 +978,7 @@ func (m *DashboardTemplate) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *DashboardTemplateList) Marshal() (dAtA []byte, err error) {
+func (m *GrafanaDashboardTemplateList) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -955,12 +988,12 @@ func (m *DashboardTemplateList) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *DashboardTemplateList) MarshalTo(dAtA []byte) (int, error) {
+func (m *GrafanaDashboardTemplateList) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *DashboardTemplateList) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *GrafanaDashboardTemplateList) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -992,7 +1025,7 @@ func (m *DashboardTemplateList) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *DashboardTemplateReference) Marshal() (dAtA []byte, err error) {
+func (m *GrafanaDashboardTemplateReference) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1002,12 +1035,12 @@ func (m *DashboardTemplateReference) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *DashboardTemplateReference) MarshalTo(dAtA []byte) (int, error) {
+func (m *GrafanaDashboardTemplateReference) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *DashboardTemplateReference) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *GrafanaDashboardTemplateReference) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1052,7 +1085,7 @@ func (m *DashboardTemplateReference) MarshalToSizedBuffer(dAtA []byte) (int, err
 	return len(dAtA) - i, nil
 }
 
-func (m *DashboardTemplateSpec) Marshal() (dAtA []byte, err error) {
+func (m *GrafanaDashboardTemplateSpec) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1062,12 +1095,12 @@ func (m *DashboardTemplateSpec) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *DashboardTemplateSpec) MarshalTo(dAtA []byte) (int, error) {
+func (m *GrafanaDashboardTemplateSpec) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *DashboardTemplateSpec) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *GrafanaDashboardTemplateSpec) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1084,7 +1117,7 @@ func (m *DashboardTemplateSpec) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i--
 	dAtA[i] = 0x10
 	{
-		size, err := m.DashboardTemplate.MarshalToSizedBuffer(dAtA[:i])
+		size, err := m.GrafanaDashboardTemplate.MarshalToSizedBuffer(dAtA[:i])
 		if err != nil {
 			return 0, err
 		}
@@ -1096,7 +1129,7 @@ func (m *DashboardTemplateSpec) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *Datasource) Marshal() (dAtA []byte, err error) {
+func (m *GrafanaDatasource) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1106,12 +1139,12 @@ func (m *Datasource) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *Datasource) MarshalTo(dAtA []byte) (int, error) {
+func (m *GrafanaDatasource) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *Datasource) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *GrafanaDatasource) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1149,7 +1182,7 @@ func (m *Datasource) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *DatasourceConfiguration) Marshal() (dAtA []byte, err error) {
+func (m *GrafanaDatasourceList) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1159,43 +1192,12 @@ func (m *DatasourceConfiguration) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *DatasourceConfiguration) MarshalTo(dAtA []byte) (int, error) {
+func (m *GrafanaDatasourceList) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *DatasourceConfiguration) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	i = encodeVarintGenerated(dAtA, i, uint64(m.FolderID))
-	i--
-	dAtA[i] = 0x10
-	i -= len(m.Datasource)
-	copy(dAtA[i:], m.Datasource)
-	i = encodeVarintGenerated(dAtA, i, uint64(len(m.Datasource)))
-	i--
-	dAtA[i] = 0xa
-	return len(dAtA) - i, nil
-}
-
-func (m *DatasourceList) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *DatasourceList) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *DatasourceList) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *GrafanaDatasourceList) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1227,7 +1229,7 @@ func (m *DatasourceList) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *DatasourceSpec) Marshal() (dAtA []byte, err error) {
+func (m *GrafanaDatasourceSpec) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1237,12 +1239,12 @@ func (m *DatasourceSpec) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *DatasourceSpec) MarshalTo(dAtA []byte) (int, error) {
+func (m *GrafanaDatasourceSpec) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *DatasourceSpec) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *GrafanaDatasourceSpec) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1337,7 +1339,7 @@ func (m *DatasourceSpec) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *DatasourceStatus) Marshal() (dAtA []byte, err error) {
+func (m *GrafanaDatasourceStatus) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1347,12 +1349,12 @@ func (m *DatasourceStatus) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *DatasourceStatus) MarshalTo(dAtA []byte) (int, error) {
+func (m *GrafanaDatasourceStatus) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *DatasourceStatus) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *GrafanaDatasourceStatus) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1381,8 +1383,8 @@ func (m *DatasourceStatus) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i = encodeVarintGenerated(dAtA, i, uint64(len(m.Phase)))
 	i--
 	dAtA[i] = 0x1a
-	if m.DatasourceID != nil {
-		i = encodeVarintGenerated(dAtA, i, uint64(*m.DatasourceID))
+	if m.GrafanaDatasourceID != nil {
+		i = encodeVarintGenerated(dAtA, i, uint64(*m.GrafanaDatasourceID))
 		i--
 		dAtA[i] = 0x10
 	}
@@ -1480,7 +1482,19 @@ func encodeVarintGenerated(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *Dashboard) Size() (n int) {
+func (m *DatasourceConfiguration) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Datasource)
+	n += 1 + l + sovGenerated(uint64(l))
+	n += 1 + sovGenerated(uint64(m.FolderID))
+	return n
+}
+
+func (m *GrafanaDashboard) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1495,7 +1509,7 @@ func (m *Dashboard) Size() (n int) {
 	return n
 }
 
-func (m *DashboardList) Size() (n int) {
+func (m *GrafanaDashboardList) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1512,7 +1526,7 @@ func (m *DashboardList) Size() (n int) {
 	return n
 }
 
-func (m *DashboardReference) Size() (n int) {
+func (m *GrafanaDashboardReference) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1542,7 +1556,7 @@ func (m *DashboardReference) Size() (n int) {
 	return n
 }
 
-func (m *DashboardSpec) Size() (n int) {
+func (m *GrafanaDashboardSpec) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1565,7 +1579,7 @@ func (m *DashboardSpec) Size() (n int) {
 	return n
 }
 
-func (m *DashboardStatus) Size() (n int) {
+func (m *GrafanaDashboardStatus) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1589,7 +1603,7 @@ func (m *DashboardStatus) Size() (n int) {
 	return n
 }
 
-func (m *DashboardTemplate) Size() (n int) {
+func (m *GrafanaDashboardTemplate) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1602,7 +1616,7 @@ func (m *DashboardTemplate) Size() (n int) {
 	return n
 }
 
-func (m *DashboardTemplateList) Size() (n int) {
+func (m *GrafanaDashboardTemplateList) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1619,7 +1633,7 @@ func (m *DashboardTemplateList) Size() (n int) {
 	return n
 }
 
-func (m *DashboardTemplateReference) Size() (n int) {
+func (m *GrafanaDashboardTemplateReference) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1647,20 +1661,20 @@ func (m *DashboardTemplateReference) Size() (n int) {
 	return n
 }
 
-func (m *DashboardTemplateSpec) Size() (n int) {
+func (m *GrafanaDashboardTemplateSpec) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = m.DashboardTemplate.Size()
+	l = m.GrafanaDashboardTemplate.Size()
 	n += 1 + l + sovGenerated(uint64(l))
 	n += 1 + sovGenerated(uint64(m.FolderID))
 	n += 2
 	return n
 }
 
-func (m *Datasource) Size() (n int) {
+func (m *GrafanaDatasource) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1675,19 +1689,7 @@ func (m *Datasource) Size() (n int) {
 	return n
 }
 
-func (m *DatasourceConfiguration) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.Datasource)
-	n += 1 + l + sovGenerated(uint64(l))
-	n += 1 + sovGenerated(uint64(m.FolderID))
-	return n
-}
-
-func (m *DatasourceList) Size() (n int) {
+func (m *GrafanaDatasourceList) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1704,7 +1706,7 @@ func (m *DatasourceList) Size() (n int) {
 	return n
 }
 
-func (m *DatasourceSpec) Size() (n int) {
+func (m *GrafanaDatasourceSpec) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1740,15 +1742,15 @@ func (m *DatasourceSpec) Size() (n int) {
 	return n
 }
 
-func (m *DatasourceStatus) Size() (n int) {
+func (m *GrafanaDatasourceStatus) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
 	n += 1 + sovGenerated(uint64(m.ObservedGeneration))
-	if m.DatasourceID != nil {
-		n += 1 + sovGenerated(uint64(*m.DatasourceID))
+	if m.GrafanaDatasourceID != nil {
+		n += 1 + sovGenerated(uint64(*m.GrafanaDatasourceID))
 	}
 	l = len(m.Phase)
 	n += 1 + l + sovGenerated(uint64(l))
@@ -1795,149 +1797,6 @@ func sovGenerated(x uint64) (n int) {
 func sozGenerated(x uint64) (n int) {
 	return sovGenerated(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (this *Dashboard) String() string {
-	if this == nil {
-		return "nil"
-	}
-	s := strings.Join([]string{`&Dashboard{`,
-		`ObjectMeta:` + strings.Replace(strings.Replace(fmt.Sprintf("%v", this.ObjectMeta), "ObjectMeta", "v1.ObjectMeta", 1), `&`, ``, 1) + `,`,
-		`Spec:` + strings.Replace(strings.Replace(this.Spec.String(), "DashboardSpec", "DashboardSpec", 1), `&`, ``, 1) + `,`,
-		`Status:` + strings.Replace(strings.Replace(this.Status.String(), "DashboardStatus", "DashboardStatus", 1), `&`, ``, 1) + `,`,
-		`}`,
-	}, "")
-	return s
-}
-func (this *DashboardList) String() string {
-	if this == nil {
-		return "nil"
-	}
-	repeatedStringForItems := "[]Dashboard{"
-	for _, f := range this.Items {
-		repeatedStringForItems += strings.Replace(strings.Replace(f.String(), "Dashboard", "Dashboard", 1), `&`, ``, 1) + ","
-	}
-	repeatedStringForItems += "}"
-	s := strings.Join([]string{`&DashboardList{`,
-		`ListMeta:` + strings.Replace(strings.Replace(fmt.Sprintf("%v", this.ListMeta), "ListMeta", "v1.ListMeta", 1), `&`, ``, 1) + `,`,
-		`Items:` + repeatedStringForItems + `,`,
-		`}`,
-	}, "")
-	return s
-}
-func (this *DashboardReference) String() string {
-	if this == nil {
-		return "nil"
-	}
-	s := strings.Join([]string{`&DashboardReference{`,
-		`ID:` + valueToStringGenerated(this.ID) + `,`,
-		`UID:` + valueToStringGenerated(this.UID) + `,`,
-		`OrgID:` + valueToStringGenerated(this.OrgID) + `,`,
-		`Slug:` + valueToStringGenerated(this.Slug) + `,`,
-		`URL:` + valueToStringGenerated(this.URL) + `,`,
-		`Version:` + valueToStringGenerated(this.Version) + `,`,
-		`}`,
-	}, "")
-	return s
-}
-func (this *DashboardSpec) String() string {
-	if this == nil {
-		return "nil"
-	}
-	s := strings.Join([]string{`&DashboardSpec{`,
-		`Grafana:` + strings.Replace(this.Grafana.String(), "TargetRef", "TargetRef", 1) + `,`,
-		`Model:` + strings.Replace(fmt.Sprintf("%v", this.Model), "RawExtension", "runtime.RawExtension", 1) + `,`,
-		`FolderID:` + fmt.Sprintf("%v", this.FolderID) + `,`,
-		`Overwrite:` + fmt.Sprintf("%v", this.Overwrite) + `,`,
-		`Templatize:` + strings.Replace(this.Templatize.String(), "ModelTemplateConfiguration", "ModelTemplateConfiguration", 1) + `,`,
-		`}`,
-	}, "")
-	return s
-}
-func (this *DashboardStatus) String() string {
-	if this == nil {
-		return "nil"
-	}
-	repeatedStringForConditions := "[]Condition{"
-	for _, f := range this.Conditions {
-		repeatedStringForConditions += fmt.Sprintf("%v", f) + ","
-	}
-	repeatedStringForConditions += "}"
-	s := strings.Join([]string{`&DashboardStatus{`,
-		`ObservedGeneration:` + fmt.Sprintf("%v", this.ObservedGeneration) + `,`,
-		`Phase:` + fmt.Sprintf("%v", this.Phase) + `,`,
-		`Reason:` + fmt.Sprintf("%v", this.Reason) + `,`,
-		`Dashboard:` + strings.Replace(this.Dashboard.String(), "DashboardReference", "DashboardReference", 1) + `,`,
-		`Conditions:` + repeatedStringForConditions + `,`,
-		`}`,
-	}, "")
-	return s
-}
-func (this *DashboardTemplate) String() string {
-	if this == nil {
-		return "nil"
-	}
-	s := strings.Join([]string{`&DashboardTemplate{`,
-		`ObjectMeta:` + strings.Replace(strings.Replace(fmt.Sprintf("%v", this.ObjectMeta), "ObjectMeta", "v1.ObjectMeta", 1), `&`, ``, 1) + `,`,
-		`Spec:` + strings.Replace(strings.Replace(this.Spec.String(), "DashboardTemplateSpec", "DashboardTemplateSpec", 1), `&`, ``, 1) + `,`,
-		`}`,
-	}, "")
-	return s
-}
-func (this *DashboardTemplateList) String() string {
-	if this == nil {
-		return "nil"
-	}
-	repeatedStringForItems := "[]DashboardTemplate{"
-	for _, f := range this.Items {
-		repeatedStringForItems += strings.Replace(strings.Replace(f.String(), "DashboardTemplate", "DashboardTemplate", 1), `&`, ``, 1) + ","
-	}
-	repeatedStringForItems += "}"
-	s := strings.Join([]string{`&DashboardTemplateList{`,
-		`ListMeta:` + strings.Replace(strings.Replace(fmt.Sprintf("%v", this.ListMeta), "ListMeta", "v1.ListMeta", 1), `&`, ``, 1) + `,`,
-		`Items:` + repeatedStringForItems + `,`,
-		`}`,
-	}, "")
-	return s
-}
-func (this *DashboardTemplateReference) String() string {
-	if this == nil {
-		return "nil"
-	}
-	s := strings.Join([]string{`&DashboardTemplateReference{`,
-		`ID:` + valueToStringGenerated(this.ID) + `,`,
-		`UID:` + valueToStringGenerated(this.UID) + `,`,
-		`Title:` + fmt.Sprintf("%v", this.Title) + `,`,
-		`Tags:` + fmt.Sprintf("%v", this.Tags) + `,`,
-		`Timezone:` + fmt.Sprintf("%v", this.Timezone) + `,`,
-		`SchemaVersion:` + fmt.Sprintf("%v", this.SchemaVersion) + `,`,
-		`Version:` + fmt.Sprintf("%v", this.Version) + `,`,
-		`}`,
-	}, "")
-	return s
-}
-func (this *DashboardTemplateSpec) String() string {
-	if this == nil {
-		return "nil"
-	}
-	s := strings.Join([]string{`&DashboardTemplateSpec{`,
-		`DashboardTemplate:` + strings.Replace(strings.Replace(this.DashboardTemplate.String(), "DashboardTemplateReference", "DashboardTemplateReference", 1), `&`, ``, 1) + `,`,
-		`FolderID:` + fmt.Sprintf("%v", this.FolderID) + `,`,
-		`Overwrite:` + fmt.Sprintf("%v", this.Overwrite) + `,`,
-		`}`,
-	}, "")
-	return s
-}
-func (this *Datasource) String() string {
-	if this == nil {
-		return "nil"
-	}
-	s := strings.Join([]string{`&Datasource{`,
-		`ObjectMeta:` + strings.Replace(strings.Replace(fmt.Sprintf("%v", this.ObjectMeta), "ObjectMeta", "v1.ObjectMeta", 1), `&`, ``, 1) + `,`,
-		`Spec:` + strings.Replace(strings.Replace(this.Spec.String(), "DatasourceSpec", "DatasourceSpec", 1), `&`, ``, 1) + `,`,
-		`Status:` + strings.Replace(strings.Replace(this.Status.String(), "DatasourceStatus", "DatasourceStatus", 1), `&`, ``, 1) + `,`,
-		`}`,
-	}, "")
-	return s
-}
 func (this *DatasourceConfiguration) String() string {
 	if this == nil {
 		return "nil"
@@ -1949,27 +1808,170 @@ func (this *DatasourceConfiguration) String() string {
 	}, "")
 	return s
 }
-func (this *DatasourceList) String() string {
+func (this *GrafanaDashboard) String() string {
 	if this == nil {
 		return "nil"
 	}
-	repeatedStringForItems := "[]Datasource{"
+	s := strings.Join([]string{`&GrafanaDashboard{`,
+		`ObjectMeta:` + strings.Replace(strings.Replace(fmt.Sprintf("%v", this.ObjectMeta), "ObjectMeta", "v1.ObjectMeta", 1), `&`, ``, 1) + `,`,
+		`Spec:` + strings.Replace(strings.Replace(this.Spec.String(), "GrafanaDashboardSpec", "GrafanaDashboardSpec", 1), `&`, ``, 1) + `,`,
+		`Status:` + strings.Replace(strings.Replace(this.Status.String(), "GrafanaDashboardStatus", "GrafanaDashboardStatus", 1), `&`, ``, 1) + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *GrafanaDashboardList) String() string {
+	if this == nil {
+		return "nil"
+	}
+	repeatedStringForItems := "[]GrafanaDashboard{"
 	for _, f := range this.Items {
-		repeatedStringForItems += strings.Replace(strings.Replace(f.String(), "Datasource", "Datasource", 1), `&`, ``, 1) + ","
+		repeatedStringForItems += strings.Replace(strings.Replace(f.String(), "GrafanaDashboard", "GrafanaDashboard", 1), `&`, ``, 1) + ","
 	}
 	repeatedStringForItems += "}"
-	s := strings.Join([]string{`&DatasourceList{`,
+	s := strings.Join([]string{`&GrafanaDashboardList{`,
 		`ListMeta:` + strings.Replace(strings.Replace(fmt.Sprintf("%v", this.ListMeta), "ListMeta", "v1.ListMeta", 1), `&`, ``, 1) + `,`,
 		`Items:` + repeatedStringForItems + `,`,
 		`}`,
 	}, "")
 	return s
 }
-func (this *DatasourceSpec) String() string {
+func (this *GrafanaDashboardReference) String() string {
 	if this == nil {
 		return "nil"
 	}
-	s := strings.Join([]string{`&DatasourceSpec{`,
+	s := strings.Join([]string{`&GrafanaDashboardReference{`,
+		`ID:` + valueToStringGenerated(this.ID) + `,`,
+		`UID:` + valueToStringGenerated(this.UID) + `,`,
+		`OrgID:` + valueToStringGenerated(this.OrgID) + `,`,
+		`Slug:` + valueToStringGenerated(this.Slug) + `,`,
+		`URL:` + valueToStringGenerated(this.URL) + `,`,
+		`Version:` + valueToStringGenerated(this.Version) + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *GrafanaDashboardSpec) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&GrafanaDashboardSpec{`,
+		`Grafana:` + strings.Replace(this.Grafana.String(), "TargetRef", "TargetRef", 1) + `,`,
+		`Model:` + strings.Replace(fmt.Sprintf("%v", this.Model), "RawExtension", "runtime.RawExtension", 1) + `,`,
+		`FolderID:` + fmt.Sprintf("%v", this.FolderID) + `,`,
+		`Overwrite:` + fmt.Sprintf("%v", this.Overwrite) + `,`,
+		`Templatize:` + strings.Replace(this.Templatize.String(), "ModelTemplateConfiguration", "ModelTemplateConfiguration", 1) + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *GrafanaDashboardStatus) String() string {
+	if this == nil {
+		return "nil"
+	}
+	repeatedStringForConditions := "[]Condition{"
+	for _, f := range this.Conditions {
+		repeatedStringForConditions += fmt.Sprintf("%v", f) + ","
+	}
+	repeatedStringForConditions += "}"
+	s := strings.Join([]string{`&GrafanaDashboardStatus{`,
+		`ObservedGeneration:` + fmt.Sprintf("%v", this.ObservedGeneration) + `,`,
+		`Phase:` + fmt.Sprintf("%v", this.Phase) + `,`,
+		`Reason:` + fmt.Sprintf("%v", this.Reason) + `,`,
+		`Dashboard:` + strings.Replace(this.Dashboard.String(), "GrafanaDashboardReference", "GrafanaDashboardReference", 1) + `,`,
+		`Conditions:` + repeatedStringForConditions + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *GrafanaDashboardTemplate) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&GrafanaDashboardTemplate{`,
+		`ObjectMeta:` + strings.Replace(strings.Replace(fmt.Sprintf("%v", this.ObjectMeta), "ObjectMeta", "v1.ObjectMeta", 1), `&`, ``, 1) + `,`,
+		`Spec:` + strings.Replace(strings.Replace(this.Spec.String(), "GrafanaDashboardTemplateSpec", "GrafanaDashboardTemplateSpec", 1), `&`, ``, 1) + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *GrafanaDashboardTemplateList) String() string {
+	if this == nil {
+		return "nil"
+	}
+	repeatedStringForItems := "[]GrafanaDashboardTemplate{"
+	for _, f := range this.Items {
+		repeatedStringForItems += strings.Replace(strings.Replace(f.String(), "GrafanaDashboardTemplate", "GrafanaDashboardTemplate", 1), `&`, ``, 1) + ","
+	}
+	repeatedStringForItems += "}"
+	s := strings.Join([]string{`&GrafanaDashboardTemplateList{`,
+		`ListMeta:` + strings.Replace(strings.Replace(fmt.Sprintf("%v", this.ListMeta), "ListMeta", "v1.ListMeta", 1), `&`, ``, 1) + `,`,
+		`Items:` + repeatedStringForItems + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *GrafanaDashboardTemplateReference) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&GrafanaDashboardTemplateReference{`,
+		`ID:` + valueToStringGenerated(this.ID) + `,`,
+		`UID:` + valueToStringGenerated(this.UID) + `,`,
+		`Title:` + fmt.Sprintf("%v", this.Title) + `,`,
+		`Tags:` + fmt.Sprintf("%v", this.Tags) + `,`,
+		`Timezone:` + fmt.Sprintf("%v", this.Timezone) + `,`,
+		`SchemaVersion:` + fmt.Sprintf("%v", this.SchemaVersion) + `,`,
+		`Version:` + fmt.Sprintf("%v", this.Version) + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *GrafanaDashboardTemplateSpec) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&GrafanaDashboardTemplateSpec{`,
+		`GrafanaDashboardTemplate:` + strings.Replace(strings.Replace(this.GrafanaDashboardTemplate.String(), "GrafanaDashboardTemplateReference", "GrafanaDashboardTemplateReference", 1), `&`, ``, 1) + `,`,
+		`FolderID:` + fmt.Sprintf("%v", this.FolderID) + `,`,
+		`Overwrite:` + fmt.Sprintf("%v", this.Overwrite) + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *GrafanaDatasource) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&GrafanaDatasource{`,
+		`ObjectMeta:` + strings.Replace(strings.Replace(fmt.Sprintf("%v", this.ObjectMeta), "ObjectMeta", "v1.ObjectMeta", 1), `&`, ``, 1) + `,`,
+		`Spec:` + strings.Replace(strings.Replace(this.Spec.String(), "GrafanaDatasourceSpec", "GrafanaDatasourceSpec", 1), `&`, ``, 1) + `,`,
+		`Status:` + strings.Replace(strings.Replace(this.Status.String(), "GrafanaDatasourceStatus", "GrafanaDatasourceStatus", 1), `&`, ``, 1) + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *GrafanaDatasourceList) String() string {
+	if this == nil {
+		return "nil"
+	}
+	repeatedStringForItems := "[]GrafanaDatasource{"
+	for _, f := range this.Items {
+		repeatedStringForItems += strings.Replace(strings.Replace(f.String(), "GrafanaDatasource", "GrafanaDatasource", 1), `&`, ``, 1) + ","
+	}
+	repeatedStringForItems += "}"
+	s := strings.Join([]string{`&GrafanaDatasourceList{`,
+		`ListMeta:` + strings.Replace(strings.Replace(fmt.Sprintf("%v", this.ListMeta), "ListMeta", "v1.ListMeta", 1), `&`, ``, 1) + `,`,
+		`Items:` + repeatedStringForItems + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *GrafanaDatasourceSpec) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&GrafanaDatasourceSpec{`,
 		`Grafana:` + strings.Replace(this.Grafana.String(), "TargetRef", "TargetRef", 1) + `,`,
 		`ID:` + fmt.Sprintf("%v", this.ID) + `,`,
 		`OrgID:` + fmt.Sprintf("%v", this.OrgID) + `,`,
@@ -1989,7 +1991,7 @@ func (this *DatasourceSpec) String() string {
 	}, "")
 	return s
 }
-func (this *DatasourceStatus) String() string {
+func (this *GrafanaDatasourceStatus) String() string {
 	if this == nil {
 		return "nil"
 	}
@@ -1998,9 +2000,9 @@ func (this *DatasourceStatus) String() string {
 		repeatedStringForConditions += fmt.Sprintf("%v", f) + ","
 	}
 	repeatedStringForConditions += "}"
-	s := strings.Join([]string{`&DatasourceStatus{`,
+	s := strings.Join([]string{`&GrafanaDatasourceStatus{`,
 		`ObservedGeneration:` + fmt.Sprintf("%v", this.ObservedGeneration) + `,`,
-		`DatasourceID:` + valueToStringGenerated(this.DatasourceID) + `,`,
+		`GrafanaDatasourceID:` + valueToStringGenerated(this.GrafanaDatasourceID) + `,`,
 		`Phase:` + fmt.Sprintf("%v", this.Phase) + `,`,
 		`Reason:` + fmt.Sprintf("%v", this.Reason) + `,`,
 		`Conditions:` + repeatedStringForConditions + `,`,
@@ -2039,7 +2041,7 @@ func valueToStringGenerated(v interface{}) string {
 	pv := reflect.Indirect(rv).Interface()
 	return fmt.Sprintf("*%v", pv)
 }
-func (m *Dashboard) Unmarshal(dAtA []byte) error {
+func (m *DatasourceConfiguration) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2062,10 +2064,111 @@ func (m *Dashboard) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: Dashboard: wiretype end group for non-group")
+			return fmt.Errorf("proto: DatasourceConfiguration: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Dashboard: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: DatasourceConfiguration: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Datasource", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenerated
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenerated
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenerated
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Datasource = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field FolderID", wireType)
+			}
+			m.FolderID = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenerated
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.FolderID |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipGenerated(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthGenerated
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *GrafanaDashboard) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowGenerated
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: GrafanaDashboard: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: GrafanaDashboard: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -2188,7 +2291,7 @@ func (m *Dashboard) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *DashboardList) Unmarshal(dAtA []byte) error {
+func (m *GrafanaDashboardList) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2211,10 +2314,10 @@ func (m *DashboardList) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: DashboardList: wiretype end group for non-group")
+			return fmt.Errorf("proto: GrafanaDashboardList: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: DashboardList: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: GrafanaDashboardList: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -2279,7 +2382,7 @@ func (m *DashboardList) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Items = append(m.Items, Dashboard{})
+			m.Items = append(m.Items, GrafanaDashboard{})
 			if err := m.Items[len(m.Items)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -2305,7 +2408,7 @@ func (m *DashboardList) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *DashboardReference) Unmarshal(dAtA []byte) error {
+func (m *GrafanaDashboardReference) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2328,10 +2431,10 @@ func (m *DashboardReference) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: DashboardReference: wiretype end group for non-group")
+			return fmt.Errorf("proto: GrafanaDashboardReference: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: DashboardReference: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: GrafanaDashboardReference: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -2514,7 +2617,7 @@ func (m *DashboardReference) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *DashboardSpec) Unmarshal(dAtA []byte) error {
+func (m *GrafanaDashboardSpec) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2537,10 +2640,10 @@ func (m *DashboardSpec) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: DashboardSpec: wiretype end group for non-group")
+			return fmt.Errorf("proto: GrafanaDashboardSpec: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: DashboardSpec: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: GrafanaDashboardSpec: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -2711,7 +2814,7 @@ func (m *DashboardSpec) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *DashboardStatus) Unmarshal(dAtA []byte) error {
+func (m *GrafanaDashboardStatus) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2734,10 +2837,10 @@ func (m *DashboardStatus) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: DashboardStatus: wiretype end group for non-group")
+			return fmt.Errorf("proto: GrafanaDashboardStatus: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: DashboardStatus: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: GrafanaDashboardStatus: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -2853,7 +2956,7 @@ func (m *DashboardStatus) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Dashboard == nil {
-				m.Dashboard = &DashboardReference{}
+				m.Dashboard = &GrafanaDashboardReference{}
 			}
 			if err := m.Dashboard.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -2914,7 +3017,7 @@ func (m *DashboardStatus) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *DashboardTemplate) Unmarshal(dAtA []byte) error {
+func (m *GrafanaDashboardTemplate) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2937,10 +3040,10 @@ func (m *DashboardTemplate) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: DashboardTemplate: wiretype end group for non-group")
+			return fmt.Errorf("proto: GrafanaDashboardTemplate: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: DashboardTemplate: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: GrafanaDashboardTemplate: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -3030,7 +3133,7 @@ func (m *DashboardTemplate) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *DashboardTemplateList) Unmarshal(dAtA []byte) error {
+func (m *GrafanaDashboardTemplateList) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3053,10 +3156,10 @@ func (m *DashboardTemplateList) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: DashboardTemplateList: wiretype end group for non-group")
+			return fmt.Errorf("proto: GrafanaDashboardTemplateList: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: DashboardTemplateList: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: GrafanaDashboardTemplateList: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -3121,7 +3224,7 @@ func (m *DashboardTemplateList) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Items = append(m.Items, DashboardTemplate{})
+			m.Items = append(m.Items, GrafanaDashboardTemplate{})
 			if err := m.Items[len(m.Items)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -3147,7 +3250,7 @@ func (m *DashboardTemplateList) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *DashboardTemplateReference) Unmarshal(dAtA []byte) error {
+func (m *GrafanaDashboardTemplateReference) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3170,10 +3273,10 @@ func (m *DashboardTemplateReference) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: DashboardTemplateReference: wiretype end group for non-group")
+			return fmt.Errorf("proto: GrafanaDashboardTemplateReference: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: DashboardTemplateReference: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: GrafanaDashboardTemplateReference: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -3384,7 +3487,7 @@ func (m *DashboardTemplateReference) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *DashboardTemplateSpec) Unmarshal(dAtA []byte) error {
+func (m *GrafanaDashboardTemplateSpec) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3407,15 +3510,15 @@ func (m *DashboardTemplateSpec) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: DashboardTemplateSpec: wiretype end group for non-group")
+			return fmt.Errorf("proto: GrafanaDashboardTemplateSpec: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: DashboardTemplateSpec: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: GrafanaDashboardTemplateSpec: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field DashboardTemplate", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field GrafanaDashboardTemplate", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -3442,7 +3545,7 @@ func (m *DashboardTemplateSpec) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.DashboardTemplate.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.GrafanaDashboardTemplate.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -3506,7 +3609,7 @@ func (m *DashboardTemplateSpec) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *Datasource) Unmarshal(dAtA []byte) error {
+func (m *GrafanaDatasource) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3529,10 +3632,10 @@ func (m *Datasource) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: Datasource: wiretype end group for non-group")
+			return fmt.Errorf("proto: GrafanaDatasource: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Datasource: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: GrafanaDatasource: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -3655,7 +3758,7 @@ func (m *Datasource) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *DatasourceConfiguration) Unmarshal(dAtA []byte) error {
+func (m *GrafanaDatasourceList) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3678,111 +3781,10 @@ func (m *DatasourceConfiguration) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: DatasourceConfiguration: wiretype end group for non-group")
+			return fmt.Errorf("proto: GrafanaDatasourceList: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: DatasourceConfiguration: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Datasource", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenerated
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthGenerated
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthGenerated
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Datasource = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field FolderID", wireType)
-			}
-			m.FolderID = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenerated
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.FolderID |= int64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		default:
-			iNdEx = preIndex
-			skippy, err := skipGenerated(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthGenerated
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *DatasourceList) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowGenerated
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: DatasourceList: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: DatasourceList: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: GrafanaDatasourceList: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -3847,7 +3849,7 @@ func (m *DatasourceList) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Items = append(m.Items, Datasource{})
+			m.Items = append(m.Items, GrafanaDatasource{})
 			if err := m.Items[len(m.Items)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -3873,7 +3875,7 @@ func (m *DatasourceList) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *DatasourceSpec) Unmarshal(dAtA []byte) error {
+func (m *GrafanaDatasourceSpec) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3896,10 +3898,10 @@ func (m *DatasourceSpec) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: DatasourceSpec: wiretype end group for non-group")
+			return fmt.Errorf("proto: GrafanaDatasourceSpec: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: DatasourceSpec: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: GrafanaDatasourceSpec: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -4038,7 +4040,7 @@ func (m *DatasourceSpec) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Type = DatasourceType(dAtA[iNdEx:postIndex])
+			m.Type = GrafanaDatasourceType(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 6:
 			if wireType != 2 {
@@ -4070,7 +4072,7 @@ func (m *DatasourceSpec) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Access = DatasourceAccessType(dAtA[iNdEx:postIndex])
+			m.Access = GrafanaDatasourceAccessType(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 7:
 			if wireType != 2 {
@@ -4345,7 +4347,7 @@ func (m *DatasourceSpec) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *DatasourceStatus) Unmarshal(dAtA []byte) error {
+func (m *GrafanaDatasourceStatus) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -4368,10 +4370,10 @@ func (m *DatasourceStatus) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: DatasourceStatus: wiretype end group for non-group")
+			return fmt.Errorf("proto: GrafanaDatasourceStatus: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: DatasourceStatus: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: GrafanaDatasourceStatus: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -4395,7 +4397,7 @@ func (m *DatasourceStatus) Unmarshal(dAtA []byte) error {
 			}
 		case 2:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field DatasourceID", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field GrafanaDatasourceID", wireType)
 			}
 			var v int64
 			for shift := uint(0); ; shift += 7 {
@@ -4412,7 +4414,7 @@ func (m *DatasourceStatus) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-			m.DatasourceID = &v
+			m.GrafanaDatasourceID = &v
 		case 3:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Phase", wireType)

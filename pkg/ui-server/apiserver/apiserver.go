@@ -156,33 +156,33 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 		return reconcile.Result{}, nil
 	})
 
-	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &openvizapi.Dashboard{}, openvizapi.GrafanaNameKey, func(rawObj client.Object) []string {
-		dashboard := rawObj.(*openvizapi.Dashboard)
-		if dashboard.Spec.Grafana == nil {
+	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &openvizapi.GrafanaDashboard{}, openvizapi.GrafanaNameKey, func(rawObj client.Object) []string {
+		grafanadashboard := rawObj.(*openvizapi.GrafanaDashboard)
+		if grafanadashboard.Spec.Grafana == nil {
 			return nil
 		}
-		if dashboard.Spec.Grafana.APIGroup != appcatalog.GroupName || dashboard.Spec.Grafana.Kind != "AppBinding" {
+		if grafanadashboard.Spec.Grafana.APIGroup != appcatalog.GroupName || grafanadashboard.Spec.Grafana.Kind != "AppBinding" {
 			return nil
 		}
-		return []string{dashboard.Spec.Grafana.Name}
+		return []string{grafanadashboard.Spec.Grafana.Name}
 	}); err != nil {
 		return nil, err
 	}
-	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &openvizapi.Dashboard{}, openvizapi.DashboardTitleKey, func(rawObj client.Object) []string {
-		dashboard := rawObj.(*openvizapi.Dashboard)
+	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &openvizapi.GrafanaDashboard{}, openvizapi.GrafanaDashboardTitleKey, func(rawObj client.Object) []string {
+		grafanadashboard := rawObj.(*openvizapi.GrafanaDashboard)
 		var board sdk.Board
-		if dashboard.Spec.Model == nil {
+		if grafanadashboard.Spec.Model == nil {
 			return nil
 		}
-		if err := json.Unmarshal(dashboard.Spec.Model.Raw, &board); err != nil {
-			klog.ErrorS(err, "failed to unmarshal Grafana Dashboard", "name", dashboard.Name, "namespace", dashboard.Namespace)
+		if err := json.Unmarshal(grafanadashboard.Spec.Model.Raw, &board); err != nil {
+			klog.ErrorS(err, "failed to unmarshal Grafana GrafanaDashboard", "name", grafanadashboard.Name, "namespace", grafanadashboard.Namespace)
 			return nil
 		}
 		return []string{board.Title}
 	}); err != nil {
 		return nil, err
 	}
-	if err := builder.ControllerManagedBy(mgr).For(&openvizapi.Dashboard{}).Complete(r); err != nil {
+	if err := builder.ControllerManagedBy(mgr).For(&openvizapi.GrafanaDashboard{}).Complete(r); err != nil {
 		return nil, err
 	}
 

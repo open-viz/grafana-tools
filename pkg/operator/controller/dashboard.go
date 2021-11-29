@@ -43,58 +43,58 @@ import (
 )
 
 const (
-	DashboardFinalizer = "dashboard.openviz.dev"
+	GrafanaDashboardFinalizer = "grafanadashboard.openviz.dev"
 )
 
-func (c *GrafanaController) initDashboardWatcher() {
-	c.dashboardInformer = c.extInformerFactory.Openviz().V1alpha1().Dashboards().Informer()
-	c.dashboardQueue = queue.New(api.ResourceKindDashboard, c.MaxNumRequeues, c.NumThreads, c.runDashboardInjector)
-	c.dashboardInformer.AddEventHandler(queue.NewReconcilableHandler(c.dashboardQueue.GetQueue(), metav1.NamespaceAll))
-	c.dashboardLister = c.extInformerFactory.Openviz().V1alpha1().Dashboards().Lister()
+func (c *GrafanaController) initGrafanaDashboardWatcher() {
+	c.grafanadashboardInformer = c.extInformerFactory.Openviz().V1alpha1().GrafanaDashboards().Informer()
+	c.grafanadashboardQueue = queue.New(api.ResourceKindGrafanaDashboard, c.MaxNumRequeues, c.NumThreads, c.runGrafanaDashboardInjector)
+	c.grafanadashboardInformer.AddEventHandler(queue.NewReconcilableHandler(c.grafanadashboardQueue.GetQueue(), metav1.NamespaceAll))
+	c.grafanadashboardLister = c.extInformerFactory.Openviz().V1alpha1().GrafanaDashboards().Lister()
 }
 
-// runDashboardInjector gets the vault policy object indexed by the key from cache
+// runGrafanaDashboardInjector gets the vault policy object indexed by the key from cache
 // and initializes, reconciles or garbage collects the vault policy as needed.
-func (c *GrafanaController) runDashboardInjector(key string) error {
-	obj, exists, err := c.dashboardInformer.GetIndexer().GetByKey(key)
+func (c *GrafanaController) runGrafanaDashboardInjector(key string) error {
+	obj, exists, err := c.grafanadashboardInformer.GetIndexer().GetByKey(key)
 	if err != nil {
 		klog.Errorf("Fetching object with key %s from store failed with %v", key, err)
 		return err
 	}
 
 	if !exists {
-		klog.Warningf("Dashboard %s does not exist anymore\n", key)
+		klog.Warningf("GrafanaDashboard %s does not exist anymore\n", key)
 	} else {
-		dashboard := obj.(*api.Dashboard).DeepCopy()
-		klog.Infof("Sync/Add/Update for Dashboard %s/%s\n", dashboard.Namespace, dashboard.Name)
+		grafanadashboard := obj.(*api.GrafanaDashboard).DeepCopy()
+		klog.Infof("Sync/Add/Update for GrafanaDashboard %s/%s\n", grafanadashboard.Namespace, grafanadashboard.Name)
 
-		if dashboard.DeletionTimestamp != nil {
-			if core_util.HasFinalizer(dashboard.ObjectMeta, DashboardFinalizer) {
-				// Finalize Dashboard
-				err := c.runDashboardFinalizer(dashboard)
+		if grafanadashboard.DeletionTimestamp != nil {
+			if core_util.HasFinalizer(grafanadashboard.ObjectMeta, GrafanaDashboardFinalizer) {
+				// Finalize GrafanaDashboard
+				err := c.runGrafanaDashboardFinalizer(grafanadashboard)
 				if err != nil {
 					return err
 				}
 			} else {
-				klog.Infof("Finalizer not found for GrafanaDashboard %s/%s", dashboard.Namespace, dashboard.Name)
+				klog.Infof("Finalizer not found for GrafanaGrafanaDashboard %s/%s", grafanadashboard.Namespace, grafanadashboard.Name)
 			}
 			return nil
 		} else {
-			if !core_util.HasFinalizer(dashboard.ObjectMeta, DashboardFinalizer) {
+			if !core_util.HasFinalizer(grafanadashboard.ObjectMeta, GrafanaDashboardFinalizer) {
 				// Add finalizer
-				_, _, err := util.PatchDashboard(context.TODO(), c.extClient.OpenvizV1alpha1(), dashboard, func(vp *api.Dashboard) *api.Dashboard {
-					vp.ObjectMeta = core_util.AddFinalizer(dashboard.ObjectMeta, DashboardFinalizer)
+				_, _, err := util.PatchGrafanaDashboard(context.TODO(), c.extClient.OpenvizV1alpha1(), grafanadashboard, func(vp *api.GrafanaDashboard) *api.GrafanaDashboard {
+					vp.ObjectMeta = core_util.AddFinalizer(grafanadashboard.ObjectMeta, GrafanaDashboardFinalizer)
 					return vp
 				}, metav1.PatchOptions{})
 				if err != nil {
-					return errors.Wrapf(err, "failed to set Dashboard finalizer for %s/%s", dashboard.Namespace, dashboard.Name)
+					return errors.Wrapf(err, "failed to set GrafanaDashboard finalizer for %s/%s", grafanadashboard.Namespace, grafanadashboard.Name)
 				}
 			}
-			if !meta_util.MustAlreadyReconciled(dashboard) {
-				err = c.reconcileDashboard(dashboard)
+			if !meta_util.MustAlreadyReconciled(grafanadashboard) {
+				err = c.reconcileGrafanaDashboard(grafanadashboard)
 				if err != nil {
-					c.pushDashboardFailureEvent(dashboard, err.Error())
-					return errors.Wrapf(err, "for Dashboard %s/%s", dashboard.Namespace, dashboard.Name)
+					c.pushGrafanaDashboardFailureEvent(grafanadashboard, err.Error())
+					return errors.Wrapf(err, "for GrafanaDashboard %s/%s", grafanadashboard.Namespace, grafanadashboard.Name)
 				}
 			}
 		}
@@ -102,43 +102,43 @@ func (c *GrafanaController) runDashboardInjector(key string) error {
 	return nil
 }
 
-// reconcileDashboard reconciles the grafana dashboard
-// it creates or updates dashboard
-func (c *GrafanaController) reconcileDashboard(dashboard *api.Dashboard) error {
+// reconcileGrafanaDashboard reconciles the grafana grafanadashboard
+// it creates or updates grafanadashboard
+func (c *GrafanaController) reconcileGrafanaDashboard(grafanadashboard *api.GrafanaDashboard) error {
 	// update Processing status
-	newDashboard, err := util.UpdateDashboardStatus(context.TODO(), c.extClient.OpenvizV1alpha1(), dashboard.ObjectMeta, func(in *api.DashboardStatus) *api.DashboardStatus {
+	newGrafanaDashboard, err := util.UpdateGrafanaDashboardStatus(context.TODO(), c.extClient.OpenvizV1alpha1(), grafanadashboard.ObjectMeta, func(in *api.GrafanaDashboardStatus) *api.GrafanaDashboardStatus {
 		in.Phase = api.GrafanaPhaseProcessing
-		in.Reason = "Started processing of dashboard"
+		in.Reason = "Started processing of grafanadashboard"
 		in.Conditions = []kmapi.Condition{}
-		in.ObservedGeneration = dashboard.Generation
+		in.ObservedGeneration = grafanadashboard.Generation
 
 		return in
 	}, metav1.UpdateOptions{})
 	if err != nil {
-		return errors.Wrapf(err, "failed to update dashboard phase to `%s`", api.GrafanaPhaseSuccess)
+		return errors.Wrapf(err, "failed to update grafanadashboard phase to `%s`", api.GrafanaPhaseSuccess)
 	}
-	dashboard.Status = newDashboard.Status
+	grafanadashboard.Status = newGrafanaDashboard.Status
 
-	if dashboard.Spec.Grafana == nil {
+	if grafanadashboard.Spec.Grafana == nil {
 		return errors.New("appBinding for grafana is missing")
 	}
 
-	if err = c.setGrafanaClient(dashboard.Namespace, dashboard.Spec.Grafana); err != nil {
+	if err = c.setGrafanaClient(grafanadashboard.Namespace, grafanadashboard.Spec.Grafana); err != nil {
 		return errors.Wrap(err, "failed to set grafana client")
 	}
 
 	var board sdk.Board
-	if dashboard.Spec.Model == nil {
-		return errors.New("dashboard model not found")
+	if grafanadashboard.Spec.Model == nil {
+		return errors.New("grafanadashboard model not found")
 	}
-	if err := json.Unmarshal(dashboard.Spec.Model.Raw, &board); err != nil {
+	if err := json.Unmarshal(grafanadashboard.Spec.Model.Raw, &board); err != nil {
 		return err
 	}
 
 	//// add labels
 	//labels := make(map[string]string)
-	//labels["meta.dashboard.openviz.dev/appbinding"] = dashboard.Spec.Grafana.Name
-	//dashboard, _, err = util.PatchDashboard(context.TODO(), c.extClient.OpenvizV1alpha1(), dashboard, func(in *api.Dashboard) *api.Dashboard {
+	//labels["meta.grafanadashboard.openviz.dev/appbinding"] = grafanadashboard.Spec.Grafana.Name
+	//grafanadashboard, _, err = util.PatchGrafanaDashboard(context.TODO(), c.extClient.OpenvizV1alpha1(), grafanadashboard, func(in *api.GrafanaDashboard) *api.GrafanaDashboard {
 	//	in.ObjectMeta.SetLabels(labels)
 	//	return in
 	//}, metav1.PatchOptions{})
@@ -146,9 +146,9 @@ func (c *GrafanaController) reconcileDashboard(dashboard *api.Dashboard) error {
 	//	return err
 	//}
 
-	if dashboard.Spec.Templatize != nil && dashboard.Spec.Templatize.Datasource {
-		// collect datasource name from app binding
-		appBinding, err := c.appCatalogClient.AppBindings(dashboard.Namespace).Get(context.TODO(), dashboard.Spec.Grafana.Name, metav1.GetOptions{})
+	if grafanadashboard.Spec.Templatize != nil && grafanadashboard.Spec.Templatize.Datasource {
+		// collect grafanadatasource name from app binding
+		appBinding, err := c.appCatalogClient.AppBindings(grafanadashboard.Namespace).Get(context.TODO(), grafanadashboard.Spec.Grafana.Name, metav1.GetOptions{})
 		if err != nil {
 			return errors.Wrap(err, "failed to fetch AppBinding")
 		}
@@ -159,69 +159,69 @@ func (c *GrafanaController) reconcileDashboard(dashboard *api.Dashboard) error {
 				return errors.Wrap(err, "failed to unmarshal app binding parameters")
 			}
 		} else {
-			return errors.New("datasource parameter is missing in app binding")
+			return errors.New("grafanadatasource parameter is missing in app binding")
 		}
-		// update panels datasource
+		// update panels grafanadatasource
 		for idx := range board.Panels {
 			board.Panels[idx].Datasource = &dsConfig.Datasource
 		}
 
-		// update templating list datasource
+		// update templating list grafanadatasource
 		for idx := range board.Templating.List {
 			board.Templating.List[idx].Datasource = &dsConfig.Datasource
 		}
 	}
 
-	if err = c.updateDashboard(dashboard, board); err != nil {
-		return errors.Wrap(err, "failed to update dashboard")
+	if err = c.updateGrafanaDashboard(grafanadashboard, board); err != nil {
+		return errors.Wrap(err, "failed to update grafanadashboard")
 	}
 
 	return nil
 }
 
-// runDashboardFinalizer performs what need to be done
-// before the dashboard is deleted
-func (c *GrafanaController) runDashboardFinalizer(dashboard *api.Dashboard) error {
+// runGrafanaDashboardFinalizer performs what need to be done
+// before the grafanadashboard is deleted
+func (c *GrafanaController) runGrafanaDashboardFinalizer(grafanadashboard *api.GrafanaDashboard) error {
 	// update Terminating status
-	newDashboard, err := util.UpdateDashboardStatus(context.TODO(), c.extClient.OpenvizV1alpha1(), dashboard.ObjectMeta, func(in *api.DashboardStatus) *api.DashboardStatus {
+	newGrafanaDashboard, err := util.UpdateGrafanaDashboardStatus(context.TODO(), c.extClient.OpenvizV1alpha1(), grafanadashboard.ObjectMeta, func(in *api.GrafanaDashboardStatus) *api.GrafanaDashboardStatus {
 		in.Phase = api.GrafanaPhaseTerminating
-		in.Reason = "Terminating dashboard"
-		in.ObservedGeneration = dashboard.Generation
+		in.Reason = "Terminating grafanadashboard"
+		in.ObservedGeneration = grafanadashboard.Generation
 
 		return in
 	}, metav1.UpdateOptions{})
 	if err != nil {
-		return errors.Wrapf(err, "failed to update dashboard phase to %q\n", api.GrafanaPhaseTerminating)
+		return errors.Wrapf(err, "failed to update grafanadashboard phase to %q\n", api.GrafanaPhaseTerminating)
 	}
-	dashboard.Status = newDashboard.Status
+	grafanadashboard.Status = newGrafanaDashboard.Status
 
-	if dashboard.Status.Dashboard != nil && dashboard.Status.Dashboard.UID != nil {
-		statusMsg, err := c.grafanaClient.DeleteDashboardByUID(context.TODO(), pointer.String(dashboard.Status.Dashboard.UID))
+	if grafanadashboard.Status.Dashboard != nil && grafanadashboard.Status.Dashboard.UID != nil {
+		statusMsg, err := c.grafanaClient.DeleteDashboardByUID(context.TODO(), pointer.String(grafanadashboard.Status.Dashboard.UID))
 		if err != nil {
 			c.recorder.Eventf(
-				dashboard,
+				grafanadashboard,
 				core.EventTypeWarning,
 				eventer.EventReasonFailedToDelete,
-				`Failed to delete GrafanaDashboard: "%v". Reason: %v`,
-				dashboard.Name,
+				`Failed to delete GrafanaGrafanaDashboard: "%v". Reason: %v`,
+				grafanadashboard.Name,
 				err.Error(),
 			)
 
-			klog.Infof("Failed to delete GrafanaDashboard: %v. Reason: %v", dashboard.Name, err)
+			klog.Infof("Failed to delete GrafanaGrafanaDashboard: %v. Reason: %v", grafanadashboard.Name, err)
 			return err
 		}
-		klog.Infof("Dashboard is deleted with message: %s\n", pointer.String(statusMsg.Message))
-	} else if dashboard.Status.Phase == api.GrafanaPhaseSuccess {
-		return errors.New("finalizer can't be removed. reason: Dashboard UID is missing")
+		klog.Infof("GrafanaDashboard is deleted with message: %s\n", pointer.String(statusMsg.Message))
+	} else if grafanadashboard.Status.Phase == api.GrafanaPhaseSuccess {
+		return errors.New("finalizer can't be removed. reason: GrafanaDashboard UID is missing")
 	}
 
-	// if .status.DatasourceID is nil and phase is not success
+	// if .status.GrafanaDatasourceID is nil and phase is not success
 	// so the remote grafana object is never created.
 	// so the finalizer can be removed.
 
 	// remove Finalizer
-	_, _, err = util.PatchDashboard(context.TODO(), c.extClient.OpenvizV1alpha1(), dashboard, func(in *api.Dashboard) *api.Dashboard {
-		in.ObjectMeta = core_util.RemoveFinalizer(dashboard.ObjectMeta, DashboardFinalizer)
+	_, _, err = util.PatchGrafanaDashboard(context.TODO(), c.extClient.OpenvizV1alpha1(), grafanadashboard, func(in *api.GrafanaDashboard) *api.GrafanaDashboard {
+		in.ObjectMeta = core_util.RemoveFinalizer(grafanadashboard.ObjectMeta, GrafanaDashboardFinalizer)
 		return in
 	}, metav1.PatchOptions{})
 	if err != nil {
@@ -230,36 +230,36 @@ func (c *GrafanaController) runDashboardFinalizer(dashboard *api.Dashboard) erro
 	return nil
 }
 
-// updateDashboard updates dashboard database through api request
-func (c *GrafanaController) updateDashboard(dashboard *api.Dashboard, board sdk.Board) error {
-	if dashboard.Status.Dashboard != nil {
-		board.ID = uint(pointer.Int64(dashboard.Status.Dashboard.ID))
-		board.UID = pointer.String(dashboard.Status.Dashboard.UID)
+// updateGrafanaDashboard updates grafanadashboard database through api request
+func (c *GrafanaController) updateGrafanaDashboard(grafanadashboard *api.GrafanaDashboard, board sdk.Board) error {
+	if grafanadashboard.Status.Dashboard != nil {
+		board.ID = uint(pointer.Int64(grafanadashboard.Status.Dashboard.ID))
+		board.UID = pointer.String(grafanadashboard.Status.Dashboard.UID)
 	}
 
 	params := sdk.SetDashboardParams{
-		FolderID:  int(dashboard.Spec.FolderID),
-		Overwrite: dashboard.Spec.Overwrite,
+		FolderID:  int(grafanadashboard.Spec.FolderID),
+		Overwrite: grafanadashboard.Spec.Overwrite,
 	}
 	statusMsg, err := c.grafanaClient.SetDashboard(context.Background(), board, params)
 	if err != nil {
-		return errors.Wrap(err, "failed to save dashboard in grafana server")
+		return errors.Wrap(err, "failed to save grafanadashboard in grafana server")
 	}
 	orgId, err := c.grafanaClient.GetActualOrg(context.Background())
 	if err != nil {
 		return errors.Wrap(err, "failed to get OrgId")
 	}
 
-	newDashboard, err := util.UpdateDashboardStatus(
+	newGrafanaDashboard, err := util.UpdateGrafanaDashboardStatus(
 		context.TODO(),
 		c.extClient.OpenvizV1alpha1(),
-		dashboard.ObjectMeta,
-		func(in *api.DashboardStatus) *api.DashboardStatus {
+		grafanadashboard.ObjectMeta,
+		func(in *api.GrafanaDashboardStatus) *api.GrafanaDashboardStatus {
 			in.Phase = api.GrafanaPhaseSuccess
 			in.Reason = "Successfully completed the modification process"
-			in.ObservedGeneration = dashboard.Generation
+			in.ObservedGeneration = grafanadashboard.Generation
 
-			in.Dashboard = &api.DashboardReference{
+			in.Dashboard = &api.GrafanaDashboardReference{
 				ID:      pointer.Int64P(int64(pointer.Uint(statusMsg.ID))),
 				UID:     statusMsg.UID,
 				Slug:    statusMsg.Slug,
@@ -276,9 +276,9 @@ func (c *GrafanaController) updateDashboard(dashboard *api.Dashboard, board sdk.
 		metav1.UpdateOptions{},
 	)
 	if err != nil {
-		return errors.Wrapf(err, "failed to update dashboard phase to `%s`", api.GrafanaPhaseSuccess)
+		return errors.Wrapf(err, "failed to update grafanadashboard phase to `%s`", api.GrafanaPhaseSuccess)
 	}
-	dashboard.Status = newDashboard.Status
+	grafanadashboard.Status = newGrafanaDashboard.Status
 
 	return nil
 }

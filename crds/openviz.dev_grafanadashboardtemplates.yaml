@@ -4,7 +4,7 @@ metadata:
   creationTimestamp: null
   labels:
     app.kubernetes.io/name: openviz
-  name: dashboardtemplates.openviz.dev
+  name: grafanadashboardtemplates.openviz.dev
 spec:
   group: openviz.dev
   names:
@@ -12,10 +12,10 @@ spec:
     - grafana
     - openviz
     - appscode
-    kind: DashboardTemplate
-    listKind: DashboardTemplateList
-    plural: dashboardtemplates
-    singular: dashboardtemplate
+    kind: GrafanaDashboardTemplate
+    listKind: GrafanaDashboardTemplateList
+    plural: grafanadashboardtemplates
+    singular: grafanadashboardtemplate
   scope: Cluster
   versions:
   - name: v1alpha1
@@ -36,7 +36,10 @@ spec:
             type: object
           spec:
             properties:
-              dashboardtemplate:
+              folderID:
+                format: int64
+                type: integer
+              grafanadashboardtemplate:
                 properties:
                   id:
                     format: int64
@@ -66,14 +69,11 @@ spec:
                 - uid
                 - version
                 type: object
-              folderID:
-                format: int64
-                type: integer
               overwrite:
                 type: boolean
             required:
-            - dashboardtemplate
             - folderID
+            - grafanadashboardtemplate
             - overwrite
             type: object
         type: object

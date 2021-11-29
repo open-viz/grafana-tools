@@ -46,8 +46,8 @@ var _ = Describe("Grafana Operator E2E testing", func() {
 	)
 
 	var (
-		getModelFromDashboardJson = func(filename string) []byte {
-			By("Selecting the dashboard model")
+		getModelFromGrafanaDashboardJson = func(filename string) []byte {
+			By("Selecting the grafanadashboard model")
 			file, err := os.Open(filename)
 			Expect(err).NotTo(HaveOccurred())
 
@@ -67,25 +67,25 @@ var _ = Describe("Grafana Operator E2E testing", func() {
 			Expect(err).NotTo(HaveOccurred())
 		}
 
-		waitForDashboardToGetToFinalPhase = func() {
-			By("Waiting for the dashboard to get to final phase")
+		waitForGrafanaDashboardToGetToFinalPhase = func() {
+			By("Waiting for the grafanadashboard to get to final phase")
 			Eventually(func() bool {
-				dashboard, err := f.GetDashboard()
+				grafanadashboard, err := f.GetGrafanaDashboard()
 				Expect(err).NotTo(HaveOccurred())
 
-				return dashboard.Status.Phase == api.GrafanaPhaseSuccess || dashboard.Status.Phase == api.GrafanaPhaseFailed
+				return grafanadashboard.Status.Phase == api.GrafanaPhaseSuccess || grafanadashboard.Status.Phase == api.GrafanaPhaseFailed
 			}, retryTimeout, 100*time.Millisecond).Should(BeTrue())
 
 		}
 
-		waitForDashboardToBeTerminated = func(dashboard *api.Dashboard) {
-			By("Deleting dashboard " + dashboard.Name)
-			err := f.DeleteDashboard()
+		waitForGrafanaDashboardToBeTerminated = func(grafanadashboard *api.GrafanaDashboard) {
+			By("Deleting grafanadashboard " + grafanadashboard.Name)
+			err := f.DeleteGrafanaDashboard()
 			Expect(err).NotTo(HaveOccurred())
 
-			By("Waiting for the dashboard to be terminated")
+			By("Waiting for the grafanadashboard to be terminated")
 			Eventually(func() bool {
-				_, err := f.GetDashboard()
+				_, err := f.GetGrafanaDashboard()
 				return kerr.IsNotFound(err)
 			}, retryTimeout, 100*time.Millisecond).Should(BeTrue())
 		}
@@ -95,18 +95,18 @@ var _ = Describe("Grafana Operator E2E testing", func() {
 		f = root.Invoke()
 	})
 
-	Describe("Dashboard Operation", func() {
+	Describe("GrafanaDashboard Operation", func() {
 		var (
-			dashboard *api.Dashboard
+			grafanadashboard *api.GrafanaDashboard
 		)
 
 		BeforeEach(func() {
-			dashboard = &api.Dashboard{
+			grafanadashboard = &api.GrafanaDashboard{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      f.Name(),
 					Namespace: f.Namespace(),
 				},
-				Spec: api.DashboardSpec{
+				Spec: api.GrafanaDashboardSpec{
 					Grafana: &api.TargetRef{
 						Name: f.AppBindingName(),
 					},
@@ -116,40 +116,40 @@ var _ = Describe("Grafana Operator E2E testing", func() {
 
 		})
 
-		Context("Successful creation of a dashboard resource", func() {
+		Context("Successful creation of a grafanadashboard resource", func() {
 			BeforeEach(func() {
-				model := getModelFromDashboardJson("dashboard-with-panels-with-mixed-yaxes.json")
-				dashboard.Spec.Model = &runtime.RawExtension{
+				model := getModelFromGrafanaDashboardJson("grafanadashboard-with-panels-with-mixed-yaxes.json")
+				grafanadashboard.Spec.Model = &runtime.RawExtension{
 					Raw: model,
 				}
 
 				createAppBindingAndSecret()
 			})
 
-			It("should insert a dashboard into grafana database", func() {
-				err := f.CreateDashboard(dashboard)
+			It("should insert a grafanadashboard into grafana database", func() {
+				err := f.CreateGrafanaDashboard(grafanadashboard)
 				Expect(err).NotTo(HaveOccurred())
 
 			})
 
 			AfterEach(func() {
-				By("Verifying dashboard has been succeeded")
-				dashboard, err := f.GetDashboard()
+				By("Verifying grafanadashboard has been succeeded")
+				grafanadashboard, err := f.GetGrafanaDashboard()
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(dashboard.Status.Phase).To(BeEquivalentTo(api.GrafanaPhaseSuccess))
+				Expect(grafanadashboard.Status.Phase).To(BeEquivalentTo(api.GrafanaPhaseSuccess))
 
-				Expect(dashboard.Status.Dashboard.ID).NotTo(BeNil())
-				Expect(dashboard.Status.Dashboard.UID).NotTo(BeNil())
-				Expect(dashboard.Status.Dashboard.Version).To(BeEquivalentTo(pointer.Int64P(dashboard.Status.ObservedGeneration)))
+				Expect(grafanadashboard.Status.Dashboard.ID).NotTo(BeNil())
+				Expect(grafanadashboard.Status.Dashboard.UID).NotTo(BeNil())
+				Expect(grafanadashboard.Status.Dashboard.Version).To(BeEquivalentTo(pointer.Int64P(grafanadashboard.Status.ObservedGeneration)))
 
 			})
 		})
 
-		Context("Unsuccessful creation of a dashboard resource", func() {
+		Context("Unsuccessful creation of a grafanadashboard resource", func() {
 			BeforeEach(func() {
-				model := getModelFromDashboardJson("dashboard-with-panels-with-mixed-yaxes.json")
-				dashboard.Spec.Model = &runtime.RawExtension{
+				model := getModelFromGrafanaDashboardJson("grafanadashboard-with-panels-with-mixed-yaxes.json")
+				grafanadashboard.Spec.Model = &runtime.RawExtension{
 					Raw: model,
 				}
 
@@ -157,46 +157,46 @@ var _ = Describe("Grafana Operator E2E testing", func() {
 				createAppBindingAndSecret()
 			})
 
-			It("should not insert a dashboard into grafana database", func() {
-				err := f.CreateDashboard(dashboard)
+			It("should not insert a grafanadashboard into grafana database", func() {
+				err := f.CreateGrafanaDashboard(grafanadashboard)
 				Expect(err).NotTo(HaveOccurred())
 
 			})
 
 			AfterEach(func() {
-				dashboard, err := f.GetDashboard()
+				grafanadashboard, err := f.GetGrafanaDashboard()
 				Expect(err).NotTo(HaveOccurred())
-				Expect(dashboard.Status.Phase).To(BeEquivalentTo(api.GrafanaPhaseFailed))
-				Expect(dashboard.Status.Dashboard).To(BeNil())
+				Expect(grafanadashboard.Status.Phase).To(BeEquivalentTo(api.GrafanaPhaseFailed))
+				Expect(grafanadashboard.Status.Dashboard).To(BeNil())
 			})
 		})
 
-		Context("Unsuccessful creation of a dashboard resource", func() {
+		Context("Unsuccessful creation of a grafanadashboard resource", func() {
 			BeforeEach(func() {
 				By("Not providing model data")
 				createAppBindingAndSecret()
 			})
 
-			It("should not insert a dashboard into grafana database", func() {
-				err := f.CreateDashboard(dashboard)
+			It("should not insert a grafanadashboard into grafana database", func() {
+				err := f.CreateGrafanaDashboard(grafanadashboard)
 				Expect(err).NotTo(HaveOccurred())
 
 			})
 
 			AfterEach(func() {
-				dashboard, err := f.GetDashboard()
+				grafanadashboard, err := f.GetGrafanaDashboard()
 				Expect(err).NotTo(HaveOccurred())
-				Expect(dashboard.Status.Phase).To(BeEquivalentTo(api.GrafanaPhaseFailed))
-				Expect(dashboard.Status.Dashboard).To(BeNil())
+				Expect(grafanadashboard.Status.Phase).To(BeEquivalentTo(api.GrafanaPhaseFailed))
+				Expect(grafanadashboard.Status.Dashboard).To(BeNil())
 			})
 		})
 
 		JustAfterEach(func() {
-			waitForDashboardToGetToFinalPhase()
+			waitForGrafanaDashboardToGetToFinalPhase()
 		})
 
 		AfterEach(func() {
-			waitForDashboardToBeTerminated(dashboard)
+			waitForGrafanaDashboardToBeTerminated(grafanadashboard)
 
 			By("Deleting Secret")
 			err := root.DeleteSecret()
