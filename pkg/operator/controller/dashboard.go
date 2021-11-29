@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/url"
 	"strconv"
 	"time"
@@ -44,6 +45,7 @@ import (
 
 const (
 	GrafanaDashboardFinalizer = "grafanadashboard.openviz.dev"
+	TemplateVarTypeDatasource = "datasource"
 )
 
 func (c *GrafanaController) initGrafanaDashboardWatcher() {
@@ -127,11 +129,11 @@ func (c *GrafanaController) reconcileGrafanaDashboard(grafanadashboard *api.Graf
 		return errors.Wrap(err, "failed to set grafana client")
 	}
 
-	var board sdk.Board
+	board := &sdk.Board{}
 	if grafanadashboard.Spec.Model == nil {
 		return errors.New("grafanadashboard model not found")
 	}
-	if err := json.Unmarshal(grafanadashboard.Spec.Model.Raw, &board); err != nil {
+	if err := json.Unmarshal(grafanadashboard.Spec.Model.Raw, board); err != nil {
 		return err
 	}
 
@@ -146,29 +148,48 @@ func (c *GrafanaController) reconcileGrafanaDashboard(grafanadashboard *api.Graf
 	//	return err
 	//}
 
-	if grafanadashboard.Spec.Templatize != nil && grafanadashboard.Spec.Templatize.Datasource {
-		// collect grafanadatasource name from app binding
-		appBinding, err := c.appCatalogClient.AppBindings(grafanadashboard.Namespace).Get(context.TODO(), grafanadashboard.Spec.Grafana.Name, metav1.GetOptions{})
+	// collect grafanadatasource name from app binding
+	appBinding, err := c.appCatalogClient.AppBindings(grafanadashboard.Namespace).Get(context.TODO(), grafanadashboard.Spec.Grafana.Name, metav1.GetOptions{})
+	if err != nil {
+		return errors.Wrap(err, "failed to fetch AppBinding")
+	}
+	dsConfig := &api.DatasourceConfiguration{}
+	if appBinding.Spec.Parameters != nil {
+		err := json.Unmarshal(appBinding.Spec.Parameters.Raw, &dsConfig)
 		if err != nil {
-			return errors.Wrap(err, "failed to fetch AppBinding")
+			return errors.Wrap(err, "failed to unmarshal app binding parameters")
 		}
-		dsConfig := &api.DatasourceConfiguration{}
-		if appBinding.Spec.Parameters != nil {
-			err := json.Unmarshal(appBinding.Spec.Parameters.Raw, &dsConfig)
-			if err != nil {
-				return errors.Wrap(err, "failed to unmarshal app binding parameters")
-			}
-		} else {
-			return errors.New("grafanadatasource parameter is missing in app binding")
-		}
+	} else {
+		return errors.New("grafanadatasource parameter is missing in app binding")
+	}
+
+	if grafanadashboard.Spec.Templatize != nil && grafanadashboard.Spec.Templatize.Datasource {
 		// update panels grafanadatasource
-		for idx := range board.Panels {
-			board.Panels[idx].Datasource = &dsConfig.Datasource
+		for _, pnl := range board.Panels {
+			pnl.Datasource = &dsConfig.Datasource
+			fmt.Println(pnl.Title)
 		}
 
-		// update templating list grafanadatasource
-		for idx := range board.Templating.List {
-			board.Templating.List[idx].Datasource = &dsConfig.Datasource
+		// update templating list datasource
+		// also remove datasource variable if present
+		varList := make([]sdk.TemplateVar, 0, len(board.Templating.List))
+		for _, tmpl := range board.Templating.List {
+			if tmpl.Type == TemplateVarTypeDatasource {
+				continue
+			}
+			tmpl.Datasource = &dsConfig.Datasource
+			varList = append(varList, tmpl)
+		}
+		board.Templating.List = varList
+	}
+
+	// update folder when it is missing
+	if grafanadashboard.Spec.FolderID == nil {
+		if dsConfig.FolderID != nil {
+			grafanadashboard.Spec.FolderID = dsConfig.FolderID
+		} else {
+			// set default(General) folder id: 0
+			grafanadashboard.Spec.FolderID = pointer.Int64P(0)
 		}
 	}
 
@@ -231,17 +252,23 @@ func (c *GrafanaController) runGrafanaDashboardFinalizer(grafanadashboard *api.G
 }
 
 // updateGrafanaDashboard updates grafanadashboard database through api request
-func (c *GrafanaController) updateGrafanaDashboard(grafanadashboard *api.GrafanaDashboard, board sdk.Board) error {
+func (c *GrafanaController) updateGrafanaDashboard(grafanadashboard *api.GrafanaDashboard, board *sdk.Board) error {
 	if grafanadashboard.Status.Dashboard != nil {
 		board.ID = uint(pointer.Int64(grafanadashboard.Status.Dashboard.ID))
 		board.UID = pointer.String(grafanadashboard.Status.Dashboard.UID)
 	}
 
 	params := sdk.SetDashboardParams{
-		FolderID:  int(grafanadashboard.Spec.FolderID),
+		FolderID:  int(pointer.Int64(grafanadashboard.Spec.FolderID)),
 		Overwrite: grafanadashboard.Spec.Overwrite,
 	}
-	statusMsg, err := c.grafanaClient.SetDashboard(context.Background(), board, params)
+	for _, pnl := range board.Panels {
+		log.Println("Creating panel:")
+		log.Println(pnl.Title)
+		log.Println(*pnl.Datasource)
+		log.Println("========================")
+	}
+	statusMsg, err := c.grafanaClient.SetDashboard(context.Background(), *board, params)
 	if err != nil {
 		return errors.Wrap(err, "failed to save grafanadashboard in grafana server")
 	}
@@ -279,6 +306,18 @@ func (c *GrafanaController) updateGrafanaDashboard(grafanadashboard *api.Grafana
 		return errors.Wrapf(err, "failed to update grafanadashboard phase to `%s`", api.GrafanaPhaseSuccess)
 	}
 	grafanadashboard.Status = newGrafanaDashboard.Status
+
+	dash, _, err := c.grafanaClient.GetDashboardByUID(context.TODO(), *statusMsg.UID)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		log.Println("Created panel")
+		for _, pnl := range dash.Panels {
+			log.Println(pnl.Title)
+			log.Println(*pnl.Datasource)
+			log.Println("===============")
+		}
+	}
 
 	return nil
 }

@@ -36,7 +36,7 @@ import (
 var kubeconfig *string
 
 const (
-	ns              = "demo"
+	ns                     = "demo"
 	SampleGrafanaDashboard = "sample-grafanadashboard"
 )
 
@@ -60,7 +60,6 @@ func CreateGrafanaDashboard(model runtime.RawExtension) error {
 				Name: "grafana-apb",
 			},
 			Model:     &model,
-			FolderID:  0,
 			Overwrite: true,
 			Templatize: &api.ModelTemplateConfiguration{
 				Title:      true,
