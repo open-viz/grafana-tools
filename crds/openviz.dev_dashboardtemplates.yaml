@@ -66,14 +66,14 @@ spec:
                 - uid
                 - version
                 type: object
-              folderId:
+              folderID:
                 format: int64
                 type: integer
               overwrite:
                 type: boolean
             required:
             - dashboardtemplate
-            - folderId
+            - folderID
             - overwrite
             type: object
         type: object

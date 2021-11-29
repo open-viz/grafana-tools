@@ -71,9 +71,11 @@ message DashboardSpec {
   optional k8s.io.apimachinery.pkg.runtime.RawExtension model = 2;
 
   // FolderID defines the Grafana folderID
-  optional int64 folderId = 3;
+  // +optional
+  optional int64 folderID = 3;
 
   // Overwrite defines the existing dashboard with the same name(if any) should be overwritten or not
+  // +optional
   optional bool overwrite = 4;
 
   // Templatize defines the fields which supports templating in Grafana Dashboard Model json
@@ -138,7 +140,7 @@ message DashboardTemplateReference {
 message DashboardTemplateSpec {
   optional DashboardTemplateReference dashboardtemplate = 1;
 
-  optional int64 folderId = 2;
+  optional int64 folderID = 2;
 
   optional bool overwrite = 3;
 }
@@ -159,7 +161,12 @@ message Datasource {
 // DatasourceConfiguration defines a Datasource AppBinding configuration
 message DatasourceConfiguration {
   // Datasource defines the grafana datasource name.
+  // +optional
   optional string datasource = 1;
+
+  // FolderID defines the Grafana folderID
+  // +optional
+  optional int64 folderID = 2;
 }
 
 message DatasourceList {
