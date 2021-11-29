@@ -41,7 +41,7 @@ type DashboardTemplate struct {
 
 type DashboardTemplateSpec struct {
 	DashboardTemplate DashboardTemplateReference `json:"dashboardtemplate" protobuf:"bytes,1,opt,name=dashboardtemplate"`
-	FolderID          int64                      `json:"folderId" protobuf:"varint,2,opt,name=folderId"`
+	FolderID          int64                      `json:"folderID" protobuf:"varint,2,opt,name=folderID"`
 	Overwrite         bool                       `json:"overwrite" protobuf:"varint,3,opt,name=overwrite"`
 }
 

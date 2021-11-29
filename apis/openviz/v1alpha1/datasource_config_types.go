@@ -29,5 +29,10 @@ type DatasourceConfiguration struct {
 	metav1.TypeMeta `json:",inline,omitempty"`
 
 	// Datasource defines the grafana datasource name.
-	Datasource string `json:"datasource" protobuf:"bytes,1,opt,name=datasource"`
+	// +optional
+	Datasource string `json:"datasource,omitempty" protobuf:"bytes,1,opt,name=datasource"`
+
+	// FolderID defines the Grafana folderID
+	// +optional
+	FolderID int64 `json:"folderID,omitempty" protobuf:"varint,2,opt,name=folderID"`
 }

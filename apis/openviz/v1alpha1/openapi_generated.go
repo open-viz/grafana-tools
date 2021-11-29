@@ -509,10 +509,9 @@ func schema_grafana_tools_apis_openviz_v1alpha1_DashboardSpec(ref common.Referen
 							Ref: ref("k8s.io/apimachinery/pkg/runtime.RawExtension"),
 						},
 					},
-					"folderId": {
+					"folderID": {
 						SchemaProps: spec.SchemaProps{
 							Description: "FolderID defines the Grafana folderID",
-							Default:     0,
 							Type:        []string{"integer"},
 							Format:      "int64",
 						},
@@ -520,7 +519,6 @@ func schema_grafana_tools_apis_openviz_v1alpha1_DashboardSpec(ref common.Referen
 					"overwrite": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Overwrite defines the existing dashboard with the same name(if any) should be overwritten or not",
-							Default:     false,
 							Type:        []string{"boolean"},
 							Format:      "",
 						},
@@ -532,7 +530,6 @@ func schema_grafana_tools_apis_openviz_v1alpha1_DashboardSpec(ref common.Referen
 						},
 					},
 				},
-				Required: []string{"folderId", "overwrite"},
 			},
 		},
 		Dependencies: []string{
@@ -761,7 +758,7 @@ func schema_grafana_tools_apis_openviz_v1alpha1_DashboardTemplateSpec(ref common
 							Ref:     ref("go.openviz.dev/grafana-tools/apis/openviz/v1alpha1.DashboardTemplateReference"),
 						},
 					},
-					"folderId": {
+					"folderID": {
 						SchemaProps: spec.SchemaProps{
 							Default: 0,
 							Type:    []string{"integer"},
@@ -776,7 +773,7 @@ func schema_grafana_tools_apis_openviz_v1alpha1_DashboardTemplateSpec(ref common
 						},
 					},
 				},
-				Required: []string{"dashboardtemplate", "folderId", "overwrite"},
+				Required: []string{"dashboardtemplate", "folderID", "overwrite"},
 			},
 		},
 		Dependencies: []string{
@@ -854,13 +851,18 @@ func schema_grafana_tools_apis_openviz_v1alpha1_DatasourceConfiguration(ref comm
 					"datasource": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Datasource defines the grafana datasource name.",
-							Default:     "",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
+					"folderID": {
+						SchemaProps: spec.SchemaProps{
+							Description: "FolderID defines the Grafana folderID",
+							Type:        []string{"integer"},
+							Format:      "int64",
+						},
+					},
 				},
-				Required: []string{"datasource"},
 			},
 		},
 	}

@@ -57,10 +57,12 @@ type DashboardSpec struct {
 	Model *runtime.RawExtension `json:"model,omitempty" protobuf:"bytes,2,opt,name=model"`
 
 	// FolderID defines the Grafana folderID
-	FolderID int64 `json:"folderId" protobuf:"varint,3,opt,name=folderId"`
+	// +optional
+	FolderID int64 `json:"folderID,omitempty" protobuf:"varint,3,opt,name=folderID"`
 
 	// Overwrite defines the existing dashboard with the same name(if any) should be overwritten or not
-	Overwrite bool `json:"overwrite" protobuf:"varint,4,opt,name=overwrite"`
+	// +optional
+	Overwrite bool `json:"overwrite,omitempty" protobuf:"varint,4,opt,name=overwrite"`
 
 	// Templatize defines the fields which supports templating in Grafana Dashboard Model json
 	// +optional

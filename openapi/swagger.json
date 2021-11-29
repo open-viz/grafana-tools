@@ -1219,16 +1219,11 @@
     },
     "dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.DashboardSpec": {
       "type": "object",
-      "required": [
-        "folderId",
-        "overwrite"
-      ],
       "properties": {
-        "folderId": {
+        "folderID": {
           "description": "FolderID defines the Grafana folderID",
           "type": "integer",
-          "format": "int64",
-          "default": 0
+          "format": "int64"
         },
         "grafana": {
           "description": "Grafana defines the grafana app binding name for the Dashboard",
@@ -1239,8 +1234,7 @@
         },
         "overwrite": {
           "description": "Overwrite defines the existing dashboard with the same name(if any) should be overwritten or not",
-          "type": "boolean",
-          "default": false
+          "type": "boolean"
         },
         "templatize": {
           "description": "Templatize defines the fields which supports templating in Grafana Dashboard Model json",
