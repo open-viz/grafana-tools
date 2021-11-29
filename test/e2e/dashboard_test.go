@@ -118,7 +118,7 @@ var _ = Describe("Grafana Operator E2E testing", func() {
 
 		Context("Successful creation of a grafanadashboard resource", func() {
 			BeforeEach(func() {
-				model := getModelFromGrafanaDashboardJson("grafanadashboard-with-panels-with-mixed-yaxes.json")
+				model := getModelFromGrafanaDashboardJson("dashboard-with-panels-with-mixed-yaxes.json")
 				grafanadashboard.Spec.Model = &runtime.RawExtension{
 					Raw: model,
 				}
@@ -148,7 +148,7 @@ var _ = Describe("Grafana Operator E2E testing", func() {
 
 		Context("Unsuccessful creation of a grafanadashboard resource", func() {
 			BeforeEach(func() {
-				model := getModelFromGrafanaDashboardJson("grafanadashboard-with-panels-with-mixed-yaxes.json")
+				model := getModelFromGrafanaDashboardJson("dashboard-with-panels-with-mixed-yaxes.json")
 				grafanadashboard.Spec.Model = &runtime.RawExtension{
 					Raw: model,
 				}
