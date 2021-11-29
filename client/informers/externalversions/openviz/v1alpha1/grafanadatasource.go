@@ -33,59 +33,59 @@ import (
 	cache "k8s.io/client-go/tools/cache"
 )
 
-// DatasourceInformer provides access to a shared informer and lister for
-// Datasources.
-type DatasourceInformer interface {
+// GrafanaDatasourceInformer provides access to a shared informer and lister for
+// GrafanaDatasources.
+type GrafanaDatasourceInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1alpha1.DatasourceLister
+	Lister() v1alpha1.GrafanaDatasourceLister
 }
 
-type datasourceInformer struct {
+type grafanaDatasourceInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
 	namespace        string
 }
 
-// NewDatasourceInformer constructs a new informer for Datasource type.
+// NewGrafanaDatasourceInformer constructs a new informer for GrafanaDatasource type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewDatasourceInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
-	return NewFilteredDatasourceInformer(client, namespace, resyncPeriod, indexers, nil)
+func NewGrafanaDatasourceInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+	return NewFilteredGrafanaDatasourceInformer(client, namespace, resyncPeriod, indexers, nil)
 }
 
-// NewFilteredDatasourceInformer constructs a new informer for Datasource type.
+// NewFilteredGrafanaDatasourceInformer constructs a new informer for GrafanaDatasource type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredDatasourceInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredGrafanaDatasourceInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.OpenvizV1alpha1().Datasources(namespace).List(context.TODO(), options)
+				return client.OpenvizV1alpha1().GrafanaDatasources(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.OpenvizV1alpha1().Datasources(namespace).Watch(context.TODO(), options)
+				return client.OpenvizV1alpha1().GrafanaDatasources(namespace).Watch(context.TODO(), options)
 			},
 		},
-		&openvizv1alpha1.Datasource{},
+		&openvizv1alpha1.GrafanaDatasource{},
 		resyncPeriod,
 		indexers,
 	)
 }
 
-func (f *datasourceInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredDatasourceInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+func (f *grafanaDatasourceInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+	return NewFilteredGrafanaDatasourceInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
-func (f *datasourceInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&openvizv1alpha1.Datasource{}, f.defaultInformer)
+func (f *grafanaDatasourceInformer) Informer() cache.SharedIndexInformer {
+	return f.factory.InformerFor(&openvizv1alpha1.GrafanaDatasource{}, f.defaultInformer)
 }
 
-func (f *datasourceInformer) Lister() v1alpha1.DatasourceLister {
-	return v1alpha1.NewDatasourceLister(f.Informer().GetIndexer())
+func (f *grafanaDatasourceInformer) Lister() v1alpha1.GrafanaDatasourceLister {
+	return v1alpha1.NewGrafanaDatasourceLister(f.Informer().GetIndexer())
 }

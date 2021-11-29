@@ -21,9 +21,9 @@ import (
 )
 
 const (
-	ResourceKindDashboardTemplate = "DashboardTemplate"
-	ResourceDashboardTemplate     = "dashboardtemplate"
-	ResourceDashboardTemplates    = "dashboardtemplates"
+	ResourceKindGrafanaDashboardTemplate = "GrafanaDashboardTemplate"
+	ResourceGrafanaDashboardTemplate     = "grafanadashboardtemplate"
+	ResourceGrafanaDashboardTemplates    = "grafanadashboardtemplates"
 )
 
 // +genclient
@@ -31,21 +31,21 @@ const (
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // +kubebuilder:object:root=true
-// +kubebuilder:resource:path=dashboardtemplates,singular=dashboardtemplate,scope=Cluster,categories={grafana,openviz,appscode}
+// +kubebuilder:resource:path=grafanadashboardtemplates,singular=grafanadashboardtemplate,scope=Cluster,categories={grafana,openviz,appscode}
 // +kubebuilder:subresource:status
-type DashboardTemplate struct {
+type GrafanaDashboardTemplate struct {
 	metav1.TypeMeta   `json:",inline,omitempty"`
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-	Spec              DashboardTemplateSpec `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
+	Spec              GrafanaDashboardTemplateSpec `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
 }
 
-type DashboardTemplateSpec struct {
-	DashboardTemplate DashboardTemplateReference `json:"dashboardtemplate" protobuf:"bytes,1,opt,name=dashboardtemplate"`
-	FolderID          int64                      `json:"folderID" protobuf:"varint,2,opt,name=folderID"`
-	Overwrite         bool                       `json:"overwrite" protobuf:"varint,3,opt,name=overwrite"`
+type GrafanaDashboardTemplateSpec struct {
+	GrafanaDashboardTemplate GrafanaDashboardTemplateReference `json:"grafanadashboardtemplate" protobuf:"bytes,1,opt,name=grafanadashboardtemplate"`
+	FolderID                 int64                             `json:"folderID" protobuf:"varint,2,opt,name=folderID"`
+	Overwrite                bool                              `json:"overwrite" protobuf:"varint,3,opt,name=overwrite"`
 }
 
-type DashboardTemplateReference struct {
+type GrafanaDashboardTemplateReference struct {
 	ID            *int64   `json:"id" protobuf:"varint,1,opt,name=id"`
 	UID           *string  `json:"uid" protobuf:"bytes,2,opt,name=uid"`
 	Title         string   `json:"title" protobuf:"bytes,3,opt,name=title"`
@@ -58,8 +58,8 @@ type DashboardTemplateReference struct {
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:object:root=true
 
-type DashboardTemplateList struct {
+type GrafanaDashboardTemplateList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-	Items           []DashboardTemplate `json:"items,omitempty" protobuf:"bytes,2,rep,name=items"`
+	Items           []GrafanaDashboardTemplate `json:"items,omitempty" protobuf:"bytes,2,rep,name=items"`
 }

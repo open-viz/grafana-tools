@@ -22,6 +22,6 @@ import (
 	"kmodules.xyz/client-go/apiextensions"
 )
 
-func (_ Dashboard) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {
-	return crds.MustCustomResourceDefinition(SchemeGroupVersion.WithResource(ResourceDashboards))
+func (_ GrafanaDashboard) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {
+	return crds.MustCustomResourceDefinition(SchemeGroupVersion.WithResource(ResourceGrafanaDashboards))
 }

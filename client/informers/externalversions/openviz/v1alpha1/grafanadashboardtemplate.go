@@ -33,59 +33,59 @@ import (
 	cache "k8s.io/client-go/tools/cache"
 )
 
-// DashboardTemplateInformer provides access to a shared informer and lister for
-// DashboardTemplates.
-type DashboardTemplateInformer interface {
+// GrafanaDashboardTemplateInformer provides access to a shared informer and lister for
+// GrafanaDashboardTemplates.
+type GrafanaDashboardTemplateInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1alpha1.DashboardTemplateLister
+	Lister() v1alpha1.GrafanaDashboardTemplateLister
 }
 
-type dashboardTemplateInformer struct {
+type grafanaDashboardTemplateInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
 	namespace        string
 }
 
-// NewDashboardTemplateInformer constructs a new informer for DashboardTemplate type.
+// NewGrafanaDashboardTemplateInformer constructs a new informer for GrafanaDashboardTemplate type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewDashboardTemplateInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
-	return NewFilteredDashboardTemplateInformer(client, namespace, resyncPeriod, indexers, nil)
+func NewGrafanaDashboardTemplateInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+	return NewFilteredGrafanaDashboardTemplateInformer(client, namespace, resyncPeriod, indexers, nil)
 }
 
-// NewFilteredDashboardTemplateInformer constructs a new informer for DashboardTemplate type.
+// NewFilteredGrafanaDashboardTemplateInformer constructs a new informer for GrafanaDashboardTemplate type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredDashboardTemplateInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredGrafanaDashboardTemplateInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.OpenvizV1alpha1().DashboardTemplates(namespace).List(context.TODO(), options)
+				return client.OpenvizV1alpha1().GrafanaDashboardTemplates(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.OpenvizV1alpha1().DashboardTemplates(namespace).Watch(context.TODO(), options)
+				return client.OpenvizV1alpha1().GrafanaDashboardTemplates(namespace).Watch(context.TODO(), options)
 			},
 		},
-		&openvizv1alpha1.DashboardTemplate{},
+		&openvizv1alpha1.GrafanaDashboardTemplate{},
 		resyncPeriod,
 		indexers,
 	)
 }
 
-func (f *dashboardTemplateInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredDashboardTemplateInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+func (f *grafanaDashboardTemplateInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+	return NewFilteredGrafanaDashboardTemplateInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
-func (f *dashboardTemplateInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&openvizv1alpha1.DashboardTemplate{}, f.defaultInformer)
+func (f *grafanaDashboardTemplateInformer) Informer() cache.SharedIndexInformer {
+	return f.factory.InformerFor(&openvizv1alpha1.GrafanaDashboardTemplate{}, f.defaultInformer)
 }
 
-func (f *dashboardTemplateInformer) Lister() v1alpha1.DashboardTemplateLister {
-	return v1alpha1.NewDashboardTemplateLister(f.Informer().GetIndexer())
+func (f *grafanaDashboardTemplateInformer) Lister() v1alpha1.GrafanaDashboardTemplateLister {
+	return v1alpha1.NewGrafanaDashboardTemplateLister(f.Informer().GetIndexer())
 }

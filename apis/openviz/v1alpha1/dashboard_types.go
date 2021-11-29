@@ -23,14 +23,14 @@ import (
 )
 
 const (
-	ResourceKindDashboard = "Dashboard"
-	ResourceDashboard     = "dashboard"
-	ResourceDashboards    = "dashboards"
+	ResourceKindGrafanaDashboard = "GrafanaDashboard"
+	ResourceGrafanaDashboard     = "grafanadashboard"
+	ResourceGrafanaDashboards    = "grafanadashboards"
 )
 
 const (
-	GrafanaNameKey    = ".grafana.name"
-	DashboardTitleKey = ".dashboard.title"
+	GrafanaNameKey           = ".grafana.name"
+	GrafanaDashboardTitleKey = ".dashboard.title"
 )
 
 // +genclient
@@ -38,19 +38,19 @@ const (
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // +kubebuilder:object:root=true
-// +kubebuilder:resource:path=dashboards,singular=dashboard,categories={grafana,openviz,appscode}
+// +kubebuilder:resource:path=grafanadashboards,singular=grafanadashboard,categories={grafana,openviz,appscode}
 // +kubebuilder:printcolumn:name="Status",type="string",JSONPath=".status.phase"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
-type Dashboard struct {
+type GrafanaDashboard struct {
 	metav1.TypeMeta   `json:",inline,omitempty"`
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-	Spec              DashboardSpec   `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
-	Status            DashboardStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
+	Spec              GrafanaDashboardSpec   `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
+	Status            GrafanaDashboardStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
 }
 
-type DashboardSpec struct {
-	// Grafana defines the grafana app binding name for the Dashboard
+type GrafanaDashboardSpec struct {
+	// Grafana defines the grafana app binding name for the GrafanaDashboard
 	Grafana *TargetRef `json:"grafana,omitempty" protobuf:"bytes,1,opt,name=grafana"`
 	// +optional
 	// +kubebuilder:pruning:PreserveUnknownFields
@@ -60,11 +60,11 @@ type DashboardSpec struct {
 	// +optional
 	FolderID int64 `json:"folderID,omitempty" protobuf:"varint,3,opt,name=folderID"`
 
-	// Overwrite defines the existing dashboard with the same name(if any) should be overwritten or not
+	// Overwrite defines the existing grafanadashboard with the same name(if any) should be overwritten or not
 	// +optional
 	Overwrite bool `json:"overwrite,omitempty" protobuf:"varint,4,opt,name=overwrite"`
 
-	// Templatize defines the fields which supports templating in Grafana Dashboard Model json
+	// Templatize defines the fields which supports templating in Grafana GrafanaDashboard Model json
 	// +optional
 	Templatize *ModelTemplateConfiguration `json:"templatize,omitempty" protobuf:"bytes,5,opt,name=templatize"`
 }
@@ -80,7 +80,7 @@ type TargetRef struct {
 	Name     string `json:"name,omitempty" protobuf:"bytes,3,opt,name=name"`
 }
 
-type DashboardReference struct {
+type GrafanaDashboardReference struct {
 	ID      *int64  `json:"id,omitempty" protobuf:"varint,1,opt,name=id"`
 	UID     *string `json:"uid,omitempty" protobuf:"bytes,2,opt,name=uid"`
 	OrgID   *int64  `json:"orgID,omitempty" protobuf:"varint,3,opt,name=orgID"`
@@ -92,13 +92,13 @@ type DashboardReference struct {
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:object:root=true
 
-type DashboardList struct {
+type GrafanaDashboardList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-	Items           []Dashboard `json:"items,omitempty" protobuf:"bytes,2,rep,name=items"`
+	Items           []GrafanaDashboard `json:"items,omitempty" protobuf:"bytes,2,rep,name=items"`
 }
 
-type DashboardStatus struct {
+type GrafanaDashboardStatus struct {
 	// ObservedGeneration is the most recent generation observed for this resource. It corresponds to the
 	// resource's generation, which is updated on mutation by the API Server.
 	// +optional
@@ -112,11 +112,11 @@ type DashboardStatus struct {
 	// +optional
 	Reason string `json:"reason,omitempty" protobuf:"bytes,3,opt,name=reason"`
 
-	// Dashboard indicates the updated dashboard database
+	// Dashboard indicates the updated grafanadashboard database
 	// +optional
-	Dashboard *DashboardReference `json:"dashboard,omitempty" protobuf:"bytes,4,opt,name=dashboard"`
+	Dashboard *GrafanaDashboardReference `json:"dashboard,omitempty" protobuf:"bytes,4,opt,name=dashboard"`
 
-	// Represents the latest available observations of a Dashboard current state.
+	// Represents the latest available observations of a GrafanaDashboard current state.
 	// +optional
 	Conditions []kmapi.Condition `json:"conditions,omitempty" protobuf:"bytes,5,rep,name=conditions"`
 }

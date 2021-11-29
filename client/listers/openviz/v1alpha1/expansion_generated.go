@@ -18,26 +18,26 @@ limitations under the License.
 
 package v1alpha1
 
-// DashboardListerExpansion allows custom methods to be added to
-// DashboardLister.
-type DashboardListerExpansion interface{}
+// GrafanaDashboardListerExpansion allows custom methods to be added to
+// GrafanaDashboardLister.
+type GrafanaDashboardListerExpansion interface{}
 
-// DashboardNamespaceListerExpansion allows custom methods to be added to
-// DashboardNamespaceLister.
-type DashboardNamespaceListerExpansion interface{}
+// GrafanaDashboardNamespaceListerExpansion allows custom methods to be added to
+// GrafanaDashboardNamespaceLister.
+type GrafanaDashboardNamespaceListerExpansion interface{}
 
-// DashboardTemplateListerExpansion allows custom methods to be added to
-// DashboardTemplateLister.
-type DashboardTemplateListerExpansion interface{}
+// GrafanaDashboardTemplateListerExpansion allows custom methods to be added to
+// GrafanaDashboardTemplateLister.
+type GrafanaDashboardTemplateListerExpansion interface{}
 
-// DashboardTemplateNamespaceListerExpansion allows custom methods to be added to
-// DashboardTemplateNamespaceLister.
-type DashboardTemplateNamespaceListerExpansion interface{}
+// GrafanaDashboardTemplateNamespaceListerExpansion allows custom methods to be added to
+// GrafanaDashboardTemplateNamespaceLister.
+type GrafanaDashboardTemplateNamespaceListerExpansion interface{}
 
-// DatasourceListerExpansion allows custom methods to be added to
-// DatasourceLister.
-type DatasourceListerExpansion interface{}
+// GrafanaDatasourceListerExpansion allows custom methods to be added to
+// GrafanaDatasourceLister.
+type GrafanaDatasourceListerExpansion interface{}
 
-// DatasourceNamespaceListerExpansion allows custom methods to be added to
-// DatasourceNamespaceLister.
-type DatasourceNamespaceListerExpansion interface{}
+// GrafanaDatasourceNamespaceListerExpansion allows custom methods to be added to
+// GrafanaDatasourceNamespaceLister.
+type GrafanaDatasourceNamespaceListerExpansion interface{}

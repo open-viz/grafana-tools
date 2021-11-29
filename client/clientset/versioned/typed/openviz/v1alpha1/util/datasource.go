@@ -33,22 +33,22 @@ import (
 	kutil "kmodules.xyz/client-go"
 )
 
-func PatchDatasource(
+func PatchGrafanaDatasource(
 	ctx context.Context,
 	c cs.OpenvizV1alpha1Interface,
-	cur *api.Datasource,
-	transform func(*api.Datasource) *api.Datasource,
+	cur *api.GrafanaDatasource,
+	transform func(*api.GrafanaDatasource) *api.GrafanaDatasource,
 	opts metav1.PatchOptions,
-) (*api.Datasource, kutil.VerbType, error) {
-	return PatchDatasourceObject(ctx, c, cur, transform(cur.DeepCopy()), opts)
+) (*api.GrafanaDatasource, kutil.VerbType, error) {
+	return PatchGrafanaDatasourceObject(ctx, c, cur, transform(cur.DeepCopy()), opts)
 }
 
-func PatchDatasourceObject(
+func PatchGrafanaDatasourceObject(
 	ctx context.Context,
 	c cs.OpenvizV1alpha1Interface,
-	cur, mod *api.Datasource,
+	cur, mod *api.GrafanaDatasource,
 	opts metav1.PatchOptions,
-) (*api.Datasource, kutil.VerbType, error) {
+) (*api.GrafanaDatasource, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
@@ -66,20 +66,20 @@ func PatchDatasourceObject(
 	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, kutil.VerbUnchanged, nil
 	}
-	klog.V(3).Infof("Patching Datasource %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
-	out, err := c.Datasources(cur.Namespace).Patch(ctx, cur.Name, types.MergePatchType, patch, opts)
+	klog.V(3).Infof("Patching GrafanaDatasource %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
+	out, err := c.GrafanaDatasources(cur.Namespace).Patch(ctx, cur.Name, types.MergePatchType, patch, opts)
 	return out, kutil.VerbPatched, err
 }
 
-func UpdateDatasourceStatus(
+func UpdateGrafanaDatasourceStatus(
 	ctx context.Context,
 	c cs.OpenvizV1alpha1Interface,
 	meta metav1.ObjectMeta,
-	transform func(*api.DatasourceStatus) *api.DatasourceStatus,
+	transform func(*api.GrafanaDatasourceStatus) *api.GrafanaDatasourceStatus,
 	opts metav1.UpdateOptions,
-) (result *api.Datasource, err error) {
-	apply := func(x *api.Datasource) *api.Datasource {
-		return &api.Datasource{
+) (result *api.GrafanaDatasource, err error) {
+	apply := func(x *api.GrafanaDatasource) *api.GrafanaDatasource {
+		return &api.GrafanaDatasource{
 			TypeMeta:   x.TypeMeta,
 			ObjectMeta: x.ObjectMeta,
 			Spec:       x.Spec,
@@ -88,16 +88,16 @@ func UpdateDatasourceStatus(
 	}
 
 	attempt := 0
-	cur, err := c.Datasources(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
+	cur, err := c.GrafanaDatasources(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
 		var e2 error
-		result, e2 = c.Datasources(meta.Namespace).UpdateStatus(ctx, apply(cur), opts)
+		result, e2 = c.GrafanaDatasources(meta.Namespace).UpdateStatus(ctx, apply(cur), opts)
 		if kerr.IsConflict(e2) {
-			latest, e3 := c.Datasources(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
+			latest, e3 := c.GrafanaDatasources(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 			switch {
 			case e3 == nil:
 				cur = latest
@@ -114,7 +114,7 @@ func UpdateDatasourceStatus(
 	})
 
 	if err != nil {
-		err = fmt.Errorf("failed to update status of Dashboard %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
+		err = fmt.Errorf("failed to update status of GrafanaDashboard %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
 	}
 	return
 }

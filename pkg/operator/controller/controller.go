@@ -62,15 +62,15 @@ type GrafanaController struct {
 	kubeInformerFactory informers.SharedInformerFactory
 	extInformerFactory  grafanainformers.SharedInformerFactory
 
-	// for Dashboard
-	dashboardQueue    *queue.Worker
-	dashboardInformer cache.SharedIndexInformer
-	dashboardLister   grafana_listers.DashboardLister
+	// for GrafanaDashboard
+	grafanadashboardQueue    *queue.Worker
+	grafanadashboardInformer cache.SharedIndexInformer
+	grafanadashboardLister   grafana_listers.GrafanaDashboardLister
 
 	//for DataSource
-	datasourceQueue    *queue.Worker
-	datasourceInformer cache.SharedIndexInformer
-	datasourceLister   grafana_listers.DatasourceLister
+	grafanadatasourceQueue    *queue.Worker
+	grafanadatasourceInformer cache.SharedIndexInformer
+	grafanadatasourceLister   grafana_listers.GrafanaDatasourceLister
 
 	// Grafana client
 	grafanaClient *sdk.Client
@@ -78,8 +78,8 @@ type GrafanaController struct {
 
 func (c *GrafanaController) ensureCustomResourceDefinitions() error {
 	crds := []*apiextensions.CustomResourceDefinition{
-		api.Dashboard{}.CustomResourceDefinition(),
-		api.Datasource{}.CustomResourceDefinition(),
+		api.GrafanaDashboard{}.CustomResourceDefinition(),
+		api.GrafanaDatasource{}.CustomResourceDefinition(),
 		appcat.AppBinding{}.CustomResourceDefinition(),
 	}
 	return apiextensions.RegisterCRDs(c.crdClient, crds)
@@ -113,26 +113,26 @@ func (c *GrafanaController) RunInformers(stopCh <-chan struct{}) {
 		}
 	}
 
-	//For Dashboard
-	go c.dashboardQueue.Run(stopCh)
+	//For GrafanaDashboard
+	go c.grafanadashboardQueue.Run(stopCh)
 
-	//For Datasource
-	go c.datasourceQueue.Run(stopCh)
+	//For GrafanaDatasource
+	go c.grafanadatasourceQueue.Run(stopCh)
 
 	<-stopCh
 	klog.Info("Stopping Vault operator")
 }
 
-func (c *GrafanaController) pushDashboardFailureEvent(dashboard *api.Dashboard, reason string) {
+func (c *GrafanaController) pushGrafanaDashboardFailureEvent(grafanadashboard *api.GrafanaDashboard, reason string) {
 	c.recorder.Eventf(
-		dashboard,
+		grafanadashboard,
 		core.EventTypeWarning,
 		eventer.EventReasonFailedToStart,
-		`Failed to complete operation for Dashboard: "%v". Reason: %v`,
-		dashboard.Name,
+		`Failed to complete operation for GrafanaDashboard: "%v". Reason: %v`,
+		grafanadashboard.Name,
 		reason,
 	)
-	dashboard, err := util.UpdateDashboardStatus(context.TODO(), c.extClient.OpenvizV1alpha1(), dashboard.ObjectMeta, func(in *api.DashboardStatus) *api.DashboardStatus {
+	grafanadashboard, err := util.UpdateGrafanaDashboardStatus(context.TODO(), c.extClient.OpenvizV1alpha1(), grafanadashboard.ObjectMeta, func(in *api.GrafanaDashboardStatus) *api.GrafanaDashboardStatus {
 		in.Phase = api.GrafanaPhaseFailed
 		in.Reason = reason
 		in.Conditions = kmapi.SetCondition(in.Conditions, kmapi.Condition{
@@ -141,12 +141,12 @@ func (c *GrafanaController) pushDashboardFailureEvent(dashboard *api.Dashboard, 
 			Reason:  reason,
 			Message: reason,
 		})
-		in.ObservedGeneration = dashboard.Generation
+		in.ObservedGeneration = grafanadashboard.Generation
 		return in
 	}, metav1.UpdateOptions{})
 	if err != nil {
 		c.recorder.Eventf(
-			dashboard,
+			grafanadashboard,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToUpdate,
 			err.Error(),
@@ -154,16 +154,16 @@ func (c *GrafanaController) pushDashboardFailureEvent(dashboard *api.Dashboard, 
 	}
 }
 
-func (c *GrafanaController) pushDatasourceFailureEvent(ds *api.Datasource, reason string) {
+func (c *GrafanaController) pushGrafanaDatasourceFailureEvent(ds *api.GrafanaDatasource, reason string) {
 	c.recorder.Eventf(
 		ds,
 		core.EventTypeWarning,
 		eventer.EventReasonFailedToStart,
-		`Failed to complete operation for Datasource: "%v". Reason: %v`,
+		`Failed to complete operation for GrafanaDatasource: "%v". Reason: %v`,
 		ds.Name,
 		reason,
 	)
-	ds, err := util.UpdateDatasourceStatus(context.TODO(), c.extClient.OpenvizV1alpha1(), ds.ObjectMeta, func(in *api.DatasourceStatus) *api.DatasourceStatus {
+	ds, err := util.UpdateGrafanaDatasourceStatus(context.TODO(), c.extClient.OpenvizV1alpha1(), ds.ObjectMeta, func(in *api.GrafanaDatasourceStatus) *api.GrafanaDatasourceStatus {
 		in.Phase = api.GrafanaPhaseFailed
 		in.Reason = reason
 		in.Conditions = kmapi.SetCondition(in.Conditions, kmapi.Condition{

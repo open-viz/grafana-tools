@@ -34,19 +34,19 @@ import (
 	kutil "kmodules.xyz/client-go"
 )
 
-func CreateOrPatchDashboard(
+func CreateOrPatchGrafanaDashboard(
 	ctx context.Context,
 	c cs.OpenvizV1alpha1Interface,
 	meta metav1.ObjectMeta,
-	transform func(alert *api.Dashboard) *api.Dashboard,
+	transform func(alert *api.GrafanaDashboard) *api.GrafanaDashboard,
 	opts metav1.PatchOptions,
-) (*api.Dashboard, kutil.VerbType, error) {
-	cur, err := c.Dashboards(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
+) (*api.GrafanaDashboard, kutil.VerbType, error) {
+	cur, err := c.GrafanaDashboards(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		klog.V(3).Infof("Creating Dashboard %s/%s.", meta.Namespace, meta.Name)
-		out, err := c.Dashboards(meta.Namespace).Create(ctx, transform(&api.Dashboard{
+		klog.V(3).Infof("Creating GrafanaDashboard %s/%s.", meta.Namespace, meta.Name)
+		out, err := c.GrafanaDashboards(meta.Namespace).Create(ctx, transform(&api.GrafanaDashboard{
 			TypeMeta: metav1.TypeMeta{
-				Kind:       api.ResourceKindDashboard,
+				Kind:       api.ResourceKindGrafanaDashboard,
 				APIVersion: api.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
@@ -58,25 +58,25 @@ func CreateOrPatchDashboard(
 	} else if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
-	return PatchDashboard(ctx, c, cur, transform, opts)
+	return PatchGrafanaDashboard(ctx, c, cur, transform, opts)
 }
 
-func PatchDashboard(
+func PatchGrafanaDashboard(
 	ctx context.Context,
 	c cs.OpenvizV1alpha1Interface,
-	cur *api.Dashboard,
-	transform func(*api.Dashboard) *api.Dashboard,
+	cur *api.GrafanaDashboard,
+	transform func(*api.GrafanaDashboard) *api.GrafanaDashboard,
 	opts metav1.PatchOptions,
-) (*api.Dashboard, kutil.VerbType, error) {
-	return PatchDashboardObject(ctx, c, cur, transform(cur.DeepCopy()), opts)
+) (*api.GrafanaDashboard, kutil.VerbType, error) {
+	return PatchGrafanaDashboardObject(ctx, c, cur, transform(cur.DeepCopy()), opts)
 }
 
-func PatchDashboardObject(
+func PatchGrafanaDashboardObject(
 	ctx context.Context,
 	c cs.OpenvizV1alpha1Interface,
-	cur, mod *api.Dashboard,
+	cur, mod *api.GrafanaDashboard,
 	opts metav1.PatchOptions,
-) (*api.Dashboard, kutil.VerbType, error) {
+) (*api.GrafanaDashboard, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
@@ -94,47 +94,47 @@ func PatchDashboardObject(
 	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, kutil.VerbUnchanged, nil
 	}
-	klog.V(3).Infof("Patching Dashboard %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
-	out, err := c.Dashboards(cur.Namespace).Patch(ctx, cur.Name, types.MergePatchType, patch, opts)
+	klog.V(3).Infof("Patching GrafanaDashboard %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
+	out, err := c.GrafanaDashboards(cur.Namespace).Patch(ctx, cur.Name, types.MergePatchType, patch, opts)
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateDashboard(
+func TryUpdateGrafanaDashboard(
 	ctx context.Context,
 	c cs.OpenvizV1alpha1Interface,
 	meta metav1.ObjectMeta,
-	transform func(*api.Dashboard) *api.Dashboard,
+	transform func(*api.GrafanaDashboard) *api.GrafanaDashboard,
 	opts metav1.UpdateOptions,
-) (result *api.Dashboard, err error) {
+) (result *api.GrafanaDashboard, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
-		cur, e2 := c.Dashboards(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
+		cur, e2 := c.GrafanaDashboards(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
-			result, e2 = c.Dashboards(cur.Namespace).Update(ctx, transform(cur.DeepCopy()), opts)
+			result, e2 = c.GrafanaDashboards(cur.Namespace).Update(ctx, transform(cur.DeepCopy()), opts)
 			return e2 == nil, nil
 		}
-		klog.Errorf("Attempt %d failed to update Dashboard %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
+		klog.Errorf("Attempt %d failed to update GrafanaDashboard %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
 		return false, nil
 	})
 
 	if err != nil {
-		err = errors.Errorf("failed to update Dashboard %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
+		err = errors.Errorf("failed to update GrafanaDashboard %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
 	}
 	return
 }
 
-func UpdateDashboardStatus(
+func UpdateGrafanaDashboardStatus(
 	ctx context.Context,
 	c cs.OpenvizV1alpha1Interface,
 	meta metav1.ObjectMeta,
-	transform func(*api.DashboardStatus) *api.DashboardStatus,
+	transform func(*api.GrafanaDashboardStatus) *api.GrafanaDashboardStatus,
 	opts metav1.UpdateOptions,
-) (result *api.Dashboard, err error) {
-	apply := func(x *api.Dashboard) *api.Dashboard {
-		return &api.Dashboard{
+) (result *api.GrafanaDashboard, err error) {
+	apply := func(x *api.GrafanaDashboard) *api.GrafanaDashboard {
+		return &api.GrafanaDashboard{
 			TypeMeta:   x.TypeMeta,
 			ObjectMeta: x.ObjectMeta,
 			Spec:       x.Spec,
@@ -143,16 +143,16 @@ func UpdateDashboardStatus(
 	}
 
 	attempt := 0
-	cur, err := c.Dashboards(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
+	cur, err := c.GrafanaDashboards(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
 		var e2 error
-		result, e2 = c.Dashboards(meta.Namespace).UpdateStatus(ctx, apply(cur), opts)
+		result, e2 = c.GrafanaDashboards(meta.Namespace).UpdateStatus(ctx, apply(cur), opts)
 		if kerr.IsConflict(e2) {
-			latest, e3 := c.Dashboards(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
+			latest, e3 := c.GrafanaDashboards(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 			switch {
 			case e3 == nil:
 				cur = latest
@@ -169,7 +169,7 @@ func UpdateDashboardStatus(
 	})
 
 	if err != nil {
-		err = fmt.Errorf("failed to update status of Dashboard %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
+		err = fmt.Errorf("failed to update status of GrafanaDashboard %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
 	}
 	return
 }

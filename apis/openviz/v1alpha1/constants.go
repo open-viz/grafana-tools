@@ -27,17 +27,17 @@ const (
 	GrafanaPhaseFailed      GrafanaPhase = "Failed"
 )
 
-// ************** Datasource Constants ****************
+// ************** GrafanaDatasource Constants ****************
 
-type DatasourceType string
+type GrafanaDatasourceType string
 
 const (
-	DatasourceTypePrometheus DatasourceType = "prometheus"
+	GrafanaDatasourceTypePrometheus GrafanaDatasourceType = "prometheus"
 )
 
-type DatasourceAccessType string
+type GrafanaDatasourceAccessType string
 
 const (
-	DatasourceAccessTypeProxy  DatasourceAccessType = "proxy"
-	DatasourceAccessTypeDirect DatasourceAccessType = "direct"
+	GrafanaDatasourceAccessTypeProxy  GrafanaDatasourceAccessType = "proxy"
+	GrafanaDatasourceAccessTypeDirect GrafanaDatasourceAccessType = "direct"
 )

@@ -27,9 +27,9 @@ import (
 
 type OpenvizV1alpha1Interface interface {
 	RESTClient() rest.Interface
-	DashboardsGetter
-	DashboardTemplatesGetter
-	DatasourcesGetter
+	GrafanaDashboardsGetter
+	GrafanaDashboardTemplatesGetter
+	GrafanaDatasourcesGetter
 }
 
 // OpenvizV1alpha1Client is used to interact with features provided by the openviz.dev group.
@@ -37,16 +37,16 @@ type OpenvizV1alpha1Client struct {
 	restClient rest.Interface
 }
 
-func (c *OpenvizV1alpha1Client) Dashboards(namespace string) DashboardInterface {
-	return newDashboards(c, namespace)
+func (c *OpenvizV1alpha1Client) GrafanaDashboards(namespace string) GrafanaDashboardInterface {
+	return newGrafanaDashboards(c, namespace)
 }
 
-func (c *OpenvizV1alpha1Client) DashboardTemplates(namespace string) DashboardTemplateInterface {
-	return newDashboardTemplates(c, namespace)
+func (c *OpenvizV1alpha1Client) GrafanaDashboardTemplates(namespace string) GrafanaDashboardTemplateInterface {
+	return newGrafanaDashboardTemplates(c, namespace)
 }
 
-func (c *OpenvizV1alpha1Client) Datasources(namespace string) DatasourceInterface {
-	return newDatasources(c, namespace)
+func (c *OpenvizV1alpha1Client) GrafanaDatasources(namespace string) GrafanaDatasourceInterface {
+	return newGrafanaDatasources(c, namespace)
 }
 
 // NewForConfig creates a new OpenvizV1alpha1Client for the given config.

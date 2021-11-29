@@ -22,6 +22,6 @@ import (
 	"kmodules.xyz/client-go/apiextensions"
 )
 
-func (_ Datasource) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {
-	return crds.MustCustomResourceDefinition(SchemeGroupVersion.WithResource(ResourceDatasources))
+func (_ GrafanaDatasource) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {
+	return crds.MustCustomResourceDefinition(SchemeGroupVersion.WithResource(ResourceGrafanaDatasources))
 }
