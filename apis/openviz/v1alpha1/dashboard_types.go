@@ -58,7 +58,7 @@ type GrafanaDashboardSpec struct {
 
 	// FolderID defines the Grafana folderID
 	// +optional
-	FolderID int64 `json:"folderID,omitempty" protobuf:"varint,3,opt,name=folderID"`
+	FolderID *int64 `json:"folderID,omitempty" protobuf:"varint,3,opt,name=folderID"`
 
 	// Overwrite defines the existing grafanadashboard with the same name(if any) should be overwritten or not
 	// +optional

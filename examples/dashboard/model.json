@@ -2,38 +2,32 @@
   "annotations": {
     "list": [
       {
-        "grafanadatasource": "-- Grafana --",
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
         "enable": true,
-        "expr": "",
+        "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
-        "iconSize": 0,
-        "lineColor": "",
         "name": "Annotations & Alerts",
-        "query": "",
-        "showLine": false,
-        "step": "",
-        "tagKeys": "",
-        "tags": null,
-        "tagsField": "",
-        "textField": "",
-        "textFormat": "",
-        "titleFormat": "",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
         "type": "dashboard"
       }
     ]
   },
+  "description": "This dashboard works with postgres_exporter for prometheus",
   "editable": true,
-  "gnetId": null,
+  "gnetId": 9628,
   "graphTooltip": 0,
-  "iteration": 1637657084652,
+  "iteration": 1638177476998,
   "links": [],
   "panels": [
     {
       "collapsed": false,
-      "grafanadatasource": null,
-
-      "editable": false,
-      "error": false,
+      "datasource": "${datasource}",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -41,49 +35,34 @@
         "y": 0
       },
       "id": 136,
-      "isNew": false,
       "panels": [],
-      "span": 0,
       "title": "General Info",
       "type": "row"
     },
     {
-      "colorBackground": false,
-      "colorValue": false,
-      "colors": null,
-      "grafanadatasource": null,
-
-      "decimals": 0,
+      "cacheTimeout": null,
+      "datasource": "${datasource}",
       "description": "Postgresql Version",
-      "editable": false,
-      "error": false,
       "fieldConfig": {
         "defaults": {
-          "custom": {},
+          "color": {
+            "fixedColor": "text",
+            "mode": "thresholds"
+          },
           "mappings": [],
+          "noValue": "N/A",
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#ffffff",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
-          }
+          },
+          "unit": "none"
         },
         "overrides": []
-      },
-      "format": "",
-      "gauge": {
-        "maxValue": 0,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": false
       },
       "gridPos": {
         "h": 3,
@@ -92,85 +71,62 @@
         "y": 1
       },
       "id": 36,
-      "isNew": false,
+      "interval": null,
+      "links": [],
       "maxDataPoints": 100,
-      "nullPointMode": "",
       "options": {
         "colorMode": "none",
-        "content": "",
-        "displayMode": "",
         "graphMode": "area",
         "justifyMode": "auto",
-        "mode": "",
         "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
-            "mean"
+            "lastNotNull"
           ],
-          "fields": "",
+          "fields": "/^version$/",
           "values": false
         },
         "text": {},
-        "textMode": "name"
+        "textMode": "value"
       },
-      "pluginVersion": "7.4.5",
-      "span": 0,
-      "sparkline": {},
+      "pluginVersion": "7.5.11",
       "targets": [
         {
+          "exemplar": false,
           "expr": "kubedb_postgres_info{namespace=\"$namespace\", postgres=\"$postgres\"}",
-          "format": "time_series",
+          "format": "table",
           "instant": true,
+          "interval": "",
           "intervalFactor": 1,
           "legendFormat": "{{version}}",
           "refId": "A"
         }
       ],
-      "thresholds": "",
       "title": "Version",
-      "type": "stat",
-      "valueFontSize": "",
-      "valueMaps": null,
-      "valueName": ""
+      "type": "stat"
     },
     {
-      "colorBackground": false,
-      "colorValue": false,
-      "colors": null,
-      "grafanadatasource": null,
-
-      "decimals": 0,
+      "datasource": "${datasource}",
       "description": "Database uptime",
-      "editable": false,
-      "error": false,
       "fieldConfig": {
         "defaults": {
-          "custom": {},
+          "color": {
+            "fixedColor": "light-blue",
+            "mode": "fixed"
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "text",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           },
-          "unit": "dtdurations"
+          "unit": "s"
         },
         "overrides": []
-      },
-      "format": "",
-      "gauge": {
-        "maxValue": 0,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": false
       },
       "gridPos": {
         "h": 3,
@@ -179,15 +135,10 @@
         "y": 1
       },
       "id": 90,
-      "isNew": false,
-      "nullPointMode": "",
       "options": {
         "colorMode": "none",
-        "content": "",
-        "displayMode": "",
         "graphMode": "area",
         "justifyMode": "auto",
-        "mode": "",
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
@@ -199,36 +150,29 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.4.5",
-      "span": 0,
-      "sparkline": {},
+      "pluginVersion": "7.5.11",
       "targets": [
         {
+          "exemplar": false,
           "expr": "time() - kubedb_postgres_created{namespace=\"$namespace\", postgres=\"$postgres\"}",
           "instant": true,
+          "interval": "",
+          "legendFormat": "",
           "refId": "A"
         }
       ],
-      "thresholds": "",
       "title": "Uptime",
-      "type": "stat",
-      "valueFontSize": "",
-      "valueMaps": null,
-      "valueName": ""
+      "type": "stat"
     },
     {
-      "colorBackground": false,
-      "colorValue": false,
-      "colors": null,
-      "grafanadatasource": null,
-
-      "decimals": 0,
+      "datasource": "${datasource}",
       "description": "Total replica count of the Postgres database",
-      "editable": false,
-      "error": false,
       "fieldConfig": {
         "defaults": {
-          "custom": {},
+          "color": {
+            "fixedColor": "green",
+            "mode": "fixed"
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -246,14 +190,6 @@
         },
         "overrides": []
       },
-      "format": "",
-      "gauge": {
-        "maxValue": 0,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": false
-      },
       "gridPos": {
         "h": 3,
         "w": 4,
@@ -261,15 +197,10 @@
         "y": 1
       },
       "id": 76,
-      "isNew": false,
-      "nullPointMode": "",
       "options": {
         "colorMode": "none",
-        "content": "",
-        "displayMode": "",
         "graphMode": "none",
         "justifyMode": "auto",
-        "mode": "",
         "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
@@ -281,60 +212,70 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.4.5",
-      "span": 0,
-      "sparkline": {},
+      "pluginVersion": "7.5.11",
       "targets": [
         {
+          "exemplar": false,
           "expr": "kubedb_postgres_replicas{namespace=\"$namespace\",postgres=\"$postgres\"}",
           "instant": true,
+          "interval": "",
+          "legendFormat": "",
           "refId": "A"
         }
       ],
-      "thresholds": "",
       "title": "Total Replicas",
-      "type": "stat",
-      "valueFontSize": "",
-      "valueMaps": null,
-      "valueName": ""
+      "type": "stat"
     },
     {
-      "colorBackground": false,
-      "colorValue": false,
-      "colors": null,
-      "grafanadatasource": null,
-
-      "decimals": 0,
+      "datasource": "${datasource}",
       "description": "Represent database status",
-      "editable": false,
-      "error": false,
       "fieldConfig": {
         "defaults": {
-          "custom": {},
-          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "Critical": {
+                  "color": "dark-yellow",
+                  "index": 1
+                },
+                "DataRestoring": {
+                  "color": "dark-red",
+                  "index": 4
+                },
+                "Halted": {
+                  "color": "dark-red",
+                  "index": 5
+                },
+                "NotReady": {
+                  "color": "dark-red",
+                  "index": 2
+                },
+                "Provisioning": {
+                  "color": "text",
+                  "index": 3
+                },
+                "Ready": {
+                  "color": "semi-dark-green",
+                  "index": 0
+                }
+              },
+              "type": "value"
+            }
+          ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#ffffff",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           }
         },
         "overrides": []
-      },
-      "format": "",
-      "gauge": {
-        "maxValue": 0,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": false
       },
       "gridPos": {
         "h": 3,
@@ -343,15 +284,10 @@
         "y": 1
       },
       "id": 78,
-      "isNew": false,
-      "nullPointMode": "",
       "options": {
         "colorMode": "none",
-        "content": "",
-        "displayMode": "",
         "graphMode": "area",
         "justifyMode": "auto",
-        "mode": "",
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
@@ -363,62 +299,51 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.4.5",
-      "span": 0,
-      "sparkline": {},
+      "pluginVersion": "7.5.11",
       "targets": [
         {
+          "exemplar": false,
           "expr": "kubedb_postgres_status_phase{namespace=\"$namespace\", postgres=\"$postgres\"} == 1\n",
           "format": "table",
           "instant": true,
+          "interval": "",
           "legendFormat": "{{phase}}",
           "refId": "A"
         }
       ],
-      "thresholds": "",
       "title": "Database Status",
-      "type": "stat",
-      "valueFontSize": "",
-      "valueMaps": null,
-      "valueName": ""
+      "type": "stat"
     },
     {
-      "colorBackground": false,
-      "colorValue": false,
-      "colors": null,
-      "grafanadatasource": null,
-
-      "decimals": 0,
+      "datasource": "${datasource}",
       "description": "KubeDB Postgres Current SSL Mode",
-      "editable": false,
-      "error": false,
       "fieldConfig": {
         "defaults": {
-          "custom": {},
-          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "disable": {
+                  "color": "dark-red",
+                  "index": 0
+                }
+              },
+              "type": "value"
+            }
+          ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#ffffff",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           }
         },
         "overrides": []
-      },
-      "format": "",
-      "gauge": {
-        "maxValue": 0,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": false
       },
       "gridPos": {
         "h": 3,
@@ -427,15 +352,10 @@
         "y": 1
       },
       "id": 82,
-      "isNew": false,
-      "nullPointMode": "",
       "options": {
         "colorMode": "none",
-        "content": "",
-        "displayMode": "",
         "graphMode": "area",
         "justifyMode": "auto",
-        "mode": "",
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
@@ -447,62 +367,63 @@
         "text": {},
         "textMode": "value"
       },
-      "pluginVersion": "7.4.5",
-      "span": 0,
-      "sparkline": {},
+      "pluginVersion": "7.5.11",
       "targets": [
         {
+          "exemplar": false,
           "expr": "kubedb_postgres_info{namespace=\"$namespace\", postgres=\"$postgres\"}",
           "format": "table",
           "instant": true,
+          "interval": "",
           "legendFormat": "{{sslMode}}",
           "refId": "A"
         }
       ],
-      "thresholds": "",
       "title": "SSL Mode",
-      "type": "stat",
-      "valueFontSize": "",
-      "valueMaps": null,
-      "valueName": ""
+      "type": "stat"
     },
     {
-      "colorBackground": false,
-      "colorValue": false,
-      "colors": null,
-      "grafanadatasource": null,
-
-      "decimals": 0,
+      "datasource": "${datasource}",
       "description": "KubeDB Postgres Resource terminationPolicy",
-      "editable": false,
-      "error": false,
       "fieldConfig": {
         "defaults": {
-          "custom": {},
-          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "Delete": {
+                  "color": "yellow",
+                  "index": 1
+                },
+                "DoNotTerminate": {
+                  "color": "green",
+                  "index": 2
+                },
+                "Halt": {
+                  "color": "blue",
+                  "index": 3
+                },
+                "WipeOut": {
+                  "color": "dark-red",
+                  "index": 0
+                }
+              },
+              "type": "value"
+            }
+          ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#ffffff",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           }
         },
         "overrides": []
-      },
-      "format": "",
-      "gauge": {
-        "maxValue": 0,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": false
       },
       "gridPos": {
         "h": 3,
@@ -511,15 +432,10 @@
         "y": 1
       },
       "id": 84,
-      "isNew": false,
-      "nullPointMode": "",
       "options": {
         "colorMode": "none",
-        "content": "",
-        "displayMode": "",
         "graphMode": "area",
         "justifyMode": "auto",
-        "mode": "",
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
@@ -531,62 +447,43 @@
         "text": {},
         "textMode": "value"
       },
-      "pluginVersion": "7.4.5",
-      "span": 0,
-      "sparkline": {},
+      "pluginVersion": "7.5.11",
       "targets": [
         {
+          "exemplar": false,
           "expr": "kubedb_postgres_info{namespace=\"$namespace\", postgres=\"$postgres\"}",
           "format": "table",
           "instant": true,
+          "interval": "",
           "legendFormat": "{{terminationPolicy}}",
           "refId": "A"
         }
       ],
-      "thresholds": "",
       "title": "Termination Policy",
-      "type": "stat",
-      "valueFontSize": "",
-      "valueMaps": null,
-      "valueName": ""
+      "type": "stat"
     },
     {
-      "colorBackground": false,
-      "colorValue": false,
-      "colors": null,
-      "grafanadatasource": null,
-
-      "decimals": 0,
+      "datasource": "${datasource}",
       "description": "Initial Requested CPU amount by Postgres Instance",
-      "editable": false,
-      "error": false,
       "fieldConfig": {
         "defaults": {
-          "custom": {},
+          "color": {
+            "fixedColor": "text",
+            "mode": "thresholds"
+          },
           "mappings": [],
+          "min": 0,
           "thresholds": {
-            "mode": "absolute",
+            "mode": "percentage",
             "steps": [
               {
-                "color": "green",
+                "color": "#ffffff",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           }
         },
         "overrides": []
-      },
-      "format": "",
-      "gauge": {
-        "maxValue": 0,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": false
       },
       "gridPos": {
         "h": 3,
@@ -595,15 +492,10 @@
         "y": 4
       },
       "id": 92,
-      "isNew": false,
-      "nullPointMode": "",
       "options": {
         "colorMode": "none",
-        "content": "",
-        "displayMode": "",
         "graphMode": "area",
         "justifyMode": "auto",
-        "mode": "",
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
@@ -615,60 +507,41 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.4.5",
-      "span": 0,
-      "sparkline": {},
+      "pluginVersion": "7.5.11",
       "targets": [
         {
+          "exemplar": false,
           "expr": "kubedb_postgres_resource_request_cpu{namespace=\"$namespace\", postgres=\"$postgres\"}",
           "instant": true,
+          "interval": "",
+          "legendFormat": "",
           "refId": "A"
         }
       ],
-      "thresholds": "",
       "title": "CPU Request (Core)",
-      "type": "stat",
-      "valueFontSize": "",
-      "valueMaps": null,
-      "valueName": ""
+      "type": "stat"
     },
     {
-      "colorBackground": false,
-      "colorValue": false,
-      "colors": null,
-      "grafanadatasource": null,
-
-      "decimals": 0,
+      "datasource": "${datasource}",
       "description": "CPU Limit in core by Postgres instance",
-      "editable": false,
-      "error": false,
       "fieldConfig": {
         "defaults": {
-          "custom": {},
+          "color": {
+            "fixedColor": "text",
+            "mode": "thresholds"
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#ffffff",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           }
         },
         "overrides": []
-      },
-      "format": "",
-      "gauge": {
-        "maxValue": 0,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": false
       },
       "gridPos": {
         "h": 3,
@@ -677,15 +550,10 @@
         "y": 4
       },
       "id": 114,
-      "isNew": false,
-      "nullPointMode": "",
       "options": {
         "colorMode": "none",
-        "content": "",
-        "displayMode": "",
         "graphMode": "area",
         "justifyMode": "auto",
-        "mode": "",
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
@@ -697,61 +565,43 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.4.5",
-      "span": 0,
-      "sparkline": {},
+      "pluginVersion": "7.5.11",
       "targets": [
         {
+          "exemplar": false,
           "expr": "kubedb_postgres_resource_limit_cpu{namespace=\"$namespace\", postgres=\"$postgres\"}",
           "instant": true,
+          "interval": "",
+          "legendFormat": "",
           "refId": "A"
         }
       ],
-      "thresholds": "",
       "title": "CPU Limit(core)",
-      "type": "stat",
-      "valueFontSize": "",
-      "valueMaps": null,
-      "valueName": ""
+      "type": "stat"
     },
     {
-      "colorBackground": false,
-      "colorValue": false,
-      "colors": null,
-      "grafanadatasource": null,
-
-      "decimals": 0,
+      "datasource": "${datasource}",
       "description": "Initial Requested Memory amount by Postgres Instance",
-      "editable": false,
-      "error": false,
       "fieldConfig": {
         "defaults": {
-          "custom": {},
+          "color": {
+            "fixedColor": "text",
+            "mode": "thresholds"
+          },
           "mappings": [],
+          "min": 0,
           "thresholds": {
-            "mode": "absolute",
+            "mode": "percentage",
             "steps": [
               {
-                "color": "green",
+                "color": "#ffffff",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           },
           "unit": "bytes"
         },
         "overrides": []
-      },
-      "format": "",
-      "gauge": {
-        "maxValue": 0,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": false
       },
       "gridPos": {
         "h": 3,
@@ -760,15 +610,10 @@
         "y": 4
       },
       "id": 94,
-      "isNew": false,
-      "nullPointMode": "",
       "options": {
         "colorMode": "none",
-        "content": "",
-        "displayMode": "",
         "graphMode": "area",
         "justifyMode": "auto",
-        "mode": "",
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
@@ -780,61 +625,42 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.4.5",
-      "span": 0,
-      "sparkline": {},
+      "pluginVersion": "7.5.11",
       "targets": [
         {
+          "exemplar": false,
           "expr": "kubedb_postgres_resource_request_memory{namespace=\"$namespace\", postgres=\"$postgres\"}",
           "instant": true,
+          "interval": "",
+          "legendFormat": "",
           "refId": "A"
         }
       ],
-      "thresholds": "",
       "title": "Memory Request",
-      "type": "stat",
-      "valueFontSize": "",
-      "valueMaps": null,
-      "valueName": ""
+      "type": "stat"
     },
     {
-      "colorBackground": false,
-      "colorValue": false,
-      "colors": null,
-      "grafanadatasource": null,
-
-      "decimals": 0,
+      "datasource": "${datasource}",
       "description": "KubeDB Postgres Total Memory Limit",
-      "editable": false,
-      "error": false,
       "fieldConfig": {
         "defaults": {
-          "custom": {},
+          "color": {
+            "fixedColor": "text",
+            "mode": "thresholds"
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#ffffff",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           },
           "unit": "bytes"
         },
         "overrides": []
-      },
-      "format": "",
-      "gauge": {
-        "maxValue": 0,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": false
       },
       "gridPos": {
         "h": 3,
@@ -843,15 +669,10 @@
         "y": 4
       },
       "id": 116,
-      "isNew": false,
-      "nullPointMode": "",
       "options": {
         "colorMode": "none",
-        "content": "",
-        "displayMode": "",
         "graphMode": "area",
         "justifyMode": "auto",
-        "mode": "",
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
@@ -863,61 +684,43 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.4.5",
-      "span": 0,
-      "sparkline": {},
+      "pluginVersion": "7.5.11",
       "targets": [
         {
+          "exemplar": false,
           "expr": "kubedb_postgres_resource_limit_memory{namespace=\"$namespace\", postgres=\"$postgres\"}",
           "instant": true,
+          "interval": "",
+          "legendFormat": "",
           "refId": "A"
         }
       ],
-      "thresholds": "",
       "title": "Memory Limit",
-      "type": "stat",
-      "valueFontSize": "",
-      "valueMaps": null,
-      "valueName": ""
+      "type": "stat"
     },
     {
-      "colorBackground": false,
-      "colorValue": false,
-      "colors": null,
-      "grafanadatasource": null,
-
-      "decimals": 0,
+      "datasource": "${datasource}",
       "description": "Intial Storage Request by Postgres Instance when deploying",
-      "editable": false,
-      "error": false,
       "fieldConfig": {
         "defaults": {
-          "custom": {},
+          "color": {
+            "fixedColor": "text",
+            "mode": "thresholds"
+          },
           "mappings": [],
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#ffffff",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           },
           "unit": "bytes"
         },
         "overrides": []
-      },
-      "format": "",
-      "gauge": {
-        "maxValue": 0,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": false
       },
       "gridPos": {
         "h": 3,
@@ -926,15 +729,10 @@
         "y": 4
       },
       "id": 96,
-      "isNew": false,
-      "nullPointMode": "",
       "options": {
         "colorMode": "none",
-        "content": "",
-        "displayMode": "",
         "graphMode": "area",
         "justifyMode": "auto",
-        "mode": "",
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
@@ -946,60 +744,41 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.4.5",
-      "span": 0,
-      "sparkline": {},
+      "pluginVersion": "7.5.11",
       "targets": [
         {
+          "exemplar": false,
           "expr": "kubedb_postgres_resource_request_storage{namespace=\"$namespace\", postgres=\"$postgres\"}",
           "instant": true,
+          "interval": "",
+          "legendFormat": "",
           "refId": "A"
         }
       ],
-      "thresholds": "",
       "title": "Storage Request",
-      "type": "stat",
-      "valueFontSize": "",
-      "valueMaps": null,
-      "valueName": ""
+      "type": "stat"
     },
     {
-      "colorBackground": false,
-      "colorValue": false,
-      "colors": null,
-      "grafanadatasource": null,
-
-      "decimals": 0,
+      "datasource": "${datasource}",
       "description": "Maximum number of concurrent connections of the Postgres instance",
-      "editable": false,
-      "error": false,
       "fieldConfig": {
         "defaults": {
-          "custom": {},
+          "color": {
+            "fixedColor": "text",
+            "mode": "thresholds"
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#ffffff",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           }
         },
         "overrides": []
-      },
-      "format": "",
-      "gauge": {
-        "maxValue": 0,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": false
       },
       "gridPos": {
         "h": 3,
@@ -1008,15 +787,10 @@
         "y": 4
       },
       "id": 118,
-      "isNew": false,
-      "nullPointMode": "",
       "options": {
         "colorMode": "none",
-        "content": "",
-        "displayMode": "",
         "graphMode": "area",
         "justifyMode": "auto",
-        "mode": "",
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
@@ -1028,28 +802,24 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.4.5",
-      "span": 0,
-      "sparkline": {},
+      "pluginVersion": "7.5.11",
       "targets": [
         {
+          "exemplar": false,
           "expr": "avg(pg_settings_max_connections{namespace=\"$namespace\", pod=~\"$postgres.*\"})",
+          "hide": false,
           "instant": true,
+          "interval": "",
+          "legendFormat": "",
           "refId": "B"
         }
       ],
-      "thresholds": "",
       "title": "Max Connections",
-      "type": "stat",
-      "valueFontSize": "",
-      "valueMaps": null,
-      "valueName": ""
+      "type": "stat"
     },
     {
-      "grafanadatasource": null,
+      "datasource": "${datasource}",
       "description": "The current active line shows the current primary pod",
-      "editable": false,
-      "error": false,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1075,9 +845,7 @@
               "type": "linear"
             },
             "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {},
-            "thresholdsStyle": {}
+            "spanNulls": false
           },
           "mappings": [],
           "thresholds": {
@@ -1103,7 +871,6 @@
         "y": 7
       },
       "id": 102,
-      "isNew": false,
       "options": {
         "legend": {
           "calcs": [],
@@ -1118,7 +885,6 @@
         }
       },
       "pluginVersion": "8.1.2",
-      "span": 0,
       "targets": [
         {
           "exemplar": false,
@@ -1133,10 +899,8 @@
       "type": "timeseries"
     },
     {
-      "grafanadatasource": null,
+      "datasource": "${datasource}",
       "description": "Postgres connections information in real time",
-      "editable": false,
-      "error": false,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1162,9 +926,7 @@
               "type": "linear"
             },
             "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {},
-            "thresholdsStyle": {}
+            "spanNulls": false
           },
           "mappings": [],
           "thresholds": {
@@ -1190,7 +952,6 @@
         "y": 7
       },
       "id": 120,
-      "isNew": false,
       "options": {
         "legend": {
           "calcs": [],
@@ -1204,7 +965,6 @@
           "mode": "single"
         }
       },
-      "span": 0,
       "targets": [
         {
           "exemplar": false,
@@ -1220,10 +980,7 @@
     },
     {
       "collapsed": false,
-      "grafanadatasource": null,
-
-      "editable": false,
-      "error": false,
+      "datasource": "${datasource}",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1231,17 +988,13 @@
         "y": 16
       },
       "id": 138,
-      "isNew": false,
       "panels": [],
-      "span": 0,
       "title": "CPU Info",
       "type": "row"
     },
     {
-      "grafanadatasource": null,
+      "datasource": "${datasource}",
       "description": "CPU Usage by Postgres pods",
-      "editable": false,
-      "error": false,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1267,9 +1020,7 @@
               "type": "linear"
             },
             "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {},
-            "thresholdsStyle": {}
+            "spanNulls": false
           },
           "mappings": [],
           "thresholds": {
@@ -1295,7 +1046,6 @@
         "y": 17
       },
       "id": 98,
-      "isNew": false,
       "options": {
         "legend": {
           "calcs": [],
@@ -1309,7 +1059,6 @@
           "mode": "single"
         }
       },
-      "span": 0,
       "targets": [
         {
           "exemplar": false,
@@ -1323,18 +1072,20 @@
       "type": "timeseries"
     },
     {
-      "columns": null,
-      "grafanadatasource": null,
-
+      "datasource": "${datasource}",
       "description": "CPU Quote information in details",
-      "editable": false,
-      "error": false,
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
           "custom": {
             "align": null,
+            "displayMode": "auto",
             "filterable": false
           },
+          "decimals": 2,
+          "displayName": "",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -1348,9 +1099,181 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "short"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Time"
+              },
+              {
+                "id": "custom.align",
+                "value": null
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "CPU Usage"
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.align",
+                "value": null
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #B"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "CPU Requests"
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.align",
+                "value": null
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #C"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "CPU Requests %"
+              },
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.align",
+                "value": null
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #D"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "CPU Limits"
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.align",
+                "value": null
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #E"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "CPU Limits %"
+              },
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.align",
+                "value": null
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pod"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Pod"
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "targetBlank": false,
+                    "title": "Drill down",
+                    "url": "./d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell"
+                  }
+                ]
+              },
+              {
+                "id": "custom.align",
+                "value": null
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 7,
@@ -1359,67 +1282,84 @@
         "y": 27
       },
       "id": 122,
-      "isNew": false,
+      "links": [],
       "options": {
-        "frameIndex": 0,
         "showHeader": true
       },
-      "pluginVersion": "7.4.5",
-      "scroll": false,
-      "span": 0,
-      "styles": null,
+      "pluginVersion": "7.5.11",
       "targets": [
         {
+          "exemplar": false,
           "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=\"$namespace\", pod=~\"$postgres.*\"}) by (pod)",
           "format": "table",
           "instant": true,
+          "interval": "",
           "intervalFactor": 2,
+          "legendFormat": "",
           "refId": "A",
           "step": 10
         },
         {
+          "exemplar": false,
           "expr": "sum(cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{namespace=\"$namespace\", pod=~\"$postgres.*\"}) by (pod)",
           "format": "table",
           "instant": true,
+          "interval": "",
           "intervalFactor": 2,
+          "legendFormat": "",
           "refId": "B",
           "step": 10
         },
         {
+          "exemplar": false,
           "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=\"$namespace\", pod=~\"$postgres.*\"}) by (pod) / sum(cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{namespace=\"$namespace\", pod=~\"$postgres.*\"}) by (pod)",
           "format": "table",
           "instant": true,
+          "interval": "",
           "intervalFactor": 2,
+          "legendFormat": "",
           "refId": "C",
           "step": 10
         },
         {
+          "exemplar": false,
           "expr": "sum(cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{namespace=\"$namespace\", pod=~\"$postgres.*\"}) by (pod)",
           "format": "table",
           "instant": true,
+          "interval": "",
           "intervalFactor": 2,
+          "legendFormat": "",
           "refId": "D",
           "step": 10
         },
         {
+          "exemplar": false,
           "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=\"$namespace\", pod=~\"$postgres.*\"}) by (pod) / sum(cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{namespace=\"$namespace\", pod=~\"$postgres.*\"}) by (pod)",
           "format": "table",
           "instant": true,
+          "interval": "",
           "intervalFactor": 2,
+          "legendFormat": "",
           "refId": "E",
           "step": 10
         }
       ],
+      "timeFrom": null,
+      "timeShift": null,
       "title": "CPU Quota",
-      "transform": "",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {
+            "reducers": []
+          }
+        }
+      ],
       "type": "table"
     },
     {
       "collapsed": false,
-      "grafanadatasource": null,
-
-      "editable": false,
-      "error": false,
+      "datasource": "${datasource}",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1427,17 +1367,13 @@
         "y": 34
       },
       "id": 140,
-      "isNew": false,
       "panels": [],
-      "span": 0,
       "title": "Memory Info",
       "type": "row"
     },
     {
-      "grafanadatasource": null,
+      "datasource": "${datasource}",
       "description": "Memory Usage by Postgres pods",
-      "editable": false,
-      "error": false,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1463,9 +1399,7 @@
               "type": "linear"
             },
             "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {},
-            "thresholdsStyle": {}
+            "spanNulls": false
           },
           "mappings": [],
           "thresholds": {
@@ -1492,7 +1426,6 @@
         "y": 35
       },
       "id": 100,
-      "isNew": false,
       "options": {
         "legend": {
           "calcs": [],
@@ -1506,7 +1439,6 @@
           "mode": "single"
         }
       },
-      "span": 0,
       "targets": [
         {
           "exemplar": false,
@@ -1520,17 +1452,19 @@
       "type": "timeseries"
     },
     {
-      "columns": null,
-      "grafanadatasource": null,
-
-      "editable": false,
-      "error": false,
+      "datasource": "${datasource}",
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
           "custom": {
             "align": null,
+            "displayMode": "auto",
             "filterable": false
           },
+          "decimals": 2,
+          "displayName": "",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -1544,9 +1478,253 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "short"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Time"
+              },
+              {
+                "id": "custom.align",
+                "value": null
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Memory Usage"
+              },
+              {
+                "id": "unit",
+                "value": "bytes"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.align",
+                "value": null
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #B"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Memory Requests"
+              },
+              {
+                "id": "unit",
+                "value": "bytes"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.align",
+                "value": null
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #C"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Memory Requests %"
+              },
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.align",
+                "value": null
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #D"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Memory Limits"
+              },
+              {
+                "id": "unit",
+                "value": "bytes"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.align",
+                "value": null
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #E"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Memory Limits %"
+              },
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.align",
+                "value": null
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #F"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Memory Usage (RSS)"
+              },
+              {
+                "id": "unit",
+                "value": "bytes"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.align",
+                "value": null
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #G"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Memory Usage (Cache)"
+              },
+              {
+                "id": "unit",
+                "value": "bytes"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.align",
+                "value": null
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #H"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Memory Usage (Swap)"
+              },
+              {
+                "id": "unit",
+                "value": "bytes"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.align",
+                "value": null
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pod"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Pod"
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "targetBlank": false,
+                    "title": "Drill down",
+                    "url": "./d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell"
+                  }
+                ]
+              },
+              {
+                "id": "custom.align",
+                "value": null
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 7,
@@ -1555,90 +1733,117 @@
         "y": 45
       },
       "id": 124,
-      "isNew": false,
+      "links": [],
       "options": {
         "showHeader": true
       },
-      "pluginVersion": "7.4.5",
-      "scroll": false,
-      "span": 0,
-      "styles": null,
+      "pluginVersion": "7.5.11",
       "targets": [
         {
+          "exemplar": false,
           "expr": "sum(container_memory_working_set_bytes{namespace=\"$namespace\",pod=~\"$postgres.*\",container!=\"\", image!=\"\"}) by (pod)",
           "format": "table",
           "instant": true,
+          "interval": "",
           "intervalFactor": 2,
+          "legendFormat": "",
           "refId": "A",
           "step": 10
         },
         {
+          "exemplar": false,
           "expr": "sum(cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{namespace=\"$namespace\",pod=~\"$postgres.*\"}) by (pod)",
           "format": "table",
           "instant": true,
+          "interval": "",
           "intervalFactor": 2,
+          "legendFormat": "",
           "refId": "B",
           "step": 10
         },
         {
+          "exemplar": false,
           "expr": "sum(container_memory_working_set_bytes{namespace=\"$namespace\",pod=~\"$postgres.*\",container!=\"\", image!=\"\"}) by (pod) / sum(cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{namespace=\"$namespace\",pod=~\"$postgres.*\"}) by (pod)",
           "format": "table",
           "instant": true,
+          "interval": "",
           "intervalFactor": 2,
+          "legendFormat": "",
           "refId": "C",
           "step": 10
         },
         {
+          "exemplar": false,
           "expr": "sum(cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{namespace=\"$namespace\",pod=~\"$postgres.*\"}) by (pod)",
           "format": "table",
           "instant": true,
+          "interval": "",
           "intervalFactor": 2,
+          "legendFormat": "",
           "refId": "D",
           "step": 10
         },
         {
+          "exemplar": false,
           "expr": "sum(container_memory_working_set_bytes{namespace=\"$namespace\",pod=~\"$postgres.*\",container!=\"\", image!=\"\"}) by (pod) / sum(cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{namespace=\"$namespace\", pod=~\"$postgres.*\"}) by (pod)",
           "format": "table",
           "instant": true,
+          "interval": "",
           "intervalFactor": 2,
+          "legendFormat": "",
           "refId": "E",
           "step": 10
         },
         {
+          "exemplar": false,
           "expr": "sum(container_memory_rss{namespace=\"$namespace\",pod=~\"$postgres.*\",container!=\"\"}) by (pod)",
           "format": "table",
           "instant": true,
+          "interval": "",
           "intervalFactor": 2,
+          "legendFormat": "",
           "refId": "F",
           "step": 10
         },
         {
+          "exemplar": false,
           "expr": "sum(container_memory_cache{namespace=\"$namespace\",pod=~\"$postgres.*\",container!=\"\"}) by (pod)",
           "format": "table",
           "instant": true,
+          "interval": "",
           "intervalFactor": 2,
+          "legendFormat": "",
           "refId": "G",
           "step": 10
         },
         {
+          "exemplar": false,
           "expr": "sum(container_memory_swap{namespace=\"$namespace\",pod=~\"$postgres.*\",container!=\"\"}) by (pod)",
           "format": "table",
           "instant": true,
+          "interval": "",
           "intervalFactor": 2,
+          "legendFormat": "",
           "refId": "H",
           "step": 10
         }
       ],
+      "timeFrom": null,
+      "timeShift": null,
       "title": "Memory Quota",
-      "transform": "",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {
+            "reducers": []
+          }
+        }
+      ],
       "type": "table"
     },
     {
       "collapsed": false,
-      "grafanadatasource": null,
-
-      "editable": false,
-      "error": false,
+      "datasource": "${datasource}",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1646,17 +1851,13 @@
         "y": 52
       },
       "id": 142,
-      "isNew": false,
       "panels": [],
-      "span": 0,
       "title": "Storage Info",
       "type": "row"
     },
     {
-      "grafanadatasource": null,
+      "datasource": "${datasource}",
       "description": "Disk usage by Postgres pods",
-      "editable": false,
-      "error": false,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1682,9 +1883,7 @@
               "type": "linear"
             },
             "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {},
-            "thresholdsStyle": {}
+            "spanNulls": false
           },
           "mappings": [],
           "thresholds": {
@@ -1711,7 +1910,6 @@
         "y": 53
       },
       "id": 112,
-      "isNew": false,
       "options": {
         "legend": {
           "calcs": [],
@@ -1725,7 +1923,6 @@
           "mode": "single"
         }
       },
-      "span": 0,
       "targets": [
         {
           "exemplar": false,
@@ -1739,10 +1936,8 @@
       "type": "timeseries"
     },
     {
-      "grafanadatasource": null,
+      "datasource": "${datasource}",
       "description": "System Disk Usage Information",
-      "editable": false,
-      "error": false,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1769,9 +1964,7 @@
               "type": "linear"
             },
             "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {},
-            "thresholdsStyle": {}
+            "spanNulls": false
           },
           "mappings": [],
           "thresholds": {
@@ -1840,7 +2033,6 @@
         "y": 53
       },
       "id": 108,
-      "isNew": false,
       "options": {
         "legend": {
           "calcs": [],
@@ -1855,7 +2047,6 @@
         }
       },
       "pluginVersion": "8.1.2",
-      "span": 0,
       "targets": [
         {
           "exemplar": false,
@@ -1880,9 +2071,7 @@
       "type": "timeseries"
     },
     {
-      "grafanadatasource": null,
-      "editable": false,
-      "error": false,
+      "datasource": "${datasource}",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1908,9 +2097,7 @@
               "type": "linear"
             },
             "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {},
-            "thresholdsStyle": {}
+            "spanNulls": false
           },
           "mappings": [],
           "min": 0,
@@ -1938,7 +2125,6 @@
         "y": 62
       },
       "id": 126,
-      "isNew": false,
       "links": [],
       "options": {
         "legend": {
@@ -1954,7 +2140,6 @@
         }
       },
       "pluginVersion": "8.1.2",
-      "span": 0,
       "targets": [
         {
           "exemplar": false,
@@ -1974,9 +2159,7 @@
       "type": "timeseries"
     },
     {
-      "grafanadatasource": null,
-      "editable": false,
-      "error": false,
+      "datasource": "${datasource}",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2002,9 +2185,7 @@
               "type": "linear"
             },
             "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {},
-            "thresholdsStyle": {}
+            "spanNulls": false
           },
           "mappings": [],
           "min": 0,
@@ -2032,7 +2213,6 @@
         "y": 62
       },
       "id": 128,
-      "isNew": false,
       "links": [],
       "options": {
         "legend": {
@@ -2048,7 +2228,6 @@
         }
       },
       "pluginVersion": "8.1.2",
-      "span": 0,
       "targets": [
         {
           "exemplar": false,
@@ -2068,17 +2247,19 @@
       "type": "timeseries"
     },
     {
-      "columns": null,
-      "grafanadatasource": null,
-
-      "editable": false,
-      "error": false,
+      "datasource": "${datasource}",
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
           "custom": {
             "align": null,
+            "displayMode": "auto",
             "filterable": false
           },
+          "decimals": 2,
+          "displayName": "",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -2092,9 +2273,205 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "short"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Time"
+              },
+              {
+                "id": "custom.align",
+                "value": null
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "IOPS(Reads)"
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": -1
+              },
+              {
+                "id": "custom.align",
+                "value": null
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #B"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "IOPS(Writes)"
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": -1
+              },
+              {
+                "id": "custom.align",
+                "value": null
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #C"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "IOPS(Reads + Writes)"
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": -1
+              },
+              {
+                "id": "custom.align",
+                "value": null
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #D"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Throughput(Read)"
+              },
+              {
+                "id": "unit",
+                "value": "Bps"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.align",
+                "value": null
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #E"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Throughput(Write)"
+              },
+              {
+                "id": "unit",
+                "value": "Bps"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.align",
+                "value": null
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #F"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Throughput(Read + Write)"
+              },
+              {
+                "id": "unit",
+                "value": "Bps"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.align",
+                "value": null
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pod"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Pod"
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "targetBlank": false,
+                    "title": "Drill down to pods",
+                    "url": "./d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell"
+                  }
+                ]
+              },
+              {
+                "id": "custom.align",
+                "value": null
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 7,
@@ -2103,74 +2480,95 @@
         "y": 69
       },
       "id": 130,
-      "isNew": false,
+      "links": [],
       "options": {
         "showHeader": true
       },
-      "pluginVersion": "7.4.5",
-      "scroll": false,
-      "span": 0,
-      "styles": null,
+      "pluginVersion": "7.5.11",
       "targets": [
         {
+          "exemplar": false,
           "expr": "sum by(pod) (rate(container_fs_reads_total{container!=\"\", pod=~\"$postgres.*\",namespace=~\"$namespace\"}[5m]))",
           "format": "table",
           "instant": true,
+          "interval": "",
           "intervalFactor": 2,
+          "legendFormat": "",
           "refId": "A",
           "step": 10
         },
         {
+          "exemplar": false,
           "expr": "sum by(pod) (rate(container_fs_writes_total{container!=\"\", pod=~\"$postgres.*\",namespace=~\"$namespace\"}[5m]))",
           "format": "table",
           "instant": true,
+          "interval": "",
           "intervalFactor": 2,
+          "legendFormat": "",
           "refId": "B",
           "step": 10
         },
         {
+          "exemplar": false,
           "expr": "sum by(pod) (rate(container_fs_reads_total{container!=\"\", pod=~\"$postgres.*\",namespace=~\"$namespace\"}[5m]) + rate(container_fs_writes_total{container!=\"\",pod=~\"$postgres.*\",namespace=~\"$namespace\"}[5m]))",
           "format": "table",
           "instant": true,
+          "interval": "",
           "intervalFactor": 2,
+          "legendFormat": "",
           "refId": "C",
           "step": 10
         },
         {
+          "exemplar": false,
           "expr": "sum by(pod) (rate(container_fs_reads_bytes_total{container!=\"\", pod=~\"$postgres.*\",namespace=~\"$namespace\"}[5m]))",
           "format": "table",
           "instant": true,
+          "interval": "",
           "intervalFactor": 2,
+          "legendFormat": "",
           "refId": "D",
           "step": 10
         },
         {
+          "exemplar": false,
           "expr": "sum by(pod) (rate(container_fs_writes_bytes_total{container!=\"\", pod=~\"$postgres.*\",namespace=~\"$namespace\"}[5m]))",
           "format": "table",
           "instant": true,
+          "interval": "",
           "intervalFactor": 2,
+          "legendFormat": "",
           "refId": "E",
           "step": 10
         },
         {
+          "exemplar": false,
           "expr": "sum by(pod) (rate(container_fs_reads_bytes_total{container!=\"\", pod=~\"$postgres.*\",namespace=~\"$namespace\"}[5m]) + rate(container_fs_writes_bytes_total{container!=\"\",pod=~\"$postgres.*\",namespace=~\"$namespace\"}[5m]))",
           "format": "table",
           "instant": true,
+          "interval": "",
           "intervalFactor": 2,
+          "legendFormat": "",
           "refId": "F",
           "step": 10
         }
       ],
+      "timeFrom": null,
+      "timeShift": null,
       "title": "Current Storage IO",
-      "transform": "",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {
+            "reducers": []
+          }
+        }
+      ],
       "type": "table"
     },
     {
       "collapsed": false,
-      "grafanadatasource": null,
-
-      "editable": false,
-      "error": false,
+      "datasource": "${datasource}",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -2178,16 +2576,12 @@
         "y": 76
       },
       "id": 144,
-      "isNew": false,
       "panels": [],
-      "span": 0,
       "title": "Network Info",
       "type": "row"
     },
     {
-      "grafanadatasource": null,
-      "editable": false,
-      "error": false,
+      "datasource": "${datasource}",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2213,9 +2607,7 @@
               "type": "linear"
             },
             "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {},
-            "thresholdsStyle": {}
+            "spanNulls": false
           },
           "mappings": [],
           "min": 0,
@@ -2243,7 +2635,6 @@
         "y": 77
       },
       "id": 132,
-      "isNew": false,
       "links": [],
       "options": {
         "legend": {
@@ -2259,7 +2650,6 @@
         }
       },
       "pluginVersion": "8.1.2",
-      "span": 0,
       "targets": [
         {
           "exemplar": false,
@@ -2279,9 +2669,7 @@
       "type": "timeseries"
     },
     {
-      "grafanadatasource": null,
-      "editable": false,
-      "error": false,
+      "datasource": "${datasource}",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2307,9 +2695,7 @@
               "type": "linear"
             },
             "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {},
-            "thresholdsStyle": {}
+            "spanNulls": false
           },
           "mappings": [],
           "min": 0,
@@ -2337,7 +2723,6 @@
         "y": 77
       },
       "id": 134,
-      "isNew": false,
       "links": [],
       "options": {
         "legend": {
@@ -2353,7 +2738,6 @@
         }
       },
       "pluginVersion": "8.1.2",
-      "span": 0,
       "targets": [
         {
           "exemplar": false,
@@ -2384,23 +2768,41 @@
   "templating": {
     "list": [
       {
-        "allFormat": "",
+        "current": {
+          "selected": false,
+          "text": "Prometheus",
+          "value": "Prometheus"
+        },
+        "description": null,
+        "error": null,
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
         "allValue": "\".+\"",
         "current": {
           "selected": false,
           "text": "demo",
           "value": "demo"
         },
-        "grafanadatasource": null,
-
-        "definition": "",
+        "datasource": "${datasource}",
+        "definition": "label_values(namespace)",
         "description": null,
         "error": null,
         "hide": 0,
         "includeAll": false,
         "label": "Namespace",
         "multi": false,
-        "multiFormat": "",
         "name": "namespace",
         "options": [],
         "query": {
@@ -2418,23 +2820,20 @@
         "useTags": false
       },
       {
-        "allFormat": "",
-        "allValue": "",
+        "allValue": null,
         "current": {
           "selected": false,
           "text": "pg-demo",
           "value": "pg-demo"
         },
-        "grafanadatasource": null,
-
-        "definition": "",
+        "datasource": "${datasource}",
+        "definition": "query_result(kubedb_postgres_created{namespace=\"$namespace\"})",
         "description": null,
         "error": null,
         "hide": 0,
         "includeAll": false,
         "label": "postgres",
         "multi": false,
-        "multiFormat": "",
         "name": "postgres",
         "options": [],
         "query": {
@@ -2484,6 +2883,5 @@
   },
   "timezone": "",
   "title": "KubeDB / Postgres / Summary",
-  "uid": "VnOggggk2Hnk",
   "version": 2
 }
