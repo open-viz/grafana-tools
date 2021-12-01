@@ -18,13 +18,17 @@ package framework
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"strconv"
 
+	api "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
+
 	"gomodules.xyz/pointer"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	meta_util "kmodules.xyz/client-go/meta"
 	"kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
@@ -35,6 +39,18 @@ func (f *Framework) AppBindingName() string {
 }
 
 func (f *Framework) CreateAppBinding() error {
+	dsConfig := &api.DatasourceConfiguration{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "DatasourceConfiguration",
+			APIVersion: "openviz.dev/v1alpha1",
+		},
+		Datasource: "some-datasource",
+		FolderID:   nil,
+	}
+	byteData, err := json.Marshal(dsConfig)
+	if err != nil {
+		return err
+	}
 	obj := &appcat.AppBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      f.name,
@@ -52,10 +68,13 @@ func (f *Framework) CreateAppBinding() error {
 					Port:   3000,
 				},
 			},
+			Parameters: &runtime.RawExtension{
+				Raw: byteData,
+			},
 		},
 	}
 
-	_, err := f.appcatClient.AppBindings(obj.Namespace).Create(context.TODO(), obj, metav1.CreateOptions{})
+	_, err = f.appcatClient.AppBindings(obj.Namespace).Create(context.TODO(), obj, metav1.CreateOptions{})
 	return err
 }
 

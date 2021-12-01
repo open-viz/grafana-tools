@@ -32,7 +32,7 @@
         {
           "aliasColors": {},
           "bars": false,
-          "grafanadatasource": "Some Prometheus",
+          "datasource": "Some Prometheus",
           "editable": false,
           "error": false,
           "fill": 10,
@@ -80,7 +80,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "grafanadatasource": "",
+              "datasource": "",
               "expr": "some_expression",
               "interval": "1m",
               "intervalFactor": 1,
