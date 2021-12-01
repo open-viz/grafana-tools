@@ -19,10 +19,10 @@ package controller
 import (
 	"context"
 
+	sdk "go.openviz.dev/grafana-sdk"
 	api "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
 	"go.openviz.dev/grafana-tools/client/clientset/versioned/typed/openviz/v1alpha1/util"
 
-	"github.com/grafana-tools/sdk"
 	"github.com/pkg/errors"
 	"gomodules.xyz/pointer"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -123,7 +123,7 @@ func (c *GrafanaController) createOrUpdateGrafanaDatasource(ds *api.GrafanaDatas
 		}
 		return nil
 	}
-	statusMsg, err := c.grafanaClient.CreateDatasource(context.TODO(), dataSrc)
+	statusMsg, err := c.grafanaClient.CreateDatasource(context.TODO(), &dataSrc)
 	if err != nil {
 		c.pushGrafanaDatasourceFailureEvent(ds, err.Error())
 		return err
@@ -133,7 +133,7 @@ func (c *GrafanaController) createOrUpdateGrafanaDatasource(ds *api.GrafanaDatas
 		st.Phase = api.GrafanaPhaseSuccess
 		st.Reason = "Successfully created Grafana GrafanaDatasource"
 		st.ObservedGeneration = ds.Generation
-		st.GrafanaDatasourceID = pointer.Int64P(int64(pointer.Uint(statusMsg.ID)))
+		st.GrafanaDatasourceID = pointer.Int64P(int64(pointer.Int(statusMsg.ID)))
 
 		return st
 	}, metav1.UpdateOptions{})
@@ -180,7 +180,7 @@ func (c *GrafanaController) runGrafanaDatasourceFinalizer(ds *api.GrafanaDatasou
 	ds.Status = newDS.Status
 
 	if ds.Status.GrafanaDatasourceID != nil {
-		dsID := uint(pointer.Int64(ds.Status.GrafanaDatasourceID))
+		dsID := int(pointer.Int64(ds.Status.GrafanaDatasourceID))
 		statusMsg, err := c.grafanaClient.DeleteDatasource(context.TODO(), dsID)
 		if err != nil {
 			c.pushGrafanaDatasourceFailureEvent(ds, err.Error())

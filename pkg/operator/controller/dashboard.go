@@ -20,20 +20,20 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/url"
 	"strconv"
 	"time"
 
+	sdk "go.openviz.dev/grafana-sdk"
 	api "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
 	"go.openviz.dev/grafana-tools/client/clientset/versioned/typed/openviz/v1alpha1/util"
 	"go.openviz.dev/grafana-tools/pkg/operator/eventer"
 
-	"github.com/grafana-tools/sdk"
 	"github.com/pkg/errors"
 	"gomodules.xyz/pointer"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
 	kmapi "kmodules.xyz/client-go/api/v1"
@@ -45,7 +45,6 @@ import (
 
 const (
 	GrafanaDashboardFinalizer = "grafanadashboard.openviz.dev"
-	TemplateVarTypeDatasource = "datasource"
 )
 
 func (c *GrafanaController) initGrafanaDashboardWatcher() {
@@ -129,13 +128,10 @@ func (c *GrafanaController) reconcileGrafanaDashboard(grafanadashboard *api.Graf
 		return errors.Wrap(err, "failed to set grafana client")
 	}
 
-	board := &sdk.Board{}
 	if grafanadashboard.Spec.Model == nil {
 		return errors.New("grafanadashboard model not found")
 	}
-	if err := json.Unmarshal(grafanadashboard.Spec.Model.Raw, board); err != nil {
-		return err
-	}
+	model := grafanadashboard.Spec.Model.Raw
 
 	//// add labels
 	//labels := make(map[string]string)
@@ -164,23 +160,10 @@ func (c *GrafanaController) reconcileGrafanaDashboard(grafanadashboard *api.Graf
 	}
 
 	if grafanadashboard.Spec.Templatize != nil && grafanadashboard.Spec.Templatize.Datasource {
-		// update panels grafanadatasource
-		for _, pnl := range board.Panels {
-			pnl.Datasource = &dsConfig.Datasource
-			fmt.Println(pnl.Title)
+		model, err = replaceDatasource(model, dsConfig.Datasource)
+		if err != nil {
+			return err
 		}
-
-		// update templating list datasource
-		// also remove datasource variable if present
-		varList := make([]sdk.TemplateVar, 0, len(board.Templating.List))
-		for _, tmpl := range board.Templating.List {
-			if tmpl.Type == TemplateVarTypeDatasource {
-				continue
-			}
-			tmpl.Datasource = &dsConfig.Datasource
-			varList = append(varList, tmpl)
-		}
-		board.Templating.List = varList
 	}
 
 	// update folder when it is missing
@@ -193,7 +176,7 @@ func (c *GrafanaController) reconcileGrafanaDashboard(grafanadashboard *api.Graf
 		}
 	}
 
-	if err = c.updateGrafanaDashboard(grafanadashboard, board); err != nil {
+	if err = c.updateGrafanaDashboard(grafanadashboard, model); err != nil {
 		return errors.Wrap(err, "failed to update grafanadashboard")
 	}
 
@@ -252,27 +235,24 @@ func (c *GrafanaController) runGrafanaDashboardFinalizer(grafanadashboard *api.G
 }
 
 // updateGrafanaDashboard updates grafanadashboard database through api request
-func (c *GrafanaController) updateGrafanaDashboard(grafanadashboard *api.GrafanaDashboard, board *sdk.Board) error {
+func (c *GrafanaController) updateGrafanaDashboard(grafanadashboard *api.GrafanaDashboard, model []byte) error {
+	var err error
 	if grafanadashboard.Status.Dashboard != nil {
-		board.ID = uint(pointer.Int64(grafanadashboard.Status.Dashboard.ID))
-		board.UID = pointer.String(grafanadashboard.Status.Dashboard.UID)
+		model, err = addDashboardID(model, *grafanadashboard.Status.Dashboard.ID, *grafanadashboard.Status.Dashboard.UID)
+		if err != nil {
+			return err
+		}
 	}
-
-	params := sdk.SetDashboardParams{
-		FolderID:  int(pointer.Int64(grafanadashboard.Spec.FolderID)),
+	gDB := &sdk.GrafanaDashboard{
+		Dashboard: &runtime.RawExtension{Raw: model},
+		FolderId:  int(pointer.Int64(grafanadashboard.Spec.FolderID)),
 		Overwrite: grafanadashboard.Spec.Overwrite,
 	}
-	for _, pnl := range board.Panels {
-		log.Println("Creating panel:")
-		log.Println(pnl.Title)
-		log.Println(*pnl.Datasource)
-		log.Println("========================")
-	}
-	statusMsg, err := c.grafanaClient.SetDashboard(context.Background(), *board, params)
+	resp, err := c.grafanaClient.SetDashboard(context.Background(), gDB)
 	if err != nil {
 		return errors.Wrap(err, "failed to save grafanadashboard in grafana server")
 	}
-	orgId, err := c.grafanaClient.GetActualOrg(context.Background())
+	orgId, err := c.grafanaClient.GetCurrentOrg(context.Background())
 	if err != nil {
 		return errors.Wrap(err, "failed to get OrgId")
 	}
@@ -287,15 +267,12 @@ func (c *GrafanaController) updateGrafanaDashboard(grafanadashboard *api.Grafana
 			in.ObservedGeneration = grafanadashboard.Generation
 
 			in.Dashboard = &api.GrafanaDashboardReference{
-				ID:      pointer.Int64P(int64(pointer.Uint(statusMsg.ID))),
-				UID:     statusMsg.UID,
-				Slug:    statusMsg.Slug,
-				URL:     statusMsg.URL,
-				OrgID:   pointer.Int64P(int64(orgId.ID)),
-				Version: pointer.Int64P(int64(pointer.Int(statusMsg.Version))),
-			}
-			if statusMsg.OrgID != nil {
-				in.Dashboard.OrgID = pointer.Int64P(int64(pointer.Uint(statusMsg.OrgID)))
+				ID:      pointer.Int64P(int64(pointer.Int(resp.ID))),
+				UID:     resp.UID,
+				Slug:    resp.Slug,
+				URL:     resp.URL,
+				OrgID:   pointer.Int64P(int64(pointer.Int(orgId.ID))),
+				Version: pointer.Int64P(int64(pointer.Int(resp.Version))),
 			}
 
 			return in
@@ -307,17 +284,17 @@ func (c *GrafanaController) updateGrafanaDashboard(grafanadashboard *api.Grafana
 	}
 	grafanadashboard.Status = newGrafanaDashboard.Status
 
-	dash, _, err := c.grafanaClient.GetDashboardByUID(context.TODO(), *statusMsg.UID)
-	if err != nil {
-		fmt.Println(err)
-	} else {
-		log.Println("Created panel")
-		for _, pnl := range dash.Panels {
-			log.Println(pnl.Title)
-			log.Println(*pnl.Datasource)
-			log.Println("===============")
-		}
-	}
+	//dash, _, err := c.grafanaClient.GetDashboardByUID(context.TODO(), *resp.UID)
+	//if err != nil {
+	//	fmt.Println(err)
+	//} else {
+	//	log.Println("Created panel")
+	//	for _, pnl := range dash.Panels {
+	//		log.Println(pnl.Title)
+	//		log.Println(*pnl.Datasource)
+	//		log.Println("===============")
+	//	}
+	//}
 
 	return nil
 }
@@ -338,7 +315,7 @@ func (c *GrafanaController) setGrafanaClient(ns string, targetRef *api.TargetRef
 	if err != nil {
 		return errors.Wrap(err, "failed to get apiURL or apiKey")
 	}
-	c.grafanaClient, err = sdk.NewClient(apiURL, apiKey, sdk.DefaultHTTPClient)
+	c.grafanaClient, err = sdk.NewClient(apiURL, apiKey)
 	if err != nil {
 		return err
 	}
@@ -371,4 +348,65 @@ func getApiURLandApiKey(appBinding *v1alpha1.AppBinding, secret *core.Secret) (a
 		err = fmt.Errorf("apiURL or apiKey not provided")
 	}
 	return
+}
+
+func replaceDatasource(model []byte, ds string) ([]byte, error) {
+	val := make(map[string]interface{})
+	err := json.Unmarshal(model, &val)
+	if err != nil {
+		return nil, err
+	}
+	panels, ok := val["panels"].([]interface{})
+	if !ok {
+		return model, nil
+	}
+	var updatedPanels []interface{}
+	for _, p := range panels {
+		panel, ok := p.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		panel["datasource"] = ds
+		updatedPanels = append(updatedPanels, panel)
+	}
+	val["panels"] = updatedPanels
+
+	templateList, ok := val["templating"].(map[string]interface{})
+	if !ok {
+		return json.Marshal(val)
+	}
+	templateVars, ok := templateList["list"].([]interface{})
+	if !ok {
+		return json.Marshal(val)
+	}
+
+	var newVars []interface{}
+	for _, v := range templateVars {
+		vr, ok := v.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		ty, ok := vr["type"].(string)
+		if !ok {
+			continue
+		}
+		vr["datasource"] = ds
+		if ty != "datasource" {
+			newVars = append(newVars, vr)
+		}
+	}
+	templateList["list"] = newVars
+
+	return json.Marshal(val)
+}
+
+func addDashboardID(model []byte, id int64, uid string) ([]byte, error) {
+	val := make(map[string]interface{})
+	err := json.Unmarshal(model, &val)
+	if err != nil {
+		return nil, err
+	}
+	val["id"] = id
+	val["uid"] = uid
+	return json.Marshal(val)
 }
