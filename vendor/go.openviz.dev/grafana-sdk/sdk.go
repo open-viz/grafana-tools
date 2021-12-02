@@ -119,6 +119,11 @@ func (c *Client) SetDashboard(ctx context.Context, db *GrafanaDashboard) (*Grafa
 	if err != nil {
 		return nil, err
 	}
+
+	if resp.StatusCode() != http.StatusOK {
+		return gResp, fmt.Errorf("failed to set dashboard, reason: %v", gResp.Message)
+	}
+
 	return gResp, nil
 }
 
@@ -135,6 +140,11 @@ func (c *Client) DeleteDashboardByUID(ctx context.Context, uid string) (*Grafana
 	if err != nil {
 		return nil, err
 	}
+
+	if resp.StatusCode() != http.StatusOK {
+		return gResp, fmt.Errorf("failed to delete dashboard, reason: %v", gResp.Message)
+	}
+
 	return gResp, nil
 }
 
@@ -212,6 +222,11 @@ func (c *Client) CreateDatasource(ctx context.Context, ds *Datasource) (*Grafana
 	if err != nil {
 		return nil, err
 	}
+
+	if resp.StatusCode() != http.StatusOK {
+		return gResp, fmt.Errorf("failed to create datasource, reason: %v", gResp.Message)
+	}
+
 	return gResp, nil
 }
 
@@ -227,6 +242,11 @@ func (c *Client) UpdateDatasource(ctx context.Context, ds Datasource) (*GrafanaR
 	if err != nil {
 		return nil, err
 	}
+
+	if resp.StatusCode() != http.StatusOK {
+		return gResp, fmt.Errorf("failed to update datasource, reason: %v", gResp.Message)
+	}
+
 	return gResp, nil
 }
 
@@ -242,55 +262,10 @@ func (c *Client) DeleteDatasource(ctx context.Context, id int) (*GrafanaResponse
 	if err != nil {
 		return nil, err
 	}
+
+	if resp.StatusCode() != http.StatusOK {
+		return gResp, fmt.Errorf("failed to delete datasource, reason: %v", gResp.Message)
+	}
+
 	return gResp, nil
-}
-
-func ReplaceDatasource(model []byte, ds string) ([]byte, error) {
-	val := make(map[string]interface{})
-	err := json.Unmarshal(model, &val)
-	if err != nil {
-		return nil, err
-	}
-	panels, ok := val["panels"].([]interface{})
-	if !ok {
-		return model, nil
-	}
-	var updatedPanels []interface{}
-	for _, p := range panels {
-		panel, ok := p.(map[string]interface{})
-		if !ok {
-			continue
-		}
-		panel["datasource"] = ds
-		updatedPanels = append(updatedPanels, panel)
-	}
-	val["panels"] = updatedPanels
-
-	templateList, ok := val["templating"].(map[string]interface{})
-	if !ok {
-		return json.Marshal(val)
-	}
-	templateVars, ok := templateList["list"].([]interface{})
-	if !ok {
-		return json.Marshal(val)
-	}
-
-	var newVars []interface{}
-	for _, v := range templateVars {
-		vr, ok := v.(map[string]interface{})
-		if !ok {
-			continue
-		}
-		ty, ok := vr["type"].(string)
-		if !ok {
-			continue
-		}
-		vr["datasource"] = ds
-		if ty != "datasource" {
-			newVars = append(newVars, vr)
-		}
-	}
-	templateList["list"] = newVars
-
-	return json.Marshal(val)
 }

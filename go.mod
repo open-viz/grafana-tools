@@ -14,7 +14,7 @@ require (
 	github.com/prometheus-operator/prometheus-operator/pkg/client v0.47.0
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/pflag v1.0.5
-	go.openviz.dev/grafana-sdk v0.0.0-20211201100100-1bdd450a1105
+	go.openviz.dev/grafana-sdk v0.0.0-20211202054346-9ecc0eb4d85b
 	gomodules.xyz/logs v0.0.6
 	gomodules.xyz/pointer v0.1.0
 	gomodules.xyz/runtime v0.2.0
