@@ -284,18 +284,6 @@ func (c *GrafanaController) updateGrafanaDashboard(grafanadashboard *api.Grafana
 	}
 	grafanadashboard.Status = newGrafanaDashboard.Status
 
-	//dash, _, err := c.grafanaClient.GetDashboardByUID(context.TODO(), *resp.UID)
-	//if err != nil {
-	//	fmt.Println(err)
-	//} else {
-	//	log.Println("Created panel")
-	//	for _, pnl := range dash.Panels {
-	//		log.Println(pnl.Title)
-	//		log.Println(*pnl.Datasource)
-	//		log.Println("===============")
-	//	}
-	//}
-
 	return nil
 }
 
