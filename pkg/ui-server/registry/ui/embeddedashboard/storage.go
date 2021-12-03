@@ -21,6 +21,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
+	"path"
+	"strconv"
 	"time"
 
 	openvizapi "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
@@ -126,6 +129,9 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 	if grafanadashboard.Spec.Grafana == nil {
 		return nil, apierrors.NewBadRequest(fmt.Sprintf("GrafanaDashboard %s/%s is missing a Grafana ref", grafanadashboard.Namespace, grafanadashboard.Name))
 	}
+	if grafanadashboard.Status.Dashboard == nil {
+		return nil, apierrors.NewBadRequest(fmt.Sprintf("Status.Dashboard field is missing in GrafanaDashboard %s/%s", grafanadashboard.Namespace, grafanadashboard.Name))
+	}
 	var ab appcatalogapi.AppBinding
 	abKey := client.ObjectKey{Namespace: grafanadashboard.Namespace, Name: grafanadashboard.Spec.Grafana.Name}
 	err = r.kc.Get(ctx, abKey, &ab)
@@ -149,6 +155,7 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 	in.Response = &uiapi.EmbeddedDashboardResponse{}
 	requestedPanels := sets.NewString(in.Request.PanelTitles...)
 	now := time.Now().Unix()
+
 	for _, p := range board.Panels {
 		if p.Type == "row" {
 			continue
@@ -157,11 +164,27 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 			continue
 		}
 
-		// url template: "http://{{.URL}}/d-solo/{{.BoardUID}}/{{.GrafanaDashboardName}}?orgId={{.OrgID}}&from={{.From}}&to={{.To}}&theme={{.Theme}}&panelId="
-		url := fmt.Sprintf("%v/d-solo/%v/%v?orgId=%v&from=%v&to=%v&panelId=%v", grafanaHost, board.UID, *grafanadashboard.Status.Dashboard.Slug, *grafanadashboard.Status.Dashboard.OrgID, now, now, p.ID)
+		baseURL, err := url.Parse(grafanaHost)
+		if err != nil {
+			return nil, apierrors.NewInternalError(err)
+		}
+
+		baseURL.Path = path.Join(baseURL.Path, fmt.Sprintf("d-solo/%v/%v", *grafanadashboard.Status.Dashboard.UID, *grafanadashboard.Status.Dashboard.Slug))
+		q := url.Values{}
+		q.Add("ordID", strconv.Itoa(int(*grafanadashboard.Status.Dashboard.OrgID)))
+		q.Add("var-namespace", "namespacehere")
+		q.Add("var-dbtype", "dbnamehere") // example: For Postgres dbtype will be postgres(same as grafana dashboard and case insensitive)
+		q.Add("from", strconv.Itoa(int(now)))
+		q.Add("to", strconv.Itoa(int(now)))
+		q.Add("panelId", strconv.Itoa(int(p.ID)))
+		baseURL.RawQuery = q.Encode()
+
+		//url-example:  http://kube-prometheus-stack-grafana.monitoring.svc:80/d-solo/7oanhmhnk/kubedb-postgres-summary?
+		//              from=1638527684&ordID=1&panelId=36&to=1638527684&var-postgres=dbnamehere&var-namespace=demo
+
 		panelURL := uiapi.PanelURL{
 			Title:       p.Title,
-			EmbeddedURL: url,
+			EmbeddedURL: baseURL.String(),
 		}
 		in.Response.URLs = append(in.Response.URLs, panelURL)
 	}
