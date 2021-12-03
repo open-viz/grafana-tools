@@ -50,16 +50,13 @@ type EmbeddedDashboardResponse struct {
 	URLs []PanelURL `json:"urls,omitempty" protobuf:"bytes,1,rep,name=urls"`
 }
 
-// EmbeddedDashboardStatus defines the observed state of EmbeddedDashboard
-type EmbeddedDashboardStatus struct {
-}
-
 // EmbeddedDashboard is the Schema for the EmbeddedDashboards API
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type EmbeddedDashboard struct {
-	metav1.TypeMeta `json:",inline"`
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
-	Request  *EmbeddedDashboardRequest  `json:"request,omitempty" protobuf:"bytes,1,opt,name=request"`
-	Response *EmbeddedDashboardResponse `json:"response,omitempty" protobuf:"bytes,2,opt,name=response"`
+	Request  *EmbeddedDashboardRequest  `json:"request,omitempty" protobuf:"bytes,2,opt,name=request"`
+	Response *EmbeddedDashboardResponse `json:"response,omitempty" protobuf:"bytes,3,opt,name=response"`
 }

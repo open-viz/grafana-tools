@@ -39,7 +39,6 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.EmbeddedDashboard":         schema_grafana_tools_apis_ui_v1alpha1_EmbeddedDashboard(ref),
 		"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.EmbeddedDashboardRequest":  schema_grafana_tools_apis_ui_v1alpha1_EmbeddedDashboardRequest(ref),
 		"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.EmbeddedDashboardResponse": schema_grafana_tools_apis_ui_v1alpha1_EmbeddedDashboardResponse(ref),
-		"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.EmbeddedDashboardStatus":   schema_grafana_tools_apis_ui_v1alpha1_EmbeddedDashboardStatus(ref),
 		"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.PanelURL":                  schema_grafana_tools_apis_ui_v1alpha1_PanelURL(ref),
 		"k8s.io/api/apps/v1.ControllerRevision":                                   schema_k8sio_api_apps_v1_ControllerRevision(ref),
 		"k8s.io/api/apps/v1.ControllerRevisionList":                               schema_k8sio_api_apps_v1_ControllerRevisionList(ref),
@@ -411,6 +410,12 @@ func schema_grafana_tools_apis_ui_v1alpha1_EmbeddedDashboard(ref common.Referenc
 							Format:      "",
 						},
 					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
 					"request": {
 						SchemaProps: spec.SchemaProps{
 							Ref: ref("go.openviz.dev/grafana-tools/apis/ui/v1alpha1.EmbeddedDashboardRequest"),
@@ -425,7 +430,7 @@ func schema_grafana_tools_apis_ui_v1alpha1_EmbeddedDashboard(ref common.Referenc
 			},
 		},
 		Dependencies: []string{
-			"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.EmbeddedDashboardRequest", "go.openviz.dev/grafana-tools/apis/ui/v1alpha1.EmbeddedDashboardResponse"},
+			"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.EmbeddedDashboardRequest", "go.openviz.dev/grafana-tools/apis/ui/v1alpha1.EmbeddedDashboardResponse", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
 	}
 }
 
@@ -488,17 +493,6 @@ func schema_grafana_tools_apis_ui_v1alpha1_EmbeddedDashboardResponse(ref common.
 		},
 		Dependencies: []string{
 			"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.PanelURL"},
-	}
-}
-
-func schema_grafana_tools_apis_ui_v1alpha1_EmbeddedDashboardStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
-	return common.OpenAPIDefinition{
-		Schema: spec.Schema{
-			SchemaProps: spec.SchemaProps{
-				Description: "EmbeddedDashboardStatus defines the observed state of EmbeddedDashboard",
-				Type:        []string{"object"},
-			},
-		},
 	}
 }
 

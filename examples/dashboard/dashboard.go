@@ -25,7 +25,7 @@ import (
 	"time"
 
 	api "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
-	crd_client "go.openviz.dev/grafana-tools/client/clientset/versioned/typed/openviz/v1alpha1"
+	openvizclient "go.openviz.dev/grafana-tools/client/clientset/versioned/typed/openviz/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/clientcmd"
@@ -67,7 +67,7 @@ func CreateGrafanaDashboard(model runtime.RawExtension) error {
 			},
 		},
 	}
-	gClient, err := createClient()
+	gClient, err := getOpenvizClient()
 	if err != nil {
 		return err
 	}
@@ -85,7 +85,7 @@ func CreateGrafanaDashboard(model runtime.RawExtension) error {
 }
 
 func DeleteGrafanaDashboard(name string) error {
-	gClient, err := createClient()
+	gClient, err := getOpenvizClient()
 	if err != nil {
 		return err
 	}
@@ -97,7 +97,7 @@ func DeleteGrafanaDashboard(name string) error {
 }
 
 func GetGrafanaDashboard(name string) (*api.GrafanaDashboard, error) {
-	gClient, err := createClient()
+	gClient, err := getOpenvizClient()
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func GetGrafanaDashboard(name string) (*api.GrafanaDashboard, error) {
 }
 
 func UpdateGrafanaDashboard(name string, model runtime.RawExtension) error {
-	gClient, err := createClient()
+	gClient, err := getOpenvizClient()
 	if err != nil {
 		return err
 	}
@@ -173,12 +173,12 @@ func main() {
 	fmt.Println("Successfully deleted grafanadashboard")
 }
 
-func createClient() (*crd_client.OpenvizV1alpha1Client, error) {
+func getOpenvizClient() (*openvizclient.OpenvizV1alpha1Client, error) {
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
 		panic(err)
 	}
-	gClient, err := crd_client.NewForConfig(config)
+	gClient, err := openvizclient.NewForConfig(config)
 	if err != nil {
 		panic(err)
 	}
