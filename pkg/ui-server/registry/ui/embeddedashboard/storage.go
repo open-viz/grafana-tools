@@ -169,7 +169,7 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 			return nil, apierrors.NewInternalError(err)
 		}
 
-		baseURL.Path = path.Join(baseURL.Path, fmt.Sprintf("d-solo/%v/%v", *grafanadashboard.Status.Dashboard.UID, *grafanadashboard.Status.Dashboard.Slug))
+		baseURL.Path = path.Join(baseURL.Path, "d-solo", *grafanadashboard.Status.Dashboard.UID, *grafanadashboard.Status.Dashboard.Slug)
 		q := url.Values{}
 		q.Add("ordID", strconv.Itoa(int(*grafanadashboard.Status.Dashboard.OrgID)))
 		q.Add("var-namespace", "namespacehere")
