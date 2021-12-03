@@ -153,7 +153,7 @@ var _ = Describe("Grafana Operator E2E testing", func() {
 					Raw: model,
 				}
 
-				options.apiKey = "unauthorized-api-key"
+				options.apiKey = "admin:not-password"
 				createAppBindingAndSecret()
 			})
 

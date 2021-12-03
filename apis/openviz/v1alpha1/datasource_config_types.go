@@ -34,5 +34,5 @@ type DatasourceConfiguration struct {
 
 	// FolderID defines the Grafana folderID
 	// +optional
-	FolderID int64 `json:"folderID,omitempty" protobuf:"varint,2,opt,name=folderID"`
+	FolderID *int64 `json:"folderID,omitempty" protobuf:"varint,2,opt,name=folderID"`
 }

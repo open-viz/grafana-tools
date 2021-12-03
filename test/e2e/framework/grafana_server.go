@@ -20,7 +20,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/grafana-tools/sdk"
+	sdk "go.openviz.dev/grafana-sdk"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	core "k8s.io/api/core/v1"
@@ -44,7 +45,7 @@ func (f *Framework) GetGrafanaClient() (*sdk.Client, error) {
 		return nil, err
 	}
 
-	client, err := sdk.NewClient(apiURL, apiKey, sdk.DefaultHTTPClient)
+	client, err := sdk.NewClient(apiURL, apiKey)
 	if err != nil {
 		return nil, err
 	}

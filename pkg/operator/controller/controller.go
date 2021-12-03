@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 
+	sdk "go.openviz.dev/grafana-sdk"
 	api "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
 	cs "go.openviz.dev/grafana-tools/client/clientset/versioned"
 	"go.openviz.dev/grafana-tools/client/clientset/versioned/typed/openviz/v1alpha1/util"
@@ -27,7 +28,6 @@ import (
 	grafana_listers "go.openviz.dev/grafana-tools/client/listers/openviz/v1alpha1"
 	"go.openviz.dev/grafana-tools/pkg/operator/eventer"
 
-	"github.com/grafana-tools/sdk"
 	pcm "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	core "k8s.io/api/core/v1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"

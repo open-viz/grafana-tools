@@ -42,9 +42,11 @@ message DashboardSelector {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 message EmbeddedDashboard {
-  optional EmbeddedDashboardRequest request = 1;
+  optional k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 1;
 
-  optional EmbeddedDashboardResponse response = 2;
+  optional EmbeddedDashboardRequest request = 2;
+
+  optional EmbeddedDashboardResponse response = 3;
 }
 
 message EmbeddedDashboardRequest {
@@ -55,10 +57,6 @@ message EmbeddedDashboardRequest {
 
 message EmbeddedDashboardResponse {
   repeated PanelURL urls = 1;
-}
-
-// EmbeddedDashboardStatus defines the observed state of EmbeddedDashboard
-message EmbeddedDashboardStatus {
 }
 
 message PanelURL {

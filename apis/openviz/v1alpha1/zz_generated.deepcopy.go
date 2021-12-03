@@ -30,6 +30,11 @@ import (
 func (in *DatasourceConfiguration) DeepCopyInto(out *DatasourceConfiguration) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
+	if in.FolderID != nil {
+		in, out := &in.FolderID, &out.FolderID
+		*out = new(int64)
+		**out = **in
+	}
 	return
 }
 
@@ -170,6 +175,11 @@ func (in *GrafanaDashboardSpec) DeepCopyInto(out *GrafanaDashboardSpec) {
 		in, out := &in.Model, &out.Model
 		*out = new(runtime.RawExtension)
 		(*in).DeepCopyInto(*out)
+	}
+	if in.FolderID != nil {
+		in, out := &in.FolderID, &out.FolderID
+		*out = new(int64)
+		**out = **in
 	}
 	if in.Templatize != nil {
 		in, out := &in.Templatize, &out.Templatize
