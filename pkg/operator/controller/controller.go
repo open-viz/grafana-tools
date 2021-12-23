@@ -72,7 +72,7 @@ type GrafanaController struct {
 	grafanadatasourceInformer cache.SharedIndexInformer
 	grafanadatasourceLister   grafana_listers.GrafanaDatasourceLister
 
-	// Grafana client
+	// GrafanaRef client
 	grafanaClient *sdk.Client
 }
 
@@ -103,7 +103,7 @@ func (c *GrafanaController) Run(stopCh <-chan struct{}) {
 func (c *GrafanaController) RunInformers(stopCh <-chan struct{}) {
 	defer runtime.HandleCrash()
 
-	klog.Info("Starting Grafana controller")
+	klog.Info("Starting GrafanaRef controller")
 
 	c.extInformerFactory.Start(stopCh)
 	for _, v := range c.extInformerFactory.WaitForCacheSync(stopCh) {

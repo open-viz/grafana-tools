@@ -40,7 +40,7 @@ const (
 	retryTimeout = 1 * time.Minute
 )
 
-var _ = Describe("Grafana Operator E2E testing", func() {
+var _ = Describe("GrafanaRef Operator E2E testing", func() {
 	var (
 		f *framework.Invocation
 	)
@@ -107,7 +107,7 @@ var _ = Describe("Grafana Operator E2E testing", func() {
 					Namespace: f.Namespace(),
 				},
 				Spec: api.GrafanaDashboardSpec{
-					Grafana: &api.TargetRef{
+					GrafanaRef: &api.TargetRef{
 						Name: f.AppBindingName(),
 					},
 					Overwrite: true,

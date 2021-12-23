@@ -55,7 +55,7 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&GrafanaDashboardTemplateList{},
 		&GrafanaDatasource{},
 		&GrafanaDatasourceList{},
-		&DatasourceConfiguration{},
+		&GrafanaConfiguration{},
 	)
 
 	scheme.AddKnownTypes(SchemeGroupVersion,

@@ -44,7 +44,7 @@ type GrafanaDatasource struct {
 }
 
 type GrafanaDatasourceSpec struct {
-	Grafana           *TargetRef                  `json:"grafana" protobuf:"bytes,1,opt,name=grafana"`
+	Grafana           *kmapi.ObjectReference      `json:"grafana" protobuf:"bytes,1,opt,name=grafana"`
 	ID                int64                       `json:"id,omitempty" protobuf:"bytes,2,opt,name=id"`
 	OrgID             int64                       `json:"orgId" protobuf:"bytes,3,opt,name=orgId"`
 	Name              string                      `json:"name" protobuf:"bytes,4,opt,name=name"`

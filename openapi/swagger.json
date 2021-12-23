@@ -1221,13 +1221,13 @@
       "type": "object",
       "properties": {
         "folderID": {
-          "description": "FolderID defines the Grafana folderID",
+          "description": "FolderID defines the GrafanaRef folderID",
           "type": "integer",
           "format": "int64"
         },
-        "grafana": {
-          "description": "Grafana defines the grafana app binding name for the GrafanaDashboard",
-          "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.TargetRef"
+        "grafanaRef": {
+          "description": "GrafanaRef defines the grafana app binding name for the GrafanaDashboard",
+          "$ref": "#/definitions/xyz.kmodules.client-go.api.v1.ObjectReference"
         },
         "model": {
           "$ref": "#/definitions/io.k8s.apimachinery.pkg.runtime.RawExtension"
@@ -1237,7 +1237,7 @@
           "type": "boolean"
         },
         "templatize": {
-          "description": "Templatize defines the fields which supports templating in Grafana GrafanaDashboard Model json",
+          "description": "Templatize defines the fields which supports templating in GrafanaRef GrafanaDashboard Model json",
           "$ref": "#/definitions/dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.ModelTemplateConfiguration"
         }
       }
@@ -1280,20 +1280,6 @@
         },
         "title": {
           "type": "boolean"
-        }
-      }
-    },
-    "dev.openviz.go.grafana-tools.apis.openviz.v1alpha1.TargetRef": {
-      "type": "object",
-      "properties": {
-        "apiGroup": {
-          "type": "string"
-        },
-        "kind": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
         }
       }
     },
@@ -1973,6 +1959,24 @@
           "description": "Type of condition in CamelCase or in foo.example.com/CamelCase. Many .condition.type values are consistent across resources like Available, but because arbitrary conditions can be useful (see .node.status.conditions), the ability to deconflict is important.",
           "type": "string",
           "default": ""
+        }
+      }
+    },
+    "xyz.kmodules.client-go.api.v1.ObjectReference": {
+      "description": "ObjectReference contains enough information to let you inspect or modify the referred object.",
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "description": "Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names",
+          "type": "string",
+          "default": ""
+        },
+        "namespace": {
+          "description": "Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/",
+          "type": "string"
         }
       }
     }

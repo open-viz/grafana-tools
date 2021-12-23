@@ -35,7 +35,7 @@ func NewCmdOperator(out, errOut io.Writer, stopCh <-chan struct{}) *cobra.Comman
 
 	cmd := &cobra.Command{
 		Use:               "operator",
-		Short:             "Launch the Grafana operator",
+		Short:             "Launch the GrafanaRef operator",
 		DisableAutoGenTag: true,
 		PersistentPreRun: func(c *cobra.Command, args []string) {
 			utilruntime.Must(scheme.AddToScheme(clientsetscheme.Scheme))

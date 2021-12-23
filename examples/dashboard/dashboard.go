@@ -56,7 +56,7 @@ func CreateGrafanaDashboard(model runtime.RawExtension) error {
 			Namespace: ns,
 		},
 		Spec: api.GrafanaDashboardSpec{
-			Grafana: &api.TargetRef{
+			GrafanaRef: &api.TargetRef{
 				Name: "grafana-apb",
 			},
 			Model:     &model,

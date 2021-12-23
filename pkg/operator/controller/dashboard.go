@@ -120,11 +120,11 @@ func (c *GrafanaController) reconcileGrafanaDashboard(grafanadashboard *api.Graf
 	}
 	grafanadashboard.Status = newGrafanaDashboard.Status
 
-	if grafanadashboard.Spec.Grafana == nil {
+	if grafanadashboard.Spec.GrafanaRef == nil {
 		return errors.New("appBinding for grafana is missing")
 	}
 
-	if err = c.setGrafanaClient(grafanadashboard.Namespace, grafanadashboard.Spec.Grafana); err != nil {
+	if err = c.setGrafanaClient(grafanadashboard.Namespace, grafanadashboard.Spec.GrafanaRef); err != nil {
 		return errors.Wrap(err, "failed to set grafana client")
 	}
 
@@ -135,7 +135,7 @@ func (c *GrafanaController) reconcileGrafanaDashboard(grafanadashboard *api.Graf
 
 	//// add labels
 	//labels := make(map[string]string)
-	//labels["meta.grafanadashboard.openviz.dev/appbinding"] = grafanadashboard.Spec.Grafana.Name
+	//labels["meta.grafanadashboard.openviz.dev/appbinding"] = grafanadashboard.Spec.GrafanaRef.Name
 	//grafanadashboard, _, err = util.PatchGrafanaDashboard(context.TODO(), c.extClient.OpenvizV1alpha1(), grafanadashboard, func(in *api.GrafanaDashboard) *api.GrafanaDashboard {
 	//	in.ObjectMeta.SetLabels(labels)
 	//	return in
@@ -145,11 +145,11 @@ func (c *GrafanaController) reconcileGrafanaDashboard(grafanadashboard *api.Graf
 	//}
 
 	// collect grafanadatasource name from app binding
-	appBinding, err := c.appCatalogClient.AppBindings(grafanadashboard.Namespace).Get(context.TODO(), grafanadashboard.Spec.Grafana.Name, metav1.GetOptions{})
+	appBinding, err := c.appCatalogClient.AppBindings(grafanadashboard.Namespace).Get(context.TODO(), grafanadashboard.Spec.GrafanaRef.Name, metav1.GetOptions{})
 	if err != nil {
 		return errors.Wrap(err, "failed to fetch AppBinding")
 	}
-	dsConfig := &api.DatasourceConfiguration{}
+	dsConfig := &api.GrafanaConfiguration{}
 	if appBinding.Spec.Parameters != nil {
 		err := json.Unmarshal(appBinding.Spec.Parameters.Raw, &dsConfig)
 		if err != nil {
