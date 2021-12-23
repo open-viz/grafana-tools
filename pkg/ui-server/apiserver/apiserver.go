@@ -30,7 +30,6 @@ import (
 
 	"github.com/grafana-tools/sdk"
 	core "k8s.io/api/core/v1"
-	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -140,7 +139,7 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 		Port:                   0,
 		HealthProbeBindAddress: "",
 		LeaderElection:         false,
-		LeaderElectionID:       "5b87adeb.ui.kubedb.com",
+		LeaderElectionID:       "5b87adeb.ui.openviz.dev",
 		ClientDisableCacheFor: []client.Object{
 			&core.Namespace{},
 			&core.Secret{},
@@ -157,25 +156,25 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 	})
 
 	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &openvizapi.GrafanaDashboard{}, openvizapi.GrafanaNameKey, func(rawObj client.Object) []string {
-		grafanadashboard := rawObj.(*openvizapi.GrafanaDashboard)
-		if grafanadashboard.Spec.Grafana == nil {
+		dashboard := rawObj.(*openvizapi.GrafanaDashboard)
+		if dashboard.Spec.Grafana == nil {
 			return nil
 		}
-		if grafanadashboard.Spec.Grafana.APIGroup != appcatalog.GroupName || grafanadashboard.Spec.Grafana.Kind != "AppBinding" {
+		if dashboard.Spec.Grafana.APIGroup != appcatalog.GroupName || dashboard.Spec.Grafana.Kind != "AppBinding" {
 			return nil
 		}
-		return []string{grafanadashboard.Spec.Grafana.Name}
+		return []string{dashboard.Spec.Grafana.Name}
 	}); err != nil {
 		return nil, err
 	}
 	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &openvizapi.GrafanaDashboard{}, openvizapi.GrafanaDashboardTitleKey, func(rawObj client.Object) []string {
-		grafanadashboard := rawObj.(*openvizapi.GrafanaDashboard)
+		dashboard := rawObj.(*openvizapi.GrafanaDashboard)
 		var board sdk.Board
-		if grafanadashboard.Spec.Model == nil {
+		if dashboard.Spec.Model == nil {
 			return nil
 		}
-		if err := json.Unmarshal(grafanadashboard.Spec.Model.Raw, &board); err != nil {
-			klog.ErrorS(err, "failed to unmarshal Grafana GrafanaDashboard", "name", grafanadashboard.Name, "namespace", grafanadashboard.Namespace)
+		if err := json.Unmarshal(dashboard.Spec.Model.Raw, &board); err != nil {
+			klog.ErrorS(err, "failed to unmarshal Grafana GrafanaDashboard", "name", dashboard.Name, "namespace", dashboard.Namespace)
 			return nil
 		}
 		return []string{board.Title}
@@ -186,18 +185,6 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 		return nil, err
 	}
 
-	if err := builder.ControllerManagedBy(mgr).For(&rbacv1.ClusterRole{}).Complete(r); err != nil {
-		return nil, err
-	}
-	if err := builder.ControllerManagedBy(mgr).For(&rbacv1.ClusterRoleBinding{}).Complete(r); err != nil {
-		return nil, err
-	}
-	if err := builder.ControllerManagedBy(mgr).For(&rbacv1.Role{}).Complete(r); err != nil {
-		return nil, err
-	}
-	if err := builder.ControllerManagedBy(mgr).For(&rbacv1.RoleBinding{}).Complete(r); err != nil {
-		return nil, err
-	}
 	rbacAuthorizer := rbac.NewForManagerOrDie(ctx, mgr)
 
 	s := &UIServer{
