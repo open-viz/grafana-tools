@@ -29,13 +29,13 @@ import "kmodules.xyz/client-go/api/v1/generated.proto";
 // Package-wide variables from generator "generated".
 option go_package = "v1alpha1";
 
-// GrafanaConfiguration defines configuration for a GrafanaRef AppBinding
+// GrafanaConfiguration defines configuration for a Grafana AppBinding
 message GrafanaConfiguration {
-  // Datasource defines the grafana grafanadatasource name.
+  // Datasource defines the Grafana datasource name.
   // +optional
   optional string datasource = 1;
 
-  // FolderID defines the GrafanaRef folderID
+  // FolderID defines the Grafana folder id.
   // +optional
   optional int64 folderID = 2;
 }
@@ -78,7 +78,7 @@ message GrafanaDashboardSpec {
   // +optional
   optional kmodules.xyz.client_go.api.v1.ObjectReference grafanaRef = 1;
 
-  // FolderID defines the GrafanaRef folderID
+  // FolderID defines the Grafana folderID
   // +optional
   optional int64 folderID = 2;
 
@@ -90,7 +90,7 @@ message GrafanaDashboardSpec {
   // +optional
   optional bool overwrite = 4;
 
-  // Templatize defines the fields which supports templating in GrafanaRef GrafanaDashboard Model json
+  // Templatize defines the fields which supports templating in GrafanaDashboard Model json
   // +optional
   optional ModelTemplateConfiguration templatize = 5;
 }

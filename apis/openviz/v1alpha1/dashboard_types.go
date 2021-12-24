@@ -68,7 +68,7 @@ type GrafanaDashboardSpec struct {
 	// +optional
 	Overwrite bool `json:"overwrite,omitempty" protobuf:"varint,4,opt,name=overwrite"`
 
-	// Templatize defines the fields which supports templating in GrafanaRef GrafanaDashboard Model json
+	// Templatize defines the fields which supports templating in GrafanaDashboard Model json
 	// +optional
 	Templatize *ModelTemplateConfiguration `json:"templatize,omitempty" protobuf:"bytes,5,opt,name=templatize"`
 }

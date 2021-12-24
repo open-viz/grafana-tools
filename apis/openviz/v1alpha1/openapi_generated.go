@@ -355,7 +355,7 @@ func schema_grafana_tools_apis_openviz_v1alpha1_GrafanaConfiguration(ref common.
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "GrafanaConfiguration defines configuration for a GrafanaRef AppBinding",
+				Description: "GrafanaConfiguration defines configuration for a Grafana AppBinding",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"kind": {
@@ -374,14 +374,14 @@ func schema_grafana_tools_apis_openviz_v1alpha1_GrafanaConfiguration(ref common.
 					},
 					"datasource": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Datasource defines the grafana grafanadatasource name.",
+							Description: "Datasource defines the Grafana datasource name.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
 					"folderID": {
 						SchemaProps: spec.SchemaProps{
-							Description: "FolderID defines the GrafanaRef folderID",
+							Description: "FolderID defines the Grafana folder id.",
 							Type:        []string{"integer"},
 							Format:      "int64",
 						},
@@ -547,7 +547,7 @@ func schema_grafana_tools_apis_openviz_v1alpha1_GrafanaDashboardSpec(ref common.
 					},
 					"folderID": {
 						SchemaProps: spec.SchemaProps{
-							Description: "FolderID defines the GrafanaRef folderID",
+							Description: "FolderID defines the Grafana folderID",
 							Type:        []string{"integer"},
 							Format:      "int64",
 						},
@@ -566,7 +566,7 @@ func schema_grafana_tools_apis_openviz_v1alpha1_GrafanaDashboardSpec(ref common.
 					},
 					"templatize": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Templatize defines the fields which supports templating in GrafanaRef GrafanaDashboard Model json",
+							Description: "Templatize defines the fields which supports templating in GrafanaDashboard Model json",
 							Ref:         ref("go.openviz.dev/grafana-tools/apis/openviz/v1alpha1.ModelTemplateConfiguration"),
 						},
 					},

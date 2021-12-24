@@ -24,15 +24,15 @@ const (
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// GrafanaConfiguration defines configuration for a GrafanaRef AppBinding
+// GrafanaConfiguration defines configuration for a Grafana AppBinding
 type GrafanaConfiguration struct {
 	metav1.TypeMeta `json:",inline,omitempty"`
 
-	// Datasource defines the grafana grafanadatasource name.
+	// Datasource defines the Grafana datasource name.
 	// +optional
 	Datasource string `json:"datasource,omitempty" protobuf:"bytes,1,opt,name=datasource"`
 
-	// FolderID defines the GrafanaRef folderID
+	// FolderID defines the Grafana folder id.
 	// +optional
 	FolderID *int64 `json:"folderID,omitempty" protobuf:"varint,2,opt,name=folderID"`
 }

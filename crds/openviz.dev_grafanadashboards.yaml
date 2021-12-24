@@ -49,7 +49,7 @@ spec:
           spec:
             properties:
               folderID:
-                description: FolderID defines the GrafanaRef folderID
+                description: FolderID defines the Grafana folderID
                 format: int64
                 type: integer
               grafanaRef:
@@ -74,7 +74,7 @@ spec:
                 type: boolean
               templatize:
                 description: Templatize defines the fields which supports templating
-                  in GrafanaRef GrafanaDashboard Model json
+                  in GrafanaDashboard Model json
                 properties:
                   datasource:
                     type: boolean
