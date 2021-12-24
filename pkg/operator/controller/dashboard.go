@@ -20,8 +20,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/url"
-	"strconv"
 	"time"
 
 	sdk "go.openviz.dev/grafana-sdk"
@@ -40,7 +38,6 @@ import (
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	"kmodules.xyz/client-go/tools/queue"
-	"kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 )
 
 const (
@@ -105,38 +102,38 @@ func (c *GrafanaController) runGrafanaDashboardInjector(key string) error {
 
 // reconcileGrafanaDashboard reconciles the grafana grafanadashboard
 // it creates or updates grafanadashboard
-func (c *GrafanaController) reconcileGrafanaDashboard(grafanadashboard *api.GrafanaDashboard) error {
+func (c *GrafanaController) reconcileGrafanaDashboard(dashboard *api.GrafanaDashboard) error {
 	// update Processing status
-	newGrafanaDashboard, err := util.UpdateGrafanaDashboardStatus(context.TODO(), c.extClient.OpenvizV1alpha1(), grafanadashboard.ObjectMeta, func(in *api.GrafanaDashboardStatus) *api.GrafanaDashboardStatus {
+	newGrafanaDashboard, err := util.UpdateGrafanaDashboardStatus(context.TODO(), c.extClient.OpenvizV1alpha1(), dashboard.ObjectMeta, func(in *api.GrafanaDashboardStatus) *api.GrafanaDashboardStatus {
 		in.Phase = api.GrafanaPhaseProcessing
-		in.Reason = "Started processing of grafanadashboard"
+		in.Reason = "Started processing of dashboard"
 		in.Conditions = []kmapi.Condition{}
-		in.ObservedGeneration = grafanadashboard.Generation
+		in.ObservedGeneration = dashboard.Generation
 
 		return in
 	}, metav1.UpdateOptions{})
 	if err != nil {
-		return errors.Wrapf(err, "failed to update grafanadashboard phase to `%s`", api.GrafanaPhaseSuccess)
+		return errors.Wrapf(err, "failed to update dashboard phase to `%s`", api.GrafanaPhaseSuccess)
 	}
-	grafanadashboard.Status = newGrafanaDashboard.Status
+	dashboard.Status = newGrafanaDashboard.Status
 
-	if grafanadashboard.Spec.GrafanaRef == nil {
+	if dashboard.Spec.GrafanaRef == nil {
 		return errors.New("appBinding for grafana is missing")
 	}
 
-	if err = c.setGrafanaClient(grafanadashboard.Namespace, grafanadashboard.Spec.GrafanaRef); err != nil {
+	if err = c.setGrafanaClient(dashboard.Spec.GrafanaRef, dashboard.Namespace); err != nil {
 		return errors.Wrap(err, "failed to set grafana client")
 	}
 
-	if grafanadashboard.Spec.Model == nil {
-		return errors.New("grafanadashboard model not found")
+	if dashboard.Spec.Model == nil {
+		return errors.New("dashboard model not found")
 	}
-	model := grafanadashboard.Spec.Model.Raw
+	model := dashboard.Spec.Model.Raw
 
 	//// add labels
 	//labels := make(map[string]string)
-	//labels["meta.grafanadashboard.openviz.dev/appbinding"] = grafanadashboard.Spec.GrafanaRef.Name
-	//grafanadashboard, _, err = util.PatchGrafanaDashboard(context.TODO(), c.extClient.OpenvizV1alpha1(), grafanadashboard, func(in *api.GrafanaDashboard) *api.GrafanaDashboard {
+	//labels["meta.dashboard.openviz.dev/appbinding"] = dashboard.Spec.GrafanaRef.Name
+	//dashboard, _, err = util.PatchGrafanaDashboard(context.TODO(), c.extClient.OpenvizV1alpha1(), dashboard, func(in *api.GrafanaDashboard) *api.GrafanaDashboard {
 	//	in.ObjectMeta.SetLabels(labels)
 	//	return in
 	//}, metav1.PatchOptions{})
@@ -145,7 +142,7 @@ func (c *GrafanaController) reconcileGrafanaDashboard(grafanadashboard *api.Graf
 	//}
 
 	// collect grafanadatasource name from app binding
-	appBinding, err := c.appCatalogClient.AppBindings(grafanadashboard.Namespace).Get(context.TODO(), grafanadashboard.Spec.GrafanaRef.Name, metav1.GetOptions{})
+	appBinding, err := c.appCatalogClient.AppBindings(dashboard.Namespace).Get(context.TODO(), dashboard.Spec.GrafanaRef.Name, metav1.GetOptions{})
 	if err != nil {
 		return errors.Wrap(err, "failed to fetch AppBinding")
 	}
@@ -159,7 +156,7 @@ func (c *GrafanaController) reconcileGrafanaDashboard(grafanadashboard *api.Graf
 		return errors.New("grafanadatasource parameter is missing in app binding")
 	}
 
-	if grafanadashboard.Spec.Templatize != nil && grafanadashboard.Spec.Templatize.Datasource {
+	if dashboard.Spec.Templatize != nil && dashboard.Spec.Templatize.Datasource {
 		model, err = replaceDatasource(model, dsConfig.Datasource)
 		if err != nil {
 			return err
@@ -167,17 +164,17 @@ func (c *GrafanaController) reconcileGrafanaDashboard(grafanadashboard *api.Graf
 	}
 
 	// update folder when it is missing
-	if grafanadashboard.Spec.FolderID == nil {
+	if dashboard.Spec.FolderID == nil {
 		if dsConfig.FolderID != nil {
-			grafanadashboard.Spec.FolderID = dsConfig.FolderID
+			dashboard.Spec.FolderID = dsConfig.FolderID
 		} else {
 			// set default(General) folder id: 0
-			grafanadashboard.Spec.FolderID = pointer.Int64P(0)
+			dashboard.Spec.FolderID = pointer.Int64P(0)
 		}
 	}
 
-	if err = c.updateGrafanaDashboard(grafanadashboard, model); err != nil {
-		return errors.Wrap(err, "failed to update grafanadashboard")
+	if err = c.updateGrafanaDashboard(dashboard, model); err != nil {
+		return errors.Wrap(err, "failed to update dashboard")
 	}
 
 	return nil
@@ -288,8 +285,8 @@ func (c *GrafanaController) updateGrafanaDashboard(grafanadashboard *api.Grafana
 }
 
 // setGrafanaClient sets grafana client from user provided data
-func (c *GrafanaController) setGrafanaClient(ns string, targetRef *api.TargetRef) error {
-	appBinding, err := c.appCatalogClient.AppBindings(ns).Get(context.TODO(), targetRef.Name, metav1.GetOptions{})
+func (c *GrafanaController) setGrafanaClient(ref *kmapi.ObjectReference, ns string) error {
+	appBinding, err := api.GetGrafana(c.cc, ref, ns)
 	if err != nil {
 		return errors.Wrap(err, "failed to fetch AppBinding")
 	}
@@ -299,11 +296,16 @@ func (c *GrafanaController) setGrafanaClient(ns string, targetRef *api.TargetRef
 		return errors.Wrap(err, "failed to fetch Secret")
 	}
 
-	apiURL, apiKey, err := getApiURLandApiKey(appBinding, secret)
+	apiURL, err := appBinding.URL()
 	if err != nil {
-		return errors.Wrap(err, "failed to get apiURL or apiKey")
+		return err
 	}
-	c.grafanaClient, err = sdk.NewClient(apiURL, apiKey)
+	apiKey, ok := secret.Data["apiKey"]
+	if !ok {
+		return fmt.Errorf("apiURL or apiKey not provided")
+	}
+
+	c.grafanaClient, err = sdk.NewClient(apiURL, string(apiKey))
 	if err != nil {
 		return err
 	}
@@ -315,27 +317,6 @@ func (c *GrafanaController) setGrafanaClient(ns string, targetRef *api.TargetRef
 		}
 		return health.Database == "ok", nil
 	})
-}
-
-// getApiURLandApiKey extracts ApiURL and ApiKey from appBinding and secret
-func getApiURLandApiKey(appBinding *v1alpha1.AppBinding, secret *core.Secret) (apiURL, apiKey string, err error) {
-	cfg := appBinding.Spec.ClientConfig
-	if cfg.URL != nil {
-		apiURL = pointer.String(cfg.URL)
-	} else if cfg.Service != nil {
-		apiurl := url.URL{
-			Scheme:   cfg.Service.Scheme,
-			Host:     cfg.Service.Name + "." + appBinding.Namespace + "." + "svc" + ":" + strconv.Itoa(int(cfg.Service.Port)),
-			Path:     cfg.Service.Path,
-			RawQuery: cfg.Service.Query,
-		}
-		apiURL = apiurl.String()
-	}
-	apiKey = string(secret.Data["apiKey"])
-	if len(apiURL) == 0 || len(apiKey) == 0 {
-		err = fmt.Errorf("apiURL or apiKey not provided")
-	}
-	return
 }
 
 func replaceDatasource(model []byte, ds string) ([]byte, error) {

@@ -32,7 +32,7 @@ import (
 )
 
 const (
-	GrafanaDatasourceFinalizer = "grafanadatasource.openviz.dev"
+	GrafanaDatasourceFinalizer = "openviz.dev"
 )
 
 func (c *GrafanaController) initGrafanaDatasourceWatcher() {
@@ -111,7 +111,7 @@ func (c *GrafanaController) createOrUpdateGrafanaDatasource(ds *api.GrafanaDatas
 		IsDefault: ds.Spec.IsDefault,
 	}
 
-	err := c.setGrafanaClient(ds.Namespace, ds.Spec.Grafana)
+	err := c.setGrafanaClient(ds.Spec.Grafana, ds.Namespace)
 	if err != nil {
 		return err
 	}

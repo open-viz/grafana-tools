@@ -45,12 +45,14 @@ import (
 	"kmodules.xyz/client-go/tools/queue"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type GrafanaController struct {
 	config
 	clientConfig *rest.Config
 
+	cc               client.Client
 	kubeClient       kubernetes.Interface
 	extClient        cs.Interface
 	appCatalogClient appcat_cs.AppcatalogV1alpha1Interface

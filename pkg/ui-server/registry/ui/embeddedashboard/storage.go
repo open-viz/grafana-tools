@@ -39,6 +39,7 @@ import (
 	"k8s.io/apiserver/pkg/authorization/authorizer"
 	apirequest "k8s.io/apiserver/pkg/endpoints/request"
 	"k8s.io/apiserver/pkg/registry/rest"
+	"kmodules.xyz/custom-resources/apis/appcatalog"
 	appcatalogapi "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -66,7 +67,7 @@ func (r *Storage) GroupVersionKind(_ schema.GroupVersion) schema.GroupVersionKin
 }
 
 func (r *Storage) NamespaceScoped() bool {
-	return true
+	return false
 }
 
 func (r *Storage) New() runtime.Object {
@@ -74,11 +75,6 @@ func (r *Storage) New() runtime.Object {
 }
 
 func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.ValidateObjectFunc, _ *metav1.CreateOptions) (runtime.Object, error) {
-	ns, ok := apirequest.NamespaceFrom(ctx)
-	if !ok {
-		return nil, apierrors.NewBadRequest("missing namespace")
-	}
-
 	in := obj.(*uiapi.EmbeddedDashboard)
 	if in.Request == nil {
 		return nil, apierrors.NewBadRequest("missing apirequest")
@@ -86,12 +82,17 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 
 	var dashboard openvizapi.GrafanaDashboard
 	if in.Request.Dashboard.ObjectReference != nil {
-		err := r.kc.Get(ctx, client.ObjectKey{Namespace: in.Request.Dashboard.Namespace, Name: in.Request.Dashboard.Name}, &dashboard)
+		ns := in.Request.Dashboard.Namespace
+		if ns == "" {
+			return nil, fmt.Errorf("missing namespace for Dashboard")
+		}
+		err := r.kc.Get(ctx, client.ObjectKey{Namespace: ns, Name: in.Request.Dashboard.Name}, &dashboard)
 		if err != nil {
 			return nil, err
 		}
 	} else if in.Request.Dashboard.Title != "" {
 		var dashboardList openvizapi.GrafanaDashboardList
+		// any namespace, using default grafana and with the given title
 		if err := r.kc.List(ctx, &dashboardList, client.MatchingFields{
 			openvizapi.DefaultGrafanaKey:        "true",
 			openvizapi.GrafanaDashboardTitleKey: in.Request.Dashboard.Title,
@@ -115,50 +116,48 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 		return nil, apierrors.NewBadRequest("missing user info")
 	}
 
-	attrs := authorizer.AttributesRecord{
-		User:      user,
-		Verb:      "get",
-		Namespace: ns,
-		APIGroup:  r.gr.Group,
-		Resource:  r.gr.Resource,
-		Name:      dashboard.Name,
+	{
+		attrs := authorizer.AttributesRecord{
+			User:      user,
+			Verb:      "get",
+			Namespace: dashboard.Namespace,
+			APIGroup:  r.gr.Group,
+			Resource:  r.gr.Resource,
+			Name:      dashboard.Name,
+		}
+		decision, why, err := r.a.Authorize(ctx, attrs)
+		if err != nil {
+			return nil, apierrors.NewInternalError(err)
+		}
+		if decision != authorizer.DecisionAllow {
+			return nil, apierrors.NewForbidden(r.gr, dashboard.Name, errors.New(why))
+		}
 	}
-	decision, why, err := r.a.Authorize(ctx, attrs)
-	if err != nil {
-		return nil, apierrors.NewInternalError(err)
-	}
-	if decision != authorizer.DecisionAllow {
-		return nil, apierrors.NewForbidden(r.gr, dashboard.Name, errors.New(why))
-	}
-
 	if dashboard.Status.Dashboard == nil {
 		return nil, apierrors.NewBadRequest(fmt.Sprintf("Status.Dashboard field is missing in GrafanaDashboard %s/%s", dashboard.Namespace, dashboard.Name))
 	}
 
-	var grafana appcatalogapi.AppBinding
-	if dashboard.Spec.GrafanaRef != nil {
-		abKey := client.ObjectKey{Namespace: dashboard.Namespace, Name: dashboard.Spec.GrafanaRef.Name}
-		err = r.kc.Get(ctx, abKey, &grafana)
+	grafana, err := openvizapi.GetGrafana(r.kc, dashboard.Spec.GrafanaRef, dashboard.Namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	{
+		attrs := authorizer.AttributesRecord{
+			User:      user,
+			Verb:      "get",
+			Namespace: grafana.Namespace,
+			APIGroup:  appcatalog.GroupName,
+			Resource:  appcatalogapi.ResourceApps,
+			Name:      grafana.Name,
+		}
+		decision, why, err := r.a.Authorize(ctx, attrs)
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to fetch AppBinding %s", abKey)
+			return nil, apierrors.NewInternalError(err)
 		}
-	} else {
-		var grafanaList appcatalogapi.AppBindingList
-		if err := r.kc.List(context.TODO(), &grafanaList, client.MatchingFields{
-			openvizapi.DefaultGrafanaKey: "true",
-		}); err != nil {
-			return nil, err
+		if decision != authorizer.DecisionAllow {
+			return nil, apierrors.NewForbidden(r.gr, grafana.Name, errors.New(why))
 		}
-		if len(grafanaList.Items) == 0 {
-			return nil, apierrors.NewNotFound(appcatalogapi.Resource(appcatalogapi.ResourceKindApp), "no default Grafana appbinding found.")
-		} else if len(grafanaList.Items) > 1 {
-			names := make([]string, len(grafanaList.Items))
-			for idx, item := range grafanaList.Items {
-				names[idx] = fmt.Sprintf("%s/%s", item.Namespace, item.Name)
-			}
-			return nil, apierrors.NewBadRequest(fmt.Sprintf("multiple Grafana appbindings %s are marked default", strings.Join(names, ",")))
-		}
-		grafana = grafanaList.Items[0]
 	}
 
 	grafanaHost, err := grafana.URL()

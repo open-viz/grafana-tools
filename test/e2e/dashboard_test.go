@@ -32,6 +32,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/dynamic"
+	kmapi "kmodules.xyz/client-go/api/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 )
@@ -107,7 +108,7 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 					Namespace: f.Namespace(),
 				},
 				Spec: api.GrafanaDashboardSpec{
-					GrafanaRef: &api.TargetRef{
+					GrafanaRef: &kmapi.ObjectReference{
 						Name: f.AppBindingName(),
 					},
 					Overwrite: true,
