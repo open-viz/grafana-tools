@@ -25,16 +25,18 @@ import (
 
 	api "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
 	crd_client "go.openviz.dev/grafana-tools/client/clientset/versioned/typed/openviz/v1alpha1"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
 	"k8s.io/client-go/util/retry"
+	kmapi "kmodules.xyz/client-go/api/v1"
 )
 
 var kubeconfig *string
 
 const (
-	ns               = "demo"
+	ns                      = "demo"
 	SampleGrafanaDatasource = "sample-ds"
 )
 
@@ -54,14 +56,14 @@ func CreateGrafanaDatasource(url string, sourceType api.GrafanaDatasourceType, a
 			Namespace: "demo",
 		},
 		Spec: api.GrafanaDatasourceSpec{
-			Grafana: &api.TargetRef{
-				Name:       "grafana-apb",
+			Grafana: &kmapi.ObjectReference{
+				Name: "grafana-apb",
 			},
 			Name:   "some-random-name",
 			Type:   sourceType,
 			Access: accessType,
 			URL:    url,
-			OrgID: 1,
+			OrgID:  1,
 		},
 	}
 	gClient, err := createClient()

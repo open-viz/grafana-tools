@@ -39,9 +39,9 @@ func (f *Framework) AppBindingName() string {
 }
 
 func (f *Framework) CreateAppBinding() error {
-	dsConfig := &api.DatasourceConfiguration{
+	dsConfig := &api.GrafanaConfiguration{
 		TypeMeta: metav1.TypeMeta{
-			Kind:       "DatasourceConfiguration",
+			Kind:       "GrafanaConfiguration",
 			APIVersion: "openviz.dev/v1alpha1",
 		},
 		Datasource: "some-datasource",

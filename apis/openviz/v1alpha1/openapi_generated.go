@@ -34,7 +34,7 @@ import (
 
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
-		"go.openviz.dev/grafana-tools/apis/openviz/v1alpha1.DatasourceConfiguration":           schema_grafana_tools_apis_openviz_v1alpha1_DatasourceConfiguration(ref),
+		"go.openviz.dev/grafana-tools/apis/openviz/v1alpha1.GrafanaConfiguration":              schema_grafana_tools_apis_openviz_v1alpha1_GrafanaConfiguration(ref),
 		"go.openviz.dev/grafana-tools/apis/openviz/v1alpha1.GrafanaDashboard":                  schema_grafana_tools_apis_openviz_v1alpha1_GrafanaDashboard(ref),
 		"go.openviz.dev/grafana-tools/apis/openviz/v1alpha1.GrafanaDashboardList":              schema_grafana_tools_apis_openviz_v1alpha1_GrafanaDashboardList(ref),
 		"go.openviz.dev/grafana-tools/apis/openviz/v1alpha1.GrafanaDashboardReference":         schema_grafana_tools_apis_openviz_v1alpha1_GrafanaDashboardReference(ref),
@@ -49,7 +49,6 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"go.openviz.dev/grafana-tools/apis/openviz/v1alpha1.GrafanaDatasourceSpec":             schema_grafana_tools_apis_openviz_v1alpha1_GrafanaDatasourceSpec(ref),
 		"go.openviz.dev/grafana-tools/apis/openviz/v1alpha1.GrafanaDatasourceStatus":           schema_grafana_tools_apis_openviz_v1alpha1_GrafanaDatasourceStatus(ref),
 		"go.openviz.dev/grafana-tools/apis/openviz/v1alpha1.ModelTemplateConfiguration":        schema_grafana_tools_apis_openviz_v1alpha1_ModelTemplateConfiguration(ref),
-		"go.openviz.dev/grafana-tools/apis/openviz/v1alpha1.TargetRef":                         schema_grafana_tools_apis_openviz_v1alpha1_TargetRef(ref),
 		"k8s.io/api/apps/v1.ControllerRevision":                                                schema_k8sio_api_apps_v1_ControllerRevision(ref),
 		"k8s.io/api/apps/v1.ControllerRevisionList":                                            schema_k8sio_api_apps_v1_ControllerRevisionList(ref),
 		"k8s.io/api/apps/v1.DaemonSet":                                                         schema_k8sio_api_apps_v1_DaemonSet(ref),
@@ -343,6 +342,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"kmodules.xyz/client-go/api/v1.CertificatePrivateKey":                                  schema_kmodulesxyz_client_go_api_v1_CertificatePrivateKey(ref),
 		"kmodules.xyz/client-go/api/v1.CertificateSpec":                                        schema_kmodulesxyz_client_go_api_v1_CertificateSpec(ref),
 		"kmodules.xyz/client-go/api/v1.Condition":                                              schema_kmodulesxyz_client_go_api_v1_Condition(ref),
+		"kmodules.xyz/client-go/api/v1.ObjectID":                                               schema_kmodulesxyz_client_go_api_v1_ObjectID(ref),
 		"kmodules.xyz/client-go/api/v1.ObjectReference":                                        schema_kmodulesxyz_client_go_api_v1_ObjectReference(ref),
 		"kmodules.xyz/client-go/api/v1.ResourceID":                                             schema_kmodulesxyz_client_go_api_v1_ResourceID(ref),
 		"kmodules.xyz/client-go/api/v1.TLSConfig":                                              schema_kmodulesxyz_client_go_api_v1_TLSConfig(ref),
@@ -351,11 +351,11 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 	}
 }
 
-func schema_grafana_tools_apis_openviz_v1alpha1_DatasourceConfiguration(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_grafana_tools_apis_openviz_v1alpha1_GrafanaConfiguration(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "DatasourceConfiguration defines a GrafanaDatasource AppBinding configuration",
+				Description: "GrafanaConfiguration defines configuration for a GrafanaRef AppBinding",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"kind": {
@@ -381,7 +381,7 @@ func schema_grafana_tools_apis_openviz_v1alpha1_DatasourceConfiguration(ref comm
 					},
 					"folderID": {
 						SchemaProps: spec.SchemaProps{
-							Description: "FolderID defines the Grafana folderID",
+							Description: "FolderID defines the GrafanaRef folderID",
 							Type:        []string{"integer"},
 							Format:      "int64",
 						},
@@ -539,22 +539,22 @@ func schema_grafana_tools_apis_openviz_v1alpha1_GrafanaDashboardSpec(ref common.
 			SchemaProps: spec.SchemaProps{
 				Type: []string{"object"},
 				Properties: map[string]spec.Schema{
-					"grafana": {
+					"grafanaRef": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Grafana defines the grafana app binding name for the GrafanaDashboard",
-							Ref:         ref("go.openviz.dev/grafana-tools/apis/openviz/v1alpha1.TargetRef"),
+							Description: "GrafanaRef defines the grafana app binding name for the GrafanaDashboard",
+							Ref:         ref("kmodules.xyz/client-go/api/v1.ObjectReference"),
+						},
+					},
+					"folderID": {
+						SchemaProps: spec.SchemaProps{
+							Description: "FolderID defines the GrafanaRef folderID",
+							Type:        []string{"integer"},
+							Format:      "int64",
 						},
 					},
 					"model": {
 						SchemaProps: spec.SchemaProps{
 							Ref: ref("k8s.io/apimachinery/pkg/runtime.RawExtension"),
-						},
-					},
-					"folderID": {
-						SchemaProps: spec.SchemaProps{
-							Description: "FolderID defines the Grafana folderID",
-							Type:        []string{"integer"},
-							Format:      "int64",
 						},
 					},
 					"overwrite": {
@@ -566,7 +566,7 @@ func schema_grafana_tools_apis_openviz_v1alpha1_GrafanaDashboardSpec(ref common.
 					},
 					"templatize": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Templatize defines the fields which supports templating in Grafana GrafanaDashboard Model json",
+							Description: "Templatize defines the fields which supports templating in GrafanaRef GrafanaDashboard Model json",
 							Ref:         ref("go.openviz.dev/grafana-tools/apis/openviz/v1alpha1.ModelTemplateConfiguration"),
 						},
 					},
@@ -574,7 +574,7 @@ func schema_grafana_tools_apis_openviz_v1alpha1_GrafanaDashboardSpec(ref common.
 			},
 		},
 		Dependencies: []string{
-			"go.openviz.dev/grafana-tools/apis/openviz/v1alpha1.ModelTemplateConfiguration", "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1.TargetRef", "k8s.io/apimachinery/pkg/runtime.RawExtension"},
+			"go.openviz.dev/grafana-tools/apis/openviz/v1alpha1.ModelTemplateConfiguration", "k8s.io/apimachinery/pkg/runtime.RawExtension", "kmodules.xyz/client-go/api/v1.ObjectReference"},
 	}
 }
 
@@ -923,7 +923,7 @@ func schema_grafana_tools_apis_openviz_v1alpha1_GrafanaDatasourceSpec(ref common
 				Properties: map[string]spec.Schema{
 					"grafana": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("go.openviz.dev/grafana-tools/apis/openviz/v1alpha1.TargetRef"),
+							Ref: ref("kmodules.xyz/client-go/api/v1.ObjectReference"),
 						},
 					},
 					"id": {
@@ -1020,7 +1020,7 @@ func schema_grafana_tools_apis_openviz_v1alpha1_GrafanaDatasourceSpec(ref common
 			},
 		},
 		Dependencies: []string{
-			"go.openviz.dev/grafana-tools/apis/openviz/v1alpha1.TargetRef"},
+			"kmodules.xyz/client-go/api/v1.ObjectReference"},
 	}
 }
 
@@ -1091,36 +1091,6 @@ func schema_grafana_tools_apis_openviz_v1alpha1_ModelTemplateConfiguration(ref c
 					"datasource": {
 						SchemaProps: spec.SchemaProps{
 							Type:   []string{"boolean"},
-							Format: "",
-						},
-					},
-				},
-			},
-		},
-	}
-}
-
-func schema_grafana_tools_apis_openviz_v1alpha1_TargetRef(ref common.ReferenceCallback) common.OpenAPIDefinition {
-	return common.OpenAPIDefinition{
-		Schema: spec.Schema{
-			SchemaProps: spec.SchemaProps{
-				Type: []string{"object"},
-				Properties: map[string]spec.Schema{
-					"apiGroup": {
-						SchemaProps: spec.SchemaProps{
-							Type:   []string{"string"},
-							Format: "",
-						},
-					},
-					"kind": {
-						SchemaProps: spec.SchemaProps{
-							Type:   []string{"string"},
-							Format: "",
-						},
-					},
-					"name": {
-						SchemaProps: spec.SchemaProps{
-							Type:   []string{"string"},
 							Format: "",
 						},
 					},
@@ -16799,6 +16769,42 @@ func schema_kmodulesxyz_client_go_api_v1_Condition(ref common.ReferenceCallback)
 		},
 		Dependencies: []string{
 			"k8s.io/apimachinery/pkg/apis/meta/v1.Time"},
+	}
+}
+
+func schema_kmodulesxyz_client_go_api_v1_ObjectID(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"group": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"namespace": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"name": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+				},
+			},
+		},
 	}
 }
 

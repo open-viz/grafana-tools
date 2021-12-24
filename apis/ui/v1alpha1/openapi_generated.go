@@ -35,7 +35,6 @@ import (
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
 		"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.DashboardRef":              schema_grafana_tools_apis_ui_v1alpha1_DashboardRef(ref),
-		"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.DashboardSelector":         schema_grafana_tools_apis_ui_v1alpha1_DashboardSelector(ref),
 		"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.EmbeddedDashboard":         schema_grafana_tools_apis_ui_v1alpha1_EmbeddedDashboard(ref),
 		"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.EmbeddedDashboardRequest":  schema_grafana_tools_apis_ui_v1alpha1_EmbeddedDashboardRequest(ref),
 		"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.EmbeddedDashboardResponse": schema_grafana_tools_apis_ui_v1alpha1_EmbeddedDashboardResponse(ref),
@@ -333,6 +332,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"kmodules.xyz/client-go/api/v1.CertificatePrivateKey":                     schema_kmodulesxyz_client_go_api_v1_CertificatePrivateKey(ref),
 		"kmodules.xyz/client-go/api/v1.CertificateSpec":                           schema_kmodulesxyz_client_go_api_v1_CertificateSpec(ref),
 		"kmodules.xyz/client-go/api/v1.Condition":                                 schema_kmodulesxyz_client_go_api_v1_Condition(ref),
+		"kmodules.xyz/client-go/api/v1.ObjectID":                                  schema_kmodulesxyz_client_go_api_v1_ObjectID(ref),
 		"kmodules.xyz/client-go/api/v1.ObjectReference":                           schema_kmodulesxyz_client_go_api_v1_ObjectReference(ref),
 		"kmodules.xyz/client-go/api/v1.ResourceID":                                schema_kmodulesxyz_client_go_api_v1_ResourceID(ref),
 		"kmodules.xyz/client-go/api/v1.TLSConfig":                                 schema_kmodulesxyz_client_go_api_v1_TLSConfig(ref),
@@ -347,44 +347,29 @@ func schema_grafana_tools_apis_ui_v1alpha1_DashboardRef(ref common.ReferenceCall
 			SchemaProps: spec.SchemaProps{
 				Type: []string{"object"},
 				Properties: map[string]spec.Schema{
+					"namespace": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
 					"name": {
 						SchemaProps: spec.SchemaProps{
-							Type:   []string{"string"},
-							Format: "",
+							Description: "Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names",
+							Default:     "",
+							Type:        []string{"string"},
+							Format:      "",
 						},
 					},
-					"selector": {
-						SchemaProps: spec.SchemaProps{
-							Ref: ref("go.openviz.dev/grafana-tools/apis/ui/v1alpha1.DashboardSelector"),
-						},
-					},
-				},
-			},
-		},
-		Dependencies: []string{
-			"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.DashboardSelector"},
-	}
-}
-
-func schema_grafana_tools_apis_ui_v1alpha1_DashboardSelector(ref common.ReferenceCallback) common.OpenAPIDefinition {
-	return common.OpenAPIDefinition{
-		Schema: spec.Schema{
-			SchemaProps: spec.SchemaProps{
-				Type: []string{"object"},
-				Properties: map[string]spec.Schema{
-					"grafanaName": {
-						SchemaProps: spec.SchemaProps{
-							Type:   []string{"string"},
-							Format: "",
-						},
-					},
-					"dashboardTitle": {
+					"title": {
 						SchemaProps: spec.SchemaProps{
 							Type:   []string{"string"},
 							Format: "",
 						},
 					},
 				},
+				Required: []string{"name"},
 			},
 		},
 	}
@@ -410,12 +395,6 @@ func schema_grafana_tools_apis_ui_v1alpha1_EmbeddedDashboard(ref common.Referenc
 							Format:      "",
 						},
 					},
-					"metadata": {
-						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
-						},
-					},
 					"request": {
 						SchemaProps: spec.SchemaProps{
 							Ref: ref("go.openviz.dev/grafana-tools/apis/ui/v1alpha1.EmbeddedDashboardRequest"),
@@ -430,7 +409,7 @@ func schema_grafana_tools_apis_ui_v1alpha1_EmbeddedDashboard(ref common.Referenc
 			},
 		},
 		Dependencies: []string{
-			"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.EmbeddedDashboardRequest", "go.openviz.dev/grafana-tools/apis/ui/v1alpha1.EmbeddedDashboardResponse", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+			"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.EmbeddedDashboardRequest", "go.openviz.dev/grafana-tools/apis/ui/v1alpha1.EmbeddedDashboardResponse"},
 	}
 }
 
@@ -440,13 +419,19 @@ func schema_grafana_tools_apis_ui_v1alpha1_EmbeddedDashboardRequest(ref common.R
 			SchemaProps: spec.SchemaProps{
 				Type: []string{"object"},
 				Properties: map[string]spec.Schema{
-					"ref": {
+					"target": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref("kmodules.xyz/client-go/api/v1.ObjectID"),
+						},
+					},
+					"dashboard": {
 						SchemaProps: spec.SchemaProps{
 							Default: map[string]interface{}{},
 							Ref:     ref("go.openviz.dev/grafana-tools/apis/ui/v1alpha1.DashboardRef"),
 						},
 					},
-					"panelTitles": {
+					"panels": {
 						SchemaProps: spec.SchemaProps{
 							Type: []string{"array"},
 							Items: &spec.SchemaOrArray{
@@ -461,11 +446,11 @@ func schema_grafana_tools_apis_ui_v1alpha1_EmbeddedDashboardRequest(ref common.R
 						},
 					},
 				},
-				Required: []string{"ref"},
+				Required: []string{"target", "dashboard"},
 			},
 		},
 		Dependencies: []string{
-			"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.DashboardRef"},
+			"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.DashboardRef", "kmodules.xyz/client-go/api/v1.ObjectID"},
 	}
 }
 
@@ -16189,6 +16174,42 @@ func schema_kmodulesxyz_client_go_api_v1_Condition(ref common.ReferenceCallback)
 		},
 		Dependencies: []string{
 			"k8s.io/apimachinery/pkg/apis/meta/v1.Time"},
+	}
+}
+
+func schema_kmodulesxyz_client_go_api_v1_ObjectID(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"group": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"namespace": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"name": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+				},
+			},
+		},
 	}
 }
 

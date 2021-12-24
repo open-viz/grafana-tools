@@ -32,7 +32,7 @@ import (
 )
 
 const (
-	GrafanaDatasourceFinalizer = "grafanadatasource.openviz.dev"
+	GrafanaDatasourceFinalizer = "openviz.dev"
 )
 
 func (c *GrafanaController) initGrafanaDatasourceWatcher() {
@@ -111,7 +111,7 @@ func (c *GrafanaController) createOrUpdateGrafanaDatasource(ds *api.GrafanaDatas
 		IsDefault: ds.Spec.IsDefault,
 	}
 
-	err := c.setGrafanaClient(ds.Namespace, ds.Spec.Grafana)
+	err := c.setGrafanaClient(ds.Spec.Grafana, ds.Namespace)
 	if err != nil {
 		return err
 	}
@@ -131,7 +131,7 @@ func (c *GrafanaController) createOrUpdateGrafanaDatasource(ds *api.GrafanaDatas
 	klog.Infof("GrafanaDatasource is created with message: %s\n", pointer.String(statusMsg.Message))
 	_, err = util.UpdateGrafanaDatasourceStatus(context.TODO(), c.extClient.OpenvizV1alpha1(), ds.ObjectMeta, func(st *api.GrafanaDatasourceStatus) *api.GrafanaDatasourceStatus {
 		st.Phase = api.GrafanaPhaseSuccess
-		st.Reason = "Successfully created Grafana GrafanaDatasource"
+		st.Reason = "Successfully created GrafanaRef GrafanaDatasource"
 		st.ObservedGeneration = ds.Generation
 		st.GrafanaDatasourceID = pointer.Int64P(int64(pointer.Int(statusMsg.ID)))
 
@@ -155,7 +155,7 @@ func (c *GrafanaController) updateGrafanaDatasource(ds *api.GrafanaDatasource, d
 	// Update status to Success
 	_, err = util.UpdateGrafanaDatasourceStatus(context.TODO(), c.extClient.OpenvizV1alpha1(), ds.ObjectMeta, func(st *api.GrafanaDatasourceStatus) *api.GrafanaDatasourceStatus {
 		st.Phase = api.GrafanaPhaseSuccess
-		st.Reason = "Successfully updated Grafana GrafanaDatasource"
+		st.Reason = "Successfully updated GrafanaRef GrafanaDatasource"
 		st.ObservedGeneration = ds.Generation
 
 		return st

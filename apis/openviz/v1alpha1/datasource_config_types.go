@@ -19,20 +19,20 @@ package v1alpha1
 import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 const (
-	ResourceKindDatasourceConfiguration = "DatasourceConfiguration"
+	ResourceKindGrafanaConfiguration = "GrafanaConfiguration"
 )
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// DatasourceConfiguration defines a GrafanaDatasource AppBinding configuration
-type DatasourceConfiguration struct {
+// GrafanaConfiguration defines configuration for a GrafanaRef AppBinding
+type GrafanaConfiguration struct {
 	metav1.TypeMeta `json:",inline,omitempty"`
 
 	// Datasource defines the grafana grafanadatasource name.
 	// +optional
 	Datasource string `json:"datasource,omitempty" protobuf:"bytes,1,opt,name=datasource"`
 
-	// FolderID defines the Grafana folderID
+	// FolderID defines the GrafanaRef folderID
 	// +optional
 	FolderID *int64 `json:"folderID,omitempty" protobuf:"varint,2,opt,name=folderID"`
 }

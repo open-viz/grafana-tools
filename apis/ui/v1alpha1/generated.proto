@@ -24,35 +24,33 @@ package go.openviz.dev.grafana_tools.apis.ui.v1alpha1;
 import "k8s.io/apimachinery/pkg/apis/meta/v1/generated.proto";
 import "k8s.io/apimachinery/pkg/runtime/generated.proto";
 import "k8s.io/apimachinery/pkg/runtime/schema/generated.proto";
+import "kmodules.xyz/client-go/api/v1/generated.proto";
 
 // Package-wide variables from generator "generated".
 option go_package = "v1alpha1";
 
 message DashboardRef {
-  optional string name = 1;
+  // +optional
+  optional kmodules.xyz.client_go.api.v1.ObjectReference objectReference = 1;
 
-  optional DashboardSelector selector = 2;
-}
-
-message DashboardSelector {
-  optional string grafanaName = 1;
-
-  optional string dashboardTitle = 2;
+  // +optional
+  optional string title = 2;
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 message EmbeddedDashboard {
-  optional k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 1;
+  optional EmbeddedDashboardRequest request = 1;
 
-  optional EmbeddedDashboardRequest request = 2;
-
-  optional EmbeddedDashboardResponse response = 3;
+  optional EmbeddedDashboardResponse response = 2;
 }
 
 message EmbeddedDashboardRequest {
-  optional DashboardRef ref = 1;
+  optional kmodules.xyz.client_go.api.v1.ObjectID target = 1;
 
-  repeated string panelTitles = 2;
+  optional DashboardRef dashboard = 2;
+
+  // +optional
+  repeated string panels = 3;
 }
 
 message EmbeddedDashboardResponse {

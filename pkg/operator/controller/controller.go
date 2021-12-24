@@ -45,12 +45,14 @@ import (
 	"kmodules.xyz/client-go/tools/queue"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type GrafanaController struct {
 	config
 	clientConfig *rest.Config
 
+	cc               client.Client
 	kubeClient       kubernetes.Interface
 	extClient        cs.Interface
 	appCatalogClient appcat_cs.AppcatalogV1alpha1Interface
@@ -72,7 +74,7 @@ type GrafanaController struct {
 	grafanadatasourceInformer cache.SharedIndexInformer
 	grafanadatasourceLister   grafana_listers.GrafanaDatasourceLister
 
-	// Grafana client
+	// GrafanaRef client
 	grafanaClient *sdk.Client
 }
 
@@ -103,7 +105,7 @@ func (c *GrafanaController) Run(stopCh <-chan struct{}) {
 func (c *GrafanaController) RunInformers(stopCh <-chan struct{}) {
 	defer runtime.HandleCrash()
 
-	klog.Info("Starting Grafana controller")
+	klog.Info("Starting GrafanaRef controller")
 
 	c.extInformerFactory.Start(stopCh)
 	for _, v := range c.extInformerFactory.WaitForCacheSync(stopCh) {

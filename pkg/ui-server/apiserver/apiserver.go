@@ -28,9 +28,7 @@ import (
 	uiapi "go.openviz.dev/grafana-tools/apis/ui/v1alpha1"
 	emdashstorage "go.openviz.dev/grafana-tools/pkg/ui-server/registry/ui/embeddedashboard"
 
-	"github.com/grafana-tools/sdk"
 	core "k8s.io/api/core/v1"
-	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -44,13 +42,10 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/klog/v2/klogr"
 	"kmodules.xyz/authorizer/rbac"
-	"kmodules.xyz/custom-resources/apis/appcatalog"
 	appcatalogapi "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
-	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
 var (
@@ -140,7 +135,7 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 		Port:                   0,
 		HealthProbeBindAddress: "",
 		LeaderElection:         false,
-		LeaderElectionID:       "5b87adeb.ui.kubedb.com",
+		LeaderElectionID:       "5b87adeb.ui.openviz.dev",
 		ClientDisableCacheFor: []client.Object{
 			&core.Namespace{},
 			&core.Secret{},
@@ -152,52 +147,63 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 	}
 	ctrlClient := mgr.GetClient()
 
-	r := reconcile.Func(func(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
-		return reconcile.Result{}, nil
-	})
-
+	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &appcatalogapi.AppBinding{}, openvizapi.DefaultGrafanaKey, func(rawObj client.Object) []string {
+		app := rawObj.(*appcatalogapi.AppBinding)
+		if v, ok := app.Annotations[openvizapi.DefaultGrafanaKey]; ok && v == "true" {
+			return []string{"true"}
+		}
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &openvizapi.GrafanaDashboard{}, openvizapi.DefaultGrafanaKey, func(rawObj client.Object) []string {
+		dashboard := rawObj.(*openvizapi.GrafanaDashboard)
+		if dashboard.Spec.GrafanaRef == nil {
+			return []string{"true"}
+		}
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &openvizapi.GrafanaDashboard{}, openvizapi.GrafanaNamespaceKey, func(rawObj client.Object) []string {
+		dashboard := rawObj.(*openvizapi.GrafanaDashboard)
+		if dashboard.Spec.GrafanaRef == nil {
+			return nil
+		}
+		ns := dashboard.Spec.GrafanaRef.Namespace
+		if ns == "" {
+			ns = dashboard.Namespace
+		}
+		return []string{ns}
+	}); err != nil {
+		return nil, err
+	}
 	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &openvizapi.GrafanaDashboard{}, openvizapi.GrafanaNameKey, func(rawObj client.Object) []string {
-		grafanadashboard := rawObj.(*openvizapi.GrafanaDashboard)
-		if grafanadashboard.Spec.Grafana == nil {
+		dashboard := rawObj.(*openvizapi.GrafanaDashboard)
+		if dashboard.Spec.GrafanaRef == nil {
 			return nil
 		}
-		if grafanadashboard.Spec.Grafana.APIGroup != appcatalog.GroupName || grafanadashboard.Spec.Grafana.Kind != "AppBinding" {
-			return nil
-		}
-		return []string{grafanadashboard.Spec.Grafana.Name}
+		return []string{dashboard.Spec.GrafanaRef.Name}
 	}); err != nil {
 		return nil, err
 	}
 	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &openvizapi.GrafanaDashboard{}, openvizapi.GrafanaDashboardTitleKey, func(rawObj client.Object) []string {
-		grafanadashboard := rawObj.(*openvizapi.GrafanaDashboard)
-		var board sdk.Board
-		if grafanadashboard.Spec.Model == nil {
+		dashboard := rawObj.(*openvizapi.GrafanaDashboard)
+		board := struct {
+			Title string `json:"title"`
+		}{}
+		if dashboard.Spec.Model == nil {
 			return nil
 		}
-		if err := json.Unmarshal(grafanadashboard.Spec.Model.Raw, &board); err != nil {
-			klog.ErrorS(err, "failed to unmarshal Grafana GrafanaDashboard", "name", grafanadashboard.Name, "namespace", grafanadashboard.Namespace)
+		if err := json.Unmarshal(dashboard.Spec.Model.Raw, &board); err != nil {
+			klog.ErrorS(err, "failed to unmarshal spec.model in GrafanaDashboard", "name", dashboard.Name, "namespace", dashboard.Namespace)
 			return nil
 		}
 		return []string{board.Title}
 	}); err != nil {
 		return nil, err
 	}
-	if err := builder.ControllerManagedBy(mgr).For(&openvizapi.GrafanaDashboard{}).Complete(r); err != nil {
-		return nil, err
-	}
 
-	if err := builder.ControllerManagedBy(mgr).For(&rbacv1.ClusterRole{}).Complete(r); err != nil {
-		return nil, err
-	}
-	if err := builder.ControllerManagedBy(mgr).For(&rbacv1.ClusterRoleBinding{}).Complete(r); err != nil {
-		return nil, err
-	}
-	if err := builder.ControllerManagedBy(mgr).For(&rbacv1.Role{}).Complete(r); err != nil {
-		return nil, err
-	}
-	if err := builder.ControllerManagedBy(mgr).For(&rbacv1.RoleBinding{}).Complete(r); err != nil {
-		return nil, err
-	}
 	rbacAuthorizer := rbac.NewForManagerOrDie(ctx, mgr)
 
 	s := &UIServer{

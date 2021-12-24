@@ -1,4 +1,4 @@
-API rule violation: list_type_missing,go.openviz.dev/grafana-tools/apis/ui/v1alpha1,EmbeddedDashboardRequest,PanelTitles
+API rule violation: list_type_missing,go.openviz.dev/grafana-tools/apis/ui/v1alpha1,EmbeddedDashboardRequest,Panels
 API rule violation: list_type_missing,go.openviz.dev/grafana-tools/apis/ui/v1alpha1,EmbeddedDashboardResponse,URLs
 API rule violation: list_type_missing,k8s.io/api/apps/v1,DaemonSetStatus,Conditions
 API rule violation: list_type_missing,k8s.io/api/apps/v1,DeploymentStatus,Conditions

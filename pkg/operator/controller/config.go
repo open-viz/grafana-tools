@@ -28,10 +28,13 @@ import (
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
+	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1"
 	"kmodules.xyz/client-go/discovery"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 )
 
 const (
@@ -69,9 +72,22 @@ func (c *Config) New() (*GrafanaController, error) {
 		return nil, err
 	}
 
+	mapper, err := apiutil.NewDynamicRESTMapper(c.ClientConfig)
+	if err != nil {
+		return nil, err
+	}
+	cc, err := client.New(c.ClientConfig, client.Options{
+		Scheme: clientsetscheme.Scheme,
+		Mapper: mapper,
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	ctrl := &GrafanaController{
 		config:           c.config,
 		clientConfig:     c.ClientConfig,
+		cc:               cc,
 		kubeClient:       c.KubeClient,
 		extClient:        c.ExtClient,
 		crdClient:        c.CRDClient,

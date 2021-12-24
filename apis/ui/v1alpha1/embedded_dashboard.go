@@ -18,6 +18,7 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kmapi "kmodules.xyz/client-go/api/v1"
 )
 
 const (
@@ -27,18 +28,17 @@ const (
 )
 
 type EmbeddedDashboardRequest struct {
-	Ref         DashboardRef `json:"ref" protobuf:"bytes,1,opt,name=ref"`
-	PanelTitles []string     `json:"panelTitles,omitempty" protobuf:"bytes,2,rep,name=panelTitles"`
+	Target    kmapi.ObjectID `json:"target" protobuf:"bytes,1,opt,name=target"`
+	Dashboard DashboardRef   `json:"dashboard" protobuf:"bytes,2,opt,name=dashboard"`
+	// +optional
+	Panels []string `json:"panels,omitempty" protobuf:"bytes,3,rep,name=panels"`
 }
 
 type DashboardRef struct {
-	Name     *string            `json:"name,omitempty" protobuf:"bytes,1,opt,name=name"`
-	Selector *DashboardSelector `json:"selector,omitempty" protobuf:"bytes,2,opt,name=selector"`
-}
-
-type DashboardSelector struct {
-	GrafanaName    string `json:"grafanaName,omitempty" protobuf:"bytes,1,opt,name=grafanaName"`
-	DashboardTitle string `json:"dashboardTitle,omitempty" protobuf:"bytes,2,opt,name=dashboardTitle"`
+	// +optional
+	*kmapi.ObjectReference `json:",inline" protobuf:"bytes,1,opt,name=objectReference"`
+	// +optional
+	Title string `json:"title,omitempty" protobuf:"bytes,2,opt,name=title"`
 }
 
 type PanelURL struct {
@@ -54,9 +54,8 @@ type EmbeddedDashboardResponse struct {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type EmbeddedDashboard struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+	metav1.TypeMeta `json:",inline"`
 
-	Request  *EmbeddedDashboardRequest  `json:"request,omitempty" protobuf:"bytes,2,opt,name=request"`
-	Response *EmbeddedDashboardResponse `json:"response,omitempty" protobuf:"bytes,3,opt,name=response"`
+	Request  *EmbeddedDashboardRequest  `json:"request,omitempty" protobuf:"bytes,1,opt,name=request"`
+	Response *EmbeddedDashboardResponse `json:"response,omitempty" protobuf:"bytes,2,opt,name=response"`
 }

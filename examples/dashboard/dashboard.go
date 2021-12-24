@@ -26,11 +26,13 @@ import (
 
 	api "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
 	openvizclient "go.openviz.dev/grafana-tools/client/clientset/versioned/typed/openviz/v1alpha1"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
 	"k8s.io/client-go/util/retry"
+	kmapi "kmodules.xyz/client-go/api/v1"
 )
 
 var kubeconfig *string
@@ -56,7 +58,7 @@ func CreateGrafanaDashboard(model runtime.RawExtension) error {
 			Namespace: ns,
 		},
 		Spec: api.GrafanaDashboardSpec{
-			Grafana: &api.TargetRef{
+			GrafanaRef: &kmapi.ObjectReference{
 				Name: "grafana-apb",
 			},
 			Model:     &model,
