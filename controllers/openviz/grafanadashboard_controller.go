@@ -18,14 +18,18 @@ package openviz
 
 import (
 	"context"
-	"fmt"
-
-	"k8s.io/apimachinery/pkg/runtime"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	openvizv1alpha1 "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/klog/v2"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/log"
+)
+
+const (
+	GrafanaDashboardFinalizer = "grafanadashboard.openviz.dev/finalizer"
 )
 
 // GrafanaDashboardReconciler reconciles a GrafanaDashboard object
@@ -50,8 +54,37 @@ type GrafanaDashboardReconciler struct {
 func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
-	// your logic here
-	fmt.Println("got event for: ", req.NamespacedName)
+	key := req.NamespacedName
+	klog.Infof("Reconciling for: %s", key.String())
+
+	db := &openvizv1alpha1.GrafanaDashboard{}
+	if err := r.Client.Get(ctx, key, db); err != nil {
+		klog.Infof("Grafana Dashboard %q doesn't exist anymore", req.NamespacedName.String())
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	// Add or remove finalizer based on deletion timestamp
+	if db.ObjectMeta.DeletionTimestamp.IsZero() {
+		if !containsString(db.GetFinalizers(), GrafanaDashboardFinalizer) {
+			controllerutil.AddFinalizer(db, GrafanaDashboardFinalizer)
+			if err := r.Update(ctx, db); err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+	} else {
+		if containsString(db.GetFinalizers(), GrafanaDashboardFinalizer) {
+			if err := r.deleteExternalResources(db); err != nil {
+				return ctrl.Result{}, err
+			}
+
+			controllerutil.RemoveFinalizer(db, GrafanaDashboardFinalizer)
+			if err := r.Update(ctx, db); err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+
+		return ctrl.Result{}, nil
+	}
 
 	return ctrl.Result{}, nil
 }
@@ -61,4 +94,18 @@ func (r *GrafanaDashboardReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&openvizv1alpha1.GrafanaDashboard{}).
 		Complete(r)
+}
+
+func (r *GrafanaDashboardReconciler) deleteExternalResources(db *openvizv1alpha1.GrafanaDashboard) error {
+	return nil
+}
+
+// Helper functions to check a string is present from a slice of strings.
+func containsString(slice []string, s string) bool {
+	for _, item := range slice {
+		if item == s {
+			return true
+		}
+	}
+	return false
 }
