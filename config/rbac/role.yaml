@@ -1,0 +1,34 @@
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: manager-role
+rules:
+- apiGroups:
+  - openviz.appscode.com
+  resources:
+  - grafanadashboards
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - openviz.appscode.com
+  resources:
+  - grafanadashboards/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - openviz.appscode.com
+  resources:
+  - grafanadashboards/status
+  verbs:
+  - get
+  - patch
+  - update

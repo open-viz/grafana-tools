@@ -1,0 +1,17 @@
+domain: openviz.dev
+layout:
+- go.kubebuilder.io/v3
+multigroup: true
+projectName: grafana-tools
+repo: go.openviz.dev/grafana-tools
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: openviz.dev
+  group: openviz.dev
+  kind: GrafanaDashboard
+  path: go.openviz.dev/grafana-tools/apis/openviz/v1alpha1
+  version: v1alpha1
+version: "3"
