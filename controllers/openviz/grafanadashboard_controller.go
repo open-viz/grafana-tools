@@ -22,6 +22,8 @@ import (
 	"errors"
 	"fmt"
 
+	meta_util "kmodules.xyz/client-go/meta"
+
 	sdk "go.openviz.dev/grafana-sdk"
 	openvizv1alpha1 "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
 	"gomodules.xyz/pointer"
@@ -29,7 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/klog/v2"
 	kmapi "kmodules.xyz/client-go/api/v1"
-	meta_util "kmodules.xyz/client-go/meta"
+	kmc "kmodules.xyz/client-go/client"
 	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -70,28 +72,63 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	// Add or remove finalizer based on deletion timestamp
 	if db.ObjectMeta.DeletionTimestamp.IsZero() {
 		if !containsString(db.GetFinalizers(), GrafanaDashboardFinalizer) {
-			controllerutil.AddFinalizer(db, GrafanaDashboardFinalizer)
-			if err := r.Update(ctx, db); err != nil {
+			_, _, err := kmc.CreateOrPatch(r.Client, db, func(obj client.Object, createOp bool) client.Object {
+				controllerutil.AddFinalizer(obj, GrafanaDashboardFinalizer)
+				return obj
+			})
+			if err != nil {
 				return ctrl.Result{}, err
 			}
+
+			return ctrl.Result{}, nil
 		}
 	} else {
 		if containsString(db.GetFinalizers(), GrafanaDashboardFinalizer) {
+			_, _, err := kmc.PatchStatus(r.Client, db, func(obj client.Object, createOp bool) client.Object {
+				in := obj.(*openvizv1alpha1.GrafanaDashboard)
+				in.Status.Phase = openvizv1alpha1.GrafanaPhaseTerminating
+				return in
+			})
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+
 			if err := r.deleteExternalResources(ctx, db); err != nil {
 				return ctrl.Result{}, err
 			}
 
-			controllerutil.RemoveFinalizer(db, GrafanaDashboardFinalizer)
-			if err := r.Update(ctx, db); err != nil {
+			_, _, err = kmc.CreateOrPatch(r.Client, db, func(obj client.Object, createOp bool) client.Object {
+				controllerutil.RemoveFinalizer(obj, GrafanaDashboardFinalizer)
+				return obj
+			})
+			if err != nil {
 				return ctrl.Result{}, err
 			}
 		}
 
 		return ctrl.Result{}, nil
 	}
+
 	if !meta_util.MustAlreadyReconciled(db) {
+		_, _, err := kmc.PatchStatus(r.Client, db, func(obj client.Object, createOp bool) client.Object {
+			in := obj.(*openvizv1alpha1.GrafanaDashboard)
+			in.Status.Phase = openvizv1alpha1.GrafanaPhaseProcessing
+			return in
+		})
+		if err != nil {
+			return ctrl.Result{}, err
+		}
 		klog.Infof("Reconciling for: %s", key.String())
+
 		if err := r.setDashboard(ctx, db); err != nil {
+			_, _, stsErr := kmc.PatchStatus(r.Client, db, func(obj client.Object, createOp bool) client.Object {
+				in := obj.(*openvizv1alpha1.GrafanaDashboard)
+				in.Status.Phase = openvizv1alpha1.GrafanaPhaseFailed
+				return in
+			})
+			if stsErr != nil {
+				return ctrl.Result{}, stsErr
+			}
 			return ctrl.Result{}, err
 		}
 	}
@@ -107,7 +144,7 @@ func (r *GrafanaDashboardReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 func (r *GrafanaDashboardReconciler) deleteExternalResources(ctx context.Context, db *openvizv1alpha1.GrafanaDashboard) error {
-	if db.Status.Dashboard.UID != nil {
+	if db.Status.Dashboard != nil && db.Status.Dashboard.UID != nil {
 		gc, err := r.getGrafanaClient(ctx, db.Spec.GrafanaRef)
 		if err != nil {
 			return err
@@ -168,22 +205,22 @@ func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, db *openv
 		return err
 	}
 
-	db.Status.Dashboard = &openvizv1alpha1.GrafanaDashboardReference{
-		ID:      pointer.Int64P(int64(pointer.Int(resp.ID))),
-		UID:     resp.UID,
-		Slug:    resp.Slug,
-		URL:     resp.URL,
-		OrgID:   pointer.Int64P(int64(pointer.Int(orgId.ID))),
-		Version: pointer.Int64P(int64(pointer.Int(resp.Version))),
-	}
-	db.Status.ObservedGeneration = db.Generation
-
-	if err := r.Client.Status().Update(ctx, db); err != nil {
-		return err
-	}
-
-	if err := r.Client.Update(ctx, db); err != nil {
-		return err
+	_, _, err = kmc.PatchStatus(r.Client, db, func(obj client.Object, createOp bool) client.Object {
+		in := obj.(*openvizv1alpha1.GrafanaDashboard)
+		in.Status.Dashboard = &openvizv1alpha1.GrafanaDashboardReference{
+			ID:      pointer.Int64P(int64(pointer.Int(resp.ID))),
+			UID:     resp.UID,
+			Slug:    resp.Slug,
+			URL:     resp.URL,
+			OrgID:   pointer.Int64P(int64(pointer.Int(orgId.ID))),
+			Version: pointer.Int64P(int64(pointer.Int(resp.Version))),
+		}
+		in.Status.Phase = openvizv1alpha1.GrafanaPhaseCurrent
+		in.Status.ObservedGeneration = in.Generation
+		return in
+	})
+	if err != nil {
+		return nil
 	}
 	return nil
 }
