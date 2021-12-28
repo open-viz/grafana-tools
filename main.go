@@ -33,6 +33,7 @@ import (
 
 	openvizv1alpha1 "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
 	openvizcontrollers "go.openviz.dev/grafana-tools/controllers/openviz"
+	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -43,7 +44,7 @@ var (
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
-
+	utilruntime.Must(appcatalog.AddToScheme(scheme))
 	utilruntime.Must(openvizv1alpha1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }

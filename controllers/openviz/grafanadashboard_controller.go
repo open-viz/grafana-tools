@@ -18,6 +18,7 @@ package openviz
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 
 	sdk "go.openviz.dev/grafana-sdk"
@@ -27,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/klog/v2"
 	kmapi "kmodules.xyz/client-go/api/v1"
+	meta_util "kmodules.xyz/client-go/meta"
 	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -57,7 +59,6 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	_ = log.FromContext(ctx)
 
 	key := req.NamespacedName
-	klog.Infof("Reconciling for: %s", key.String())
 
 	db := &openvizv1alpha1.GrafanaDashboard{}
 	if err := r.Client.Get(ctx, key, db); err != nil {
@@ -75,7 +76,7 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		}
 	} else {
 		if containsString(db.GetFinalizers(), GrafanaDashboardFinalizer) {
-			if err := r.deleteExternalResources(db); err != nil {
+			if err := r.deleteExternalResources(ctx, db); err != nil {
 				return ctrl.Result{}, err
 			}
 
@@ -87,9 +88,11 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 		return ctrl.Result{}, nil
 	}
-
-	if err := r.setDashboard(ctx, db); err != nil {
-		return ctrl.Result{}, err
+	if !meta_util.MustAlreadyReconciled(db) {
+		klog.Infof("Reconciling for: %s", key.String())
+		if err := r.setDashboard(ctx, db); err != nil {
+			return ctrl.Result{}, err
+		}
 	}
 
 	return ctrl.Result{}, nil
@@ -102,15 +105,29 @@ func (r *GrafanaDashboardReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *GrafanaDashboardReconciler) deleteExternalResources(db *openvizv1alpha1.GrafanaDashboard) error {
+func (r *GrafanaDashboardReconciler) deleteExternalResources(ctx context.Context, db *openvizv1alpha1.GrafanaDashboard) error {
+	if db.Status.Dashboard.UID != nil {
+		gc, err := r.getGrafanaClient(ctx, db.Spec.GrafanaRef)
+		if err != nil {
+			return err
+		}
+		if _, err = gc.DeleteDashboardByUID(ctx, *db.Status.Dashboard.UID); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
 func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, db *openvizv1alpha1.GrafanaDashboard) error {
-	// collect grafana url and auth info from app binding
-	if db.Spec.GrafanaRef == nil {
-		return errors.New("grafana app binding info is missing")
+	if db.Status.Dashboard != nil {
+		model, err := addDashboardID(db.Spec.Model.Raw, *db.Status.Dashboard.ID, *db.Status.Dashboard.UID)
+		if err != nil {
+			return err
+		}
+		db.Spec.Model = &runtime.RawExtension{Raw: model}
 	}
+
+	// collect grafana url and auth info from app binding
 	gc, err := r.getGrafanaClient(ctx, db.Spec.GrafanaRef)
 	if err != nil {
 		return err
@@ -137,14 +154,22 @@ func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, db *openv
 		OrgID:   pointer.Int64P(int64(pointer.Int(orgId.ID))),
 		Version: pointer.Int64P(int64(pointer.Int(resp.Version))),
 	}
+	db.Status.ObservedGeneration = db.Generation
 
 	if err := r.Client.Status().Update(ctx, db); err != nil {
+		return err
+	}
+
+	if err := r.Client.Update(ctx, db); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (r *GrafanaDashboardReconciler) getGrafanaClient(ctx context.Context, ref *kmapi.ObjectReference) (*sdk.Client, error) {
+	if ref == nil {
+		return nil, errors.New("grafana app binding ref is not provided")
+	}
 	ab := &appcatalog.AppBinding{}
 	if err := r.Get(ctx, client.ObjectKey{Namespace: ref.Namespace, Name: ref.Name}, ab); err != nil {
 		return nil, err
@@ -176,4 +201,16 @@ func containsString(slice []string, s string) bool {
 		}
 	}
 	return false
+}
+
+// Helper function to add dashboard id of the created dashboard in dashboard model json while updating
+func addDashboardID(model []byte, id int64, uid string) ([]byte, error) {
+	val := make(map[string]interface{})
+	err := json.Unmarshal(model, &val)
+	if err != nil {
+		return nil, err
+	}
+	val["id"] = id
+	val["uid"] = uid
+	return json.Marshal(val)
 }

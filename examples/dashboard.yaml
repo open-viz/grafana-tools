@@ -6,6 +6,7 @@ metadata:
 spec:
   grafanaRef:
     name: grafana-apb
+    namespace: demo
   model:
     annotations:
       list:
