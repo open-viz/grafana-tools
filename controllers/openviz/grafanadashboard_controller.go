@@ -226,26 +226,36 @@ func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, db *openv
 }
 
 func (r *GrafanaDashboardReconciler) getAppBinding(ctx context.Context, ref *kmapi.ObjectReference) (*appcatalog.AppBinding, error) {
-	if ref == nil {
-		return nil, errors.New("grafana app binding ref is not provided")
-	}
 	ab := &appcatalog.AppBinding{}
-	if err := r.Get(ctx, client.ObjectKey{Namespace: ref.Namespace, Name: ref.Name}, ab); err != nil {
-		return nil, err
+	if ref != nil {
+		if err := r.Get(ctx, client.ObjectKey{Namespace: ref.Namespace, Name: ref.Name}, ab); err != nil {
+			return nil, err
+		}
+	} else {
+		abList := &appcatalog.AppBindingList{}
+		opts := &client.ListOptions{Namespace: ""}
+		selector := client.MatchingLabels{
+			openvizv1alpha1.DefaultGrafanaKey: "true",
+		}
+		selector.ApplyToList(opts)
+		if err := r.List(ctx, abList, opts); err != nil {
+			return nil, err
+		}
+		if len(abList.Items) != 1 {
+			return nil, fmt.Errorf("expected one AppBinding with labelKey %q but got %v", openvizv1alpha1.DefaultGrafanaKey, len(abList.Items))
+		}
+		ab = &abList.Items[0]
 	}
 	return ab, nil
 }
 
 func (r *GrafanaDashboardReconciler) getGrafanaClient(ctx context.Context, ref *kmapi.ObjectReference) (*sdk.Client, error) {
-	if ref == nil {
-		return nil, errors.New("grafana app binding ref is not provided")
-	}
-	ab := &appcatalog.AppBinding{}
-	if err := r.Get(ctx, client.ObjectKey{Namespace: ref.Namespace, Name: ref.Name}, ab); err != nil {
+	ab, err := r.getAppBinding(ctx, ref)
+	if err != nil {
 		return nil, err
 	}
 	auth := &core.Secret{}
-	if err := r.Get(ctx, client.ObjectKey{Namespace: ref.Namespace, Name: ab.Spec.Secret.Name}, auth); err != nil {
+	if err := r.Get(ctx, client.ObjectKey{Namespace: ab.Namespace, Name: ab.Spec.Secret.Name}, auth); err != nil {
 		return nil, err
 	}
 	gURL, err := ab.URL()
