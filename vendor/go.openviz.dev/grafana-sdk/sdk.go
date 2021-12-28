@@ -173,6 +173,9 @@ func (c *Client) GetCurrentOrg(ctx context.Context) (*Org, error) {
 	if err != nil {
 		return nil, err
 	}
+	if resp.StatusCode() != http.StatusOK {
+		return nil, fmt.Errorf("failed to get current org, Status Code: %v", resp.StatusCode())
+	}
 	org := &Org{}
 	err = json.Unmarshal(resp.Body(), org)
 	if err != nil {
