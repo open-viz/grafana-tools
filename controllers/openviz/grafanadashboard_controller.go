@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	sdk "go.openviz.dev/grafana-sdk"
 	openvizv1alpha1 "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
@@ -126,6 +127,27 @@ func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, db *openv
 		}
 		db.Spec.Model = &runtime.RawExtension{Raw: model}
 	}
+	ab, err := r.getAppBinding(ctx, db.Spec.GrafanaRef)
+	if err != nil {
+		return err
+	}
+
+	if db.Spec.Templatize != nil && db.Spec.Templatize.Datasource {
+		dsConfig := &openvizv1alpha1.GrafanaConfiguration{}
+		if ab.Spec.Parameters != nil {
+			err := json.Unmarshal(ab.Spec.Parameters.Raw, &dsConfig)
+			if err != nil {
+				return fmt.Errorf("failed to unmarshal app binding parameters, reason: %v", err)
+			}
+		} else {
+			return errors.New("failed to templatize dashboard, reason: dashboard parameter is not provided in the app binding")
+		}
+		model, err := replaceDatasource(db.Spec.Model.Raw, dsConfig.Datasource)
+		if err != nil {
+			return err
+		}
+		db.Spec.Model = &runtime.RawExtension{Raw: model}
+	}
 
 	// collect grafana url and auth info from app binding
 	gc, err := r.getGrafanaClient(ctx, db.Spec.GrafanaRef)
@@ -164,6 +186,17 @@ func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, db *openv
 		return err
 	}
 	return nil
+}
+
+func (r *GrafanaDashboardReconciler) getAppBinding(ctx context.Context, ref *kmapi.ObjectReference) (*appcatalog.AppBinding, error) {
+	if ref == nil {
+		return nil, errors.New("grafana app binding ref is not provided")
+	}
+	ab := &appcatalog.AppBinding{}
+	if err := r.Get(ctx, client.ObjectKey{Namespace: ref.Namespace, Name: ref.Name}, ab); err != nil {
+		return nil, err
+	}
+	return ab, nil
 }
 
 func (r *GrafanaDashboardReconciler) getGrafanaClient(ctx context.Context, ref *kmapi.ObjectReference) (*sdk.Client, error) {
@@ -212,5 +245,56 @@ func addDashboardID(model []byte, id int64, uid string) ([]byte, error) {
 	}
 	val["id"] = id
 	val["uid"] = uid
+	return json.Marshal(val)
+}
+
+// Helper function to replace datasource of the given dashboard model
+func replaceDatasource(model []byte, ds string) ([]byte, error) {
+	val := make(map[string]interface{})
+	err := json.Unmarshal(model, &val)
+	if err != nil {
+		return nil, err
+	}
+	panels, ok := val["panels"].([]interface{})
+	if !ok {
+		return model, nil
+	}
+	var updatedPanels []interface{}
+	for _, p := range panels {
+		panel, ok := p.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		panel["datasource"] = ds
+		updatedPanels = append(updatedPanels, panel)
+	}
+	val["panels"] = updatedPanels
+
+	templateList, ok := val["templating"].(map[string]interface{})
+	if !ok {
+		return json.Marshal(val)
+	}
+	templateVars, ok := templateList["list"].([]interface{})
+	if !ok {
+		return json.Marshal(val)
+	}
+
+	var newVars []interface{}
+	for _, v := range templateVars {
+		vr, ok := v.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		ty, ok := vr["type"].(string)
+		if !ok {
+			continue
+		}
+		vr["datasource"] = ds
+		if ty != "datasource" {
+			newVars = append(newVars, vr)
+		}
+	}
+	templateList["list"] = newVars
+
 	return json.Marshal(val)
 }
