@@ -20,6 +20,11 @@ import (
 	"context"
 	"fmt"
 
+	core "k8s.io/api/core/v1"
+	kmapi "kmodules.xyz/client-go/api/v1"
+
+	"k8s.io/client-go/tools/record"
+
 	sdk "go.openviz.dev/grafana-sdk"
 	openvizapi "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
 	"gomodules.xyz/pointer"
@@ -40,7 +45,8 @@ const (
 // GrafanaDatasourceReconciler reconciles a GrafanaDatasource object
 type GrafanaDatasourceReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	Scheme   *runtime.Scheme
+	Recorder record.EventRecorder
 }
 
 //+kubebuilder:rbac:groups=openviz.openviz.dev,resources=grafanadatasources,verbs=get;list;watch;create;update;patch;delete
@@ -107,6 +113,7 @@ func (r *GrafanaDatasourceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		_, _, err := kmc.PatchStatus(r.Client, ds, func(obj client.Object, createOp bool) client.Object {
 			in := obj.(*openvizapi.GrafanaDatasource)
 			in.Status.Phase = openvizapi.GrafanaPhaseProcessing
+			in.Status.Conditions = []kmapi.Condition{}
 			in.Status.ObservedGeneration = in.Generation
 			return in
 		})
@@ -116,15 +123,7 @@ func (r *GrafanaDatasourceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		klog.Infof("Reconciling for: %s", key.String())
 
 		if err := r.createOrUpdateDatasource(ctx, ds); err != nil {
-			_, _, stsErr := kmc.PatchStatus(r.Client, ds, func(obj client.Object, createOp bool) client.Object {
-				in := obj.(*openvizapi.GrafanaDatasource)
-				in.Status.Phase = openvizapi.GrafanaPhaseFailed
-				in.Status.Reason = err.Error()
-				return in
-			})
-			if stsErr != nil {
-				return ctrl.Result{}, stsErr
-			}
+			r.handleFailureEvent(ctx, ds, err.Error())
 			return ctrl.Result{}, err
 		}
 	}
@@ -222,4 +221,29 @@ func (r *GrafanaDatasourceReconciler) updateDatasource(ctx context.Context, gc *
 		return fmt.Errorf("failed to update GrafanaDatasource phase to %q\n", openvizapi.GrafanaPhaseCurrent)
 	}
 	return nil
+}
+
+func (r *GrafanaDatasourceReconciler) handleFailureEvent(ctx context.Context, ds *openvizapi.GrafanaDatasource, reason string) {
+	r.Recorder.Eventf(
+		ds,
+		core.EventTypeWarning,
+		reason,
+		`Failed to complete operation for GrafanaDatasource: "%v", Reason: "%v"`,
+		ds.Name,
+		reason)
+	_, _, err := kmc.PatchStatus(r.Client, ds, func(obj client.Object, createOp bool) client.Object {
+		in := obj.(*openvizapi.GrafanaDatasource)
+		in.Status.Phase = openvizapi.GrafanaPhaseFailed
+		in.Status.Reason = reason
+		in.Status.Conditions = kmapi.SetCondition(in.Status.Conditions, kmapi.Condition{
+			Type:    kmapi.ConditionFailed,
+			Status:  core.ConditionTrue,
+			Reason:  reason,
+			Message: reason,
+		})
+		return in
+	})
+	if err != nil {
+		r.Recorder.Eventf(ds, core.EventTypeWarning, "failed to update status", err.Error())
+	}
 }
