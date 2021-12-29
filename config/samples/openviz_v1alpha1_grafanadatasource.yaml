@@ -1,0 +1,7 @@
+apiVersion: openviz.openviz.dev/v1alpha1
+kind: GrafanaDatasource
+metadata:
+  name: grafanadatasource-sample
+spec:
+  # Add fields here
+  foo: bar

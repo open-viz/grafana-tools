@@ -31,9 +31,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
+
 	openvizv1alpha1 "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
 	openvizcontrollers "go.openviz.dev/grafana-tools/controllers/openviz"
-	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -84,6 +85,13 @@ func main() {
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "GrafanaDashboard")
+		os.Exit(1)
+	}
+	if err = (&openvizcontrollers.GrafanaDatasourceReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "GrafanaDatasource")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder

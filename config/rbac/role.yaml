@@ -32,3 +32,29 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - openviz.openviz.dev
+  resources:
+  - grafanadatasources
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - openviz.openviz.dev
+  resources:
+  - grafanadatasources/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - openviz.openviz.dev
+  resources:
+  - grafanadatasources/status
+  verbs:
+  - get
+  - patch
+  - update
