@@ -22,12 +22,12 @@ var _ = Describe("GrafanaDashboard Controller", func() {
 	const (
 		GrafanaDashboardName = "test-db"
 		CommonNS             = "default"
-		SecretName           = "grafana-auth"
-		AppBindingName       = "grafana-ab"
+		SecretName           = "grafana-auth-db"
+		AppBindingName       = "grafana-ab-db"
 		GrafanaAPIKey        = "admin:prom-operator"
 
-		timeout  = time.Minute * 5
-		duration = time.Minute * 1
+		timeout  = time.Minute
+		duration = time.Minute
 		interval = time.Second
 	)
 
@@ -74,7 +74,7 @@ var _ = Describe("GrafanaDashboard Controller", func() {
 			}
 			Expect(k8sClient.Create(ctx, ab)).Should(Succeed())
 		})
-		It("Should update GrafanaDashboard Status to Processing when new GrafanaDashboard are created", func() {
+		It("Should update GrafanaDashboard Status to Current when new GrafanaDashboard are created", func() {
 			By("By creating a new GrafanaDashboard")
 			ctx := context.Background()
 			model, err := ioutil.ReadFile("../../testdata/dashboard_model.json")

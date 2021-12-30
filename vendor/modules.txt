@@ -126,10 +126,6 @@ github.com/json-iterator/go
 github.com/mailru/easyjson/buffer
 github.com/mailru/easyjson/jlexer
 github.com/mailru/easyjson/jwriter
-# github.com/mattn/go-colorable v0.1.9
-## explicit; go 1.13
-# github.com/mattn/go-isatty v0.0.14
-## explicit; go 1.12
 # github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369
 ## explicit; go 1.9
 github.com/matttproud/golang_protobuf_extensions/pbutil
@@ -296,9 +292,15 @@ golang.org/x/time/rate
 # gomodules.xyz/jsonpatch/v2 v2.2.0
 ## explicit; go 1.12
 gomodules.xyz/jsonpatch/v2
+# gomodules.xyz/password-generator v0.2.7
+## explicit; go 1.15
+gomodules.xyz/password-generator
 # gomodules.xyz/pointer v0.1.0
 ## explicit; go 1.15
 gomodules.xyz/pointer
+# gomodules.xyz/x v0.0.10
+## explicit; go 1.17
+gomodules.xyz/x/crypto/rand
 # google.golang.org/appengine v1.6.7
 ## explicit; go 1.11
 google.golang.org/appengine

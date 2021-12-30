@@ -20,6 +20,7 @@ import (
 	"context"
 	"path/filepath"
 	"testing"
+	"time"
 
 	ctrl "sigs.k8s.io/controller-runtime"
 
@@ -86,7 +87,14 @@ var _ = BeforeSuite(func() {
 	err = (&GrafanaDashboardReconciler{
 		Client:   k8sManager.GetClient(),
 		Scheme:   k8sManager.GetScheme(),
-		Recorder: k8sManager.GetEventRecorderFor("grafana-dashboard-controller"),
+		Recorder: k8sManager.GetEventRecorderFor("grafana-operator"),
+	}).SetupWithManager(k8sManager)
+	Expect(err).ToNot(HaveOccurred())
+
+	err = (&GrafanaDatasourceReconciler{
+		Client:   k8sManager.GetClient(),
+		Scheme:   k8sManager.GetScheme(),
+		Recorder: k8sManager.GetEventRecorderFor("grafana-operator"),
 	}).SetupWithManager(k8sManager)
 	Expect(err).ToNot(HaveOccurred())
 
@@ -100,6 +108,8 @@ var _ = BeforeSuite(func() {
 
 var _ = AfterSuite(func() {
 	By("tearing down the test environment")
-	err := testEnv.Stop()
-	Expect(err).NotTo(HaveOccurred())
+	Eventually(func() bool {
+		err := testEnv.Stop()
+		return err == nil
+	}, time.Minute)
 })
