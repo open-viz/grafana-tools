@@ -27,6 +27,7 @@ import (
 	"strings"
 
 	"github.com/go-resty/resty/v2"
+	"gomodules.xyz/pointer"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -137,7 +138,7 @@ func (c *Client) SetDashboard(ctx context.Context, db *GrafanaDashboard) (*Grafa
 	}
 
 	if resp.StatusCode() != http.StatusOK {
-		return gResp, fmt.Errorf("failed to set dashboard, reason: %v", gResp.Message)
+		return gResp, fmt.Errorf("failed to set dashboard, reason: %v", pointer.String(gResp.Message))
 	}
 
 	return gResp, nil
@@ -158,7 +159,7 @@ func (c *Client) DeleteDashboardByUID(ctx context.Context, uid string) (*Grafana
 	}
 
 	if resp.StatusCode() != http.StatusOK {
-		return gResp, fmt.Errorf("failed to delete dashboard, reason: %v", gResp.Message)
+		return gResp, fmt.Errorf("failed to delete dashboard, reason: %v", pointer.String(gResp.Message))
 	}
 
 	return gResp, nil
@@ -243,7 +244,7 @@ func (c *Client) CreateDatasource(ctx context.Context, ds *Datasource) (*Grafana
 	}
 
 	if resp.StatusCode() != http.StatusOK {
-		return gResp, fmt.Errorf("failed to create datasource, reason: %v", gResp.Message)
+		return gResp, fmt.Errorf("failed to create datasource, reason: %v", pointer.String(gResp.Message))
 	}
 
 	return gResp, nil
@@ -263,7 +264,7 @@ func (c *Client) UpdateDatasource(ctx context.Context, ds Datasource) (*GrafanaR
 	}
 
 	if resp.StatusCode() != http.StatusOK {
-		return gResp, fmt.Errorf("failed to update datasource, reason: %v", gResp.Message)
+		return gResp, fmt.Errorf("failed to update datasource, reason: %v", pointer.String(gResp.Message))
 	}
 
 	return gResp, nil
@@ -283,7 +284,7 @@ func (c *Client) DeleteDatasource(ctx context.Context, id int) (*GrafanaResponse
 	}
 
 	if resp.StatusCode() != http.StatusOK {
-		return gResp, fmt.Errorf("failed to delete datasource, reason: %v", gResp.Message)
+		return gResp, fmt.Errorf("failed to delete datasource, reason: %v", pointer.String(gResp.Message))
 	}
 
 	return gResp, nil

@@ -4,17 +4,17 @@ import (
 	"context"
 	"time"
 
-	"gomodules.xyz/pointer"
-	core "k8s.io/api/core/v1"
-	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	openvizapi "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
+	"gomodules.xyz/pointer"
 	"gomodules.xyz/x/crypto/rand"
+	core "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	kmapi "kmodules.xyz/client-go/api/v1"
+	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 )
 
 var _ = Describe("GrafanaDatasource Controller", func() {
@@ -31,7 +31,7 @@ var _ = Describe("GrafanaDatasource Controller", func() {
 	)
 
 	Context("When updating GrafanaDatasource Status to Current", func() {
-		It("Should create the necessary auth", func() {
+		It("Should create GrafanaDatasource resource and check status to Current", func() {
 			ctx := context.Background()
 			By("Creating Grafana Secret")
 			auth := &core.Secret{
@@ -54,7 +54,7 @@ var _ = Describe("GrafanaDatasource Controller", func() {
 				},
 				Spec: appcatalog.AppBindingSpec{
 					ClientConfig: appcatalog.ClientConfig{
-						URL: pointer.StringP("http://localhost:3001/"),
+						URL: pointer.StringP("http://localhost:3000/"),
 					},
 					Secret: &core.LocalObjectReference{
 						Name: SecretName,
@@ -62,10 +62,8 @@ var _ = Describe("GrafanaDatasource Controller", func() {
 				},
 			}
 			Expect(k8sClient.Create(ctx, ab)).Should(Succeed())
-		})
-		It("Should update GrafanaDatasource Status to Current when new GrafanaDatasource are created", func() {
+
 			By("By creating a new GrafanaDatasource")
-			ctx := context.Background()
 			ds := &openvizapi.GrafanaDatasource{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      GrafanaDatasourceName,
@@ -89,7 +87,6 @@ var _ = Describe("GrafanaDatasource Controller", func() {
 
 			dsKey := types.NamespacedName{Namespace: CommonNS, Name: GrafanaDatasourceName}
 			createdDS := &openvizapi.GrafanaDatasource{}
-
 			Eventually(func() bool {
 				err := k8sClient.Get(ctx, dsKey, createdDS)
 				if err != nil {
@@ -98,6 +95,13 @@ var _ = Describe("GrafanaDatasource Controller", func() {
 				return createdDS.Status.Phase == openvizapi.GrafanaPhaseCurrent
 			}, timeout, interval).Should(BeTrue())
 
+			By("Deleting the GrafanaDatasource resource")
+			Expect(k8sClient.Delete(ctx, createdDS)).Should(Succeed())
+			Eventually(func() bool {
+				err := k8sClient.Get(ctx, dsKey, createdDS)
+
+				return apierrors.IsNotFound(err)
+			}, timeout, interval).Should(BeTrue())
 		})
 	})
 })

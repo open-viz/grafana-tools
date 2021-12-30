@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"time"
 
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	openvizapi "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
@@ -32,7 +34,8 @@ var _ = Describe("GrafanaDashboard Controller", func() {
 	)
 
 	Context("When updating GrafanaDashboard Status to Current", func() {
-		It("Should create the necessary auth", func() {
+		It("Should create GrafanaDashboard resource and check status to Current", func() {
+			By("Creating the necessary auth")
 			ctx := context.Background()
 			By("Creating Grafana Secret")
 			auth := &core.Secret{
@@ -64,7 +67,7 @@ var _ = Describe("GrafanaDashboard Controller", func() {
 				},
 				Spec: appcatalog.AppBindingSpec{
 					ClientConfig: appcatalog.ClientConfig{
-						URL: pointer.StringP("http://localhost:3001/"),
+						URL: pointer.StringP("http://localhost:3000/"),
 					},
 					Secret: &core.LocalObjectReference{
 						Name: SecretName,
@@ -73,10 +76,8 @@ var _ = Describe("GrafanaDashboard Controller", func() {
 				},
 			}
 			Expect(k8sClient.Create(ctx, ab)).Should(Succeed())
-		})
-		It("Should update GrafanaDashboard Status to Current when new GrafanaDashboard are created", func() {
+
 			By("By creating a new GrafanaDashboard")
-			ctx := context.Background()
 			model, err := ioutil.ReadFile("../../testdata/dashboard_model.json")
 			Expect(err).NotTo(HaveOccurred())
 			db := &openvizapi.GrafanaDashboard{
@@ -101,7 +102,6 @@ var _ = Describe("GrafanaDashboard Controller", func() {
 
 			dbKey := types.NamespacedName{Namespace: CommonNS, Name: GrafanaDashboardName}
 			createdDB := &openvizapi.GrafanaDashboard{}
-
 			Eventually(func() bool {
 				err := k8sClient.Get(ctx, dbKey, createdDB)
 				if err != nil {
@@ -110,6 +110,13 @@ var _ = Describe("GrafanaDashboard Controller", func() {
 				return createdDB.Status.Phase == openvizapi.GrafanaPhaseCurrent
 			}, timeout, interval).Should(BeTrue())
 
+			By("Deleting the GrafanaDashboard resource")
+			Expect(k8sClient.Delete(ctx, createdDB)).Should(Succeed())
+			Eventually(func() bool {
+				err := k8sClient.Get(ctx, dbKey, createdDB)
+
+				return apierrors.IsNotFound(err)
+			}, timeout, interval).Should(BeTrue())
 		})
 	})
 })

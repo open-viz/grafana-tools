@@ -212,7 +212,7 @@ github.com/yudai/gojsondiff/formatter
 # github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82
 ## explicit
 github.com/yudai/golcs
-# go.openviz.dev/grafana-sdk v0.0.2-0.20211227124300-6e289b62a3d0
+# go.openviz.dev/grafana-sdk v0.0.2-0.20211230105712-cb2296c5a379
 ## explicit; go 1.17
 go.openviz.dev/grafana-sdk
 # go.uber.org/atomic v1.7.0

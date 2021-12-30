@@ -22,7 +22,6 @@
   "editable": true,
   "gnetId": 9628,
   "graphTooltip": 0,
-  "id": 27,
   "iteration": 1638177476998,
   "links": [],
   "panels": [
@@ -2884,6 +2883,5 @@
   },
   "timezone": "",
   "title": "KubeDB / Postgres / Summary",
-  "uid": "VnOgk2Hnk",
   "version": 2
 }
