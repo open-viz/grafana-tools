@@ -17,10 +17,13 @@ limitations under the License.
 package e2e_test
 
 import (
+	"log"
 	"testing"
 	"time"
 
-	"go.openviz.dev/grafana-tools/pkg/operator/controller"
+	ctrl "sigs.k8s.io/controller-runtime"
+
+	"go.openviz.dev/grafana-tools/pkg/operator/cmds/server"
 	"go.openviz.dev/grafana-tools/test/e2e/framework"
 
 	. "github.com/onsi/ginkgo"
@@ -56,12 +59,17 @@ var _ = BeforeSuite(func() {
 	clientConfig.Burst = 100
 	clientConfig.QPS = 100
 
-	ctrlConfig := controller.NewConfig(clientConfig)
-	err = options.ApplyTo(ctrlConfig)
+	mgr, err := server.GetManager()
 	Expect(err).NotTo(HaveOccurred())
 
 	// Framework
-	root = framework.New(clientConfig, ctrlConfig.KubeClient, ctrlConfig.ExtClient, ctrlConfig.AppCatalogClient)
+	root = framework.New(mgr.GetConfig(), mgr.GetClient())
+
+	go func() {
+		if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
+			log.Printf("error from manager: %v", err)
+		}
+	}()
 
 	By("Creating namespace " + root.Namespace())
 	err = root.CreateNamespace()

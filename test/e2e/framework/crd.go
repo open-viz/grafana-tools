@@ -17,13 +17,9 @@ limitations under the License.
 package framework
 
 import (
-	"context"
-	"fmt"
 	"time"
 
 	. "github.com/onsi/gomega"
-	core "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func (f *Framework) EventuallyCRD() GomegaAsyncAssertion {
@@ -35,9 +31,9 @@ func (f *Framework) EventuallyCRD() GomegaAsyncAssertion {
 			}*/
 
 			// Check GrafanaDashboard CRD
-			if _, err := f.extClient.OpenvizV1alpha1().GrafanaDashboards(core.NamespaceAll).List(context.TODO(), metav1.ListOptions{}); err != nil {
-				return fmt.Errorf("CRD GrafanaDashboard is not ready. Reason: %v", err)
-			}
+			//if _, err := f.extClient.OpenvizV1alpha1().GrafanaDashboards(core.NamespaceAll).List(context.TODO(), metav1.ListOptions{}); err != nil {
+			//	return fmt.Errorf("CRD GrafanaDashboard is not ready. Reason: %v", err)
+			//}
 
 			// Check GrafanaDashboardTemplate CRD
 			/*if _, err := f.extClient.OpenvizV1alpha1().GrafanaDashboardTemplates(core.NamespaceAll).List(metav1.ListOptions{}); err != nil {

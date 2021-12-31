@@ -24,7 +24,6 @@ import (
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	meta_util "kmodules.xyz/client-go/meta"
 )
 
 func (f *Framework) GrafanaDeploymentName() string {
@@ -86,12 +85,16 @@ func (f *Framework) CreateGrafanaDeployment() error {
 		},
 	}
 
-	_, err := f.kubeClient.AppsV1().Deployments(obj.Namespace).Create(context.TODO(), obj, metav1.CreateOptions{})
-	return err
+	return f.cc.Create(context.TODO(), obj)
 }
 
 func (f *Framework) DeleteGrafanaDeployment() error {
-	return f.kubeClient.AppsV1().Deployments(f.namespace).Delete(context.TODO(), f.name, meta_util.DeleteInForeground())
+	return f.cc.Delete(context.TODO(), &apps.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      f.name,
+			Namespace: f.namespace,
+		},
+	})
 }
 
 func (f *Framework) GrafanaServiceName() string {
@@ -118,10 +121,9 @@ func (f *Framework) CreateGrafanaService() error {
 		},
 	}
 
-	_, err := f.kubeClient.CoreV1().Services(obj.Namespace).Create(context.TODO(), obj, metav1.CreateOptions{})
-	return err
+	return f.cc.Create(context.TODO(), obj)
 }
 
 func (f *Framework) DeleteGrafanaService() error {
-	return f.kubeClient.CoreV1().Services(f.namespace).Delete(context.TODO(), f.name, meta_util.DeleteInForeground())
+	return f.cc.Delete(context.TODO(), &core.Service{ObjectMeta: metav1.ObjectMeta{Name: f.name, Namespace: f.namespace}})
 }

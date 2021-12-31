@@ -35,9 +35,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
-
-const defaultEtcdPathPrefix = "/registry/openviz.dev"
 
 type GrafanaDashboardOptions struct {
 	//RecommendedOptions *genericoptions.RecommendedOptions
@@ -106,8 +105,11 @@ func (o *GrafanaDashboardOptions) Complete() error {
 //}
 
 var (
-	scheme   = runtime.NewScheme()
-	setupLog = ctrl.Log.WithName("setup")
+	scheme               = runtime.NewScheme()
+	setupLog             = ctrl.Log.WithName("setup")
+	metricsAddr          string
+	enableLeaderElection bool
+	probeAddr            string
 )
 
 func init() {
@@ -115,25 +117,15 @@ func init() {
 	utilruntime.Must(appcatalog.AddToScheme(scheme))
 	utilruntime.Must(openvizv1alpha1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
-}
 
-func (o GrafanaDashboardOptions) Run(stopCh <-chan struct{}) error {
-	var metricsAddr string
-	var enableLeaderElection bool
-	var probeAddr string
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
-	opts := zap.Options{
-		Development: true,
-	}
-	opts.BindFlags(flag.CommandLine)
-	flag.Parse()
+}
 
-	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
-
+func GetManager() (manager.Manager, error) {
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
 		MetricsBindAddress:     metricsAddr,
@@ -142,6 +134,22 @@ func (o GrafanaDashboardOptions) Run(stopCh <-chan struct{}) error {
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "d2899bc8.appscode.com",
 	})
+	if err != nil {
+		return nil, err
+	}
+	return mgr, nil
+}
+
+func (o GrafanaDashboardOptions) Run(stopCh <-chan struct{}) error {
+	opts := zap.Options{
+		Development: true,
+	}
+	opts.BindFlags(flag.CommandLine)
+	flag.Parse()
+
+	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
+
+	mgr, err := GetManager()
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
 		os.Exit(1)

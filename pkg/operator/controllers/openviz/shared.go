@@ -19,43 +19,17 @@ package openviz
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	sdk "go.openviz.dev/grafana-sdk"
-	openvizv1alpha1 "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
+	openvizapi "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
 
 	core "k8s.io/api/core/v1"
 	kmapi "kmodules.xyz/client-go/api/v1"
-	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func getAppBinding(ctx context.Context, cc client.Client, ref *kmapi.ObjectReference) (*appcatalog.AppBinding, error) {
-	ab := &appcatalog.AppBinding{}
-	if ref != nil {
-		if err := cc.Get(ctx, client.ObjectKey{Namespace: ref.Namespace, Name: ref.Name}, ab); err != nil {
-			return nil, err
-		}
-	} else {
-		abList := &appcatalog.AppBindingList{}
-		opts := &client.ListOptions{Namespace: ""}
-		selector := client.MatchingLabels{
-			openvizv1alpha1.DefaultGrafanaKey: "true",
-		}
-		selector.ApplyToList(opts)
-		if err := cc.List(ctx, abList, opts); err != nil {
-			return nil, err
-		}
-		if len(abList.Items) != 1 {
-			return nil, fmt.Errorf("expected one AppBinding with labelKey %q but got %v", openvizv1alpha1.DefaultGrafanaKey, len(abList.Items))
-		}
-		ab = &abList.Items[0]
-	}
-	return ab, nil
-}
-
 func getGrafanaClient(ctx context.Context, cc client.Client, ref *kmapi.ObjectReference) (*sdk.Client, error) {
-	ab, err := getAppBinding(ctx, cc, ref)
+	ab, err := openvizapi.GetGrafana(ctx, cc, ref, core.NamespaceDefault)
 	if err != nil {
 		return nil, err
 	}

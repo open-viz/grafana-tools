@@ -125,7 +125,7 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		klog.Infof("Reconciling for: %s", key.String())
 
 		if err := r.setDashboard(ctx, db); err != nil {
-			r.handleFailureEvent(ctx, db, err.Error())
+			r.handleFailureEvent(db, err.Error())
 			return ctrl.Result{}, err
 		}
 	}
@@ -161,7 +161,7 @@ func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, db *openv
 		}
 		db.Spec.Model = &runtime.RawExtension{Raw: model}
 	}
-	ab, err := getAppBinding(ctx, r.Client, db.Spec.GrafanaRef)
+	ab, err := openvizapi.GetGrafana(ctx, r.Client, db.Spec.GrafanaRef, core.NamespaceDefault)
 	if err != nil {
 		return err
 	}
@@ -284,7 +284,7 @@ func replaceDatasource(model []byte, ds string) ([]byte, error) {
 	return json.Marshal(val)
 }
 
-func (r *GrafanaDashboardReconciler) handleFailureEvent(ctx context.Context, db *openvizapi.GrafanaDashboard, reason string) {
+func (r *GrafanaDashboardReconciler) handleFailureEvent(db *openvizapi.GrafanaDashboard, reason string) {
 	r.Recorder.Eventf(
 		db,
 		core.EventTypeWarning,

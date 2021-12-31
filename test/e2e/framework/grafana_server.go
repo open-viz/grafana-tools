@@ -20,36 +20,37 @@ import (
 	"context"
 	"time"
 
-	sdk "go.openviz.dev/grafana-sdk"
+	apps "k8s.io/api/apps/v1"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	sdk "go.openviz.dev/grafana-sdk"
 	core "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
+	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func (f *Framework) GetGrafanaClient() (*sdk.Client, error) {
-	appBinding, err := f.appcatClient.AppBindings(f.namespace).Get(context.TODO(), f.name, metav1.GetOptions{})
+	ab := &appcatalog.AppBinding{}
+	if err := f.cc.Get(context.TODO(), client.ObjectKey{Namespace: f.namespace, Name: f.name}, ab); err != nil {
+		return nil, err
+	}
+
+	auth := &core.Secret{}
+	if err := f.cc.Get(context.TODO(), client.ObjectKey{Namespace: f.namespace, Name: ab.Spec.Secret.Name}, auth); err != nil {
+		return nil, err
+	}
+
+	apiURL, apiKey, err := f.getApiURLandApiKey(ab, auth)
 	if err != nil {
 		return nil, err
 	}
 
-	secret, err := f.kubeClient.CoreV1().Secrets(f.namespace).Get(context.TODO(), appBinding.Spec.Secret.Name, metav1.GetOptions{})
+	gc, err := sdk.NewClient(apiURL, apiKey)
 	if err != nil {
 		return nil, err
 	}
-
-	apiURL, apiKey, err := f.getApiURLandApiKey(appBinding, secret)
-	if err != nil {
-		return nil, err
-	}
-
-	client, err := sdk.NewClient(apiURL, apiKey)
-	if err != nil {
-		return nil, err
-	}
-	return client, nil
+	return gc, nil
 }
 
 func (f *Framework) DeployGrafanaServer() error {
@@ -82,12 +83,17 @@ func (f *Framework) DeleteGrafanaServer() error {
 
 func (f *Framework) WaitForGrafanaServerToBeReady() {
 	Eventually(func() bool {
-		deploy, err := f.kubeClient.AppsV1().Deployments(f.namespace).Get(context.TODO(), f.name, metav1.GetOptions{})
+		dpl := &apps.Deployment{}
+		err := f.cc.Get(context.TODO(), client.ObjectKey{Namespace: f.namespace, Name: f.name}, dpl)
 		Expect(err).NotTo(HaveOccurred())
 
-		pods, err := f.kubeClient.CoreV1().Pods(deploy.Namespace).List(context.TODO(), metav1.ListOptions{
-			LabelSelector: labels.Set(deploy.GetLabels()).String(),
-		})
+		pods := &core.PodList{}
+		opts := &client.ListOptions{
+			Namespace: f.namespace,
+		}
+		selector := client.MatchingLabels(dpl.Labels)
+		selector.ApplyToList(opts)
+		err = f.cc.List(context.TODO(), pods, opts)
 		Expect(err).NotTo(HaveOccurred())
 
 		for _, pod := range pods.Items {

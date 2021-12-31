@@ -17,19 +17,15 @@ limitations under the License.
 package framework
 
 import (
-	cs "go.openviz.dev/grafana-tools/client/clientset/versioned"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"gomodules.xyz/x/crypto/rand"
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1"
 )
 
 type Framework struct {
-	restConfig   *rest.Config
-	kubeClient   kubernetes.Interface
-	extClient    cs.Interface
-	appcatClient appcat_cs.AppcatalogV1alpha1Interface
+	restConfig *rest.Config
+	cc         client.Client
 
 	namespace string
 	name      string
@@ -37,15 +33,11 @@ type Framework struct {
 
 func New(
 	restConfig *rest.Config,
-	kubeClient kubernetes.Interface,
-	extClient cs.Interface,
-	appcatClient appcat_cs.AppcatalogV1alpha1Interface,
+	cc client.Client,
 ) *Framework {
 	return &Framework{
-		restConfig:   restConfig,
-		kubeClient:   kubeClient,
-		extClient:    extClient,
-		appcatClient: appcatClient,
+		restConfig: restConfig,
+		cc:         cc,
 
 		name:      rand.WithUniqSuffix("grafana-tools"),
 		namespace: rand.WithUniqSuffix("grafana"),
@@ -61,10 +53,6 @@ func (f *Framework) Invoke() *Invocation {
 
 func (f *Framework) Name() string {
 	return f.name
-}
-
-func (fi *Invocation) KubeClient() kubernetes.Interface {
-	return fi.kubeClient
 }
 
 func (fi *Invocation) RestConfig() *rest.Config {

@@ -122,7 +122,7 @@ func (r *GrafanaDatasourceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		klog.Infof("Reconciling for: %s", key.String())
 
 		if err := r.createOrUpdateDatasource(ctx, ds); err != nil {
-			r.handleFailureEvent(ctx, ds, err.Error())
+			r.handleFailureEvent(ds, err.Error())
 			return ctrl.Result{}, err
 		}
 	}
@@ -222,7 +222,7 @@ func (r *GrafanaDatasourceReconciler) updateDatasource(ctx context.Context, gc *
 	return nil
 }
 
-func (r *GrafanaDatasourceReconciler) handleFailureEvent(ctx context.Context, ds *openvizapi.GrafanaDatasource, reason string) {
+func (r *GrafanaDatasourceReconciler) handleFailureEvent(ds *openvizapi.GrafanaDatasource, reason string) {
 	r.Recorder.Eventf(
 		ds,
 		core.EventTypeWarning,

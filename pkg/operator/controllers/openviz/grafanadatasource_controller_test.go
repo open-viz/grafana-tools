@@ -43,7 +43,6 @@ var _ = Describe("GrafanaDatasource Controller", func() {
 		GrafanaAPIKey         = "admin:prom-operator"
 
 		timeout  = time.Minute
-		duration = time.Minute
 		interval = time.Second
 	)
 

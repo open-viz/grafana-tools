@@ -428,6 +428,9 @@ gomodules.xyz/jsonpatch/v2
 # gomodules.xyz/logs v0.0.6
 ## explicit; go 1.16
 gomodules.xyz/logs
+# gomodules.xyz/mergo v0.3.13-0.20210702100041-9d62ff8ece4d
+## explicit; go 1.13
+gomodules.xyz/mergo
 # gomodules.xyz/password-generator v0.2.7
 ## explicit; go 1.15
 gomodules.xyz/password-generator
@@ -651,6 +654,7 @@ k8s.io/apimachinery/pkg/util/errors
 k8s.io/apimachinery/pkg/util/framer
 k8s.io/apimachinery/pkg/util/intstr
 k8s.io/apimachinery/pkg/util/json
+k8s.io/apimachinery/pkg/util/jsonmergepatch
 k8s.io/apimachinery/pkg/util/managedfields
 k8s.io/apimachinery/pkg/util/mergepatch
 k8s.io/apimachinery/pkg/util/naming
@@ -1020,6 +1024,7 @@ k8s.io/client-go/tools/pager
 k8s.io/client-go/tools/record
 k8s.io/client-go/tools/record/util
 k8s.io/client-go/tools/reference
+k8s.io/client-go/tools/watch
 k8s.io/client-go/transport
 k8s.io/client-go/util/cert
 k8s.io/client-go/util/connrotation
@@ -1077,7 +1082,9 @@ kmodules.xyz/client-go/apiextensions
 kmodules.xyz/client-go/apiextensions/v1
 kmodules.xyz/client-go/apiextensions/v1beta1
 kmodules.xyz/client-go/client
+kmodules.xyz/client-go/core/v1
 kmodules.xyz/client-go/discovery
+kmodules.xyz/client-go/dynamic
 kmodules.xyz/client-go/meta
 kmodules.xyz/client-go/openapi
 kmodules.xyz/client-go/tools/clientcmd

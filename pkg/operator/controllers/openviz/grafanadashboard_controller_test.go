@@ -46,7 +46,6 @@ var _ = Describe("GrafanaDashboard Controller", func() {
 		DashboardModelPath   = "../../../../testdata/dashboard_model.json"
 
 		timeout  = time.Minute
-		duration = time.Minute
 		interval = time.Second
 	)
 
