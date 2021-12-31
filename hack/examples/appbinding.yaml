@@ -1,0 +1,14 @@
+apiVersion: appcatalog.appscode.com/v1alpha1
+kind: AppBinding
+metadata:
+    name: grafana
+    namespace: monitoring
+spec:
+    secret:
+        name: grafana-api-key
+    clientConfig:
+        # url: http://192.168.0.115:3000
+        service:
+            name: grafana
+            scheme: http
+            port: 3000

@@ -34,7 +34,7 @@ import (
 	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 
 	openvizv1alpha1 "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
-	openvizcontrollers "go.openviz.dev/grafana-tools/controllers/openviz"
+	openvizcontrollers "go.openviz.dev/grafana-tools/pkg/operator/controllers/openviz"
 	//+kubebuilder:scaffold:imports
 )
 
