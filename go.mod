@@ -7,10 +7,11 @@ require (
 	github.com/onsi/gomega v1.17.0
 	go.openviz.dev/grafana-sdk v0.0.2-0.20211230105712-cb2296c5a379
 	k8s.io/api v0.21.1
+	k8s.io/apiextensions-apiserver v0.21.1
 	k8s.io/apimachinery v0.21.1
 	k8s.io/client-go v0.21.1
 	k8s.io/klog/v2 v2.9.0
-	kmodules.xyz/client-go v0.0.0-20211223200000-0c37b46c4f50
+	kmodules.xyz/client-go v0.0.0-20220102213152-0f74863899e3
 	kmodules.xyz/custom-resources v0.0.0-20211221073415-ab9b13cfc659
 	sigs.k8s.io/controller-runtime v0.9.0
 )
@@ -135,7 +136,6 @@ require (
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
-	k8s.io/apiextensions-apiserver v0.21.1 // indirect
 	k8s.io/cli-runtime v0.21.1 // indirect
 	k8s.io/component-base v0.21.1 // indirect
 	k8s.io/component-helpers v0.21.1 // indirect

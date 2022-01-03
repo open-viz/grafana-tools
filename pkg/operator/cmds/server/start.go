@@ -17,11 +17,13 @@ limitations under the License.
 package server
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io"
 	"os"
 
+	openvizapi "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
 	openvizv1alpha1 "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
 	openvizcontrollers "go.openviz.dev/grafana-tools/pkg/operator/controllers/openviz"
 
@@ -32,7 +34,9 @@ import (
 	"k8s.io/apiserver/pkg/util/feature"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
+	appcatalogapi "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -152,6 +156,17 @@ func (o GrafanaDashboardOptions) Run(stopCh <-chan struct{}) error {
 	mgr, err := GetManager()
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
+		os.Exit(1)
+	}
+
+	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &appcatalogapi.AppBinding{}, openvizapi.DefaultGrafanaKey, func(rawObj client.Object) []string {
+		app := rawObj.(*appcatalogapi.AppBinding)
+		if v, ok := app.Annotations[openvizapi.DefaultGrafanaKey]; ok && v == "true" {
+			return []string{"true"}
+		}
+		return nil
+	}); err != nil {
+		setupLog.Error(err, "unable to set up AppBinding Indexer", "field", openvizapi.DefaultGrafanaKey)
 		os.Exit(1)
 	}
 
