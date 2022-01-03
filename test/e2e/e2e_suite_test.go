@@ -17,9 +17,14 @@ limitations under the License.
 package e2e_test
 
 import (
+	"context"
+	"encoding/json"
 	"log"
+	"os"
 	"testing"
 	"time"
+
+	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
 
 	ctrl "sigs.k8s.io/controller-runtime"
 
@@ -61,9 +66,12 @@ var _ = BeforeSuite(func() {
 
 	mgr, err := server.GetManager()
 	Expect(err).NotTo(HaveOccurred())
+	restConfig := mgr.GetConfig()
+	restConfig.Burst = 100
+	restConfig.QPS = 100
 
 	// Framework
-	root = framework.New(mgr.GetConfig(), mgr.GetClient())
+	root = framework.New(restConfig, mgr.GetClient())
 
 	go func() {
 		if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
@@ -81,6 +89,14 @@ var _ = BeforeSuite(func() {
 
 	By("Waiting for grafana server to be ready")
 	root.WaitForGrafanaServerToBeReady()
+
+	// temporary crd installation
+	crd := &apiextensions.CustomResourceDefinition{}
+	by, err := os.ReadFile("../../config/crd/bases/appcatalog.appscode.com_appbindings.yaml")
+	Expect(err).NotTo(HaveOccurred())
+	Expect(json.Unmarshal(by, crd)).Should(Succeed())
+	cc := mgr.GetClient()
+	Expect(cc.Create(context.TODO(), crd)).Should(Succeed())
 
 	root.EventuallyCRD().Should(Succeed())
 })

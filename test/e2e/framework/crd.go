@@ -17,7 +17,13 @@ limitations under the License.
 package framework
 
 import (
+	"context"
+	"fmt"
 	"time"
+
+	api "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
+
+	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 
 	. "github.com/onsi/gomega"
 )
@@ -25,20 +31,20 @@ import (
 func (f *Framework) EventuallyCRD() GomegaAsyncAssertion {
 	return Eventually(
 		func() error {
-			// Check GrafanaDatasource CRD
-			/*if _, err := f.extClient.OpenvizV1alpha1().GrafanaDatasources(core.NamespaceAll).List(metav1.ListOptions{}); err != nil {
-				return fmt.Errorf("CRD GrafanaDashboard is not ready. Reason: %v", err)
-			}*/
-
 			// Check GrafanaDashboard CRD
-			//if _, err := f.extClient.OpenvizV1alpha1().GrafanaDashboards(core.NamespaceAll).List(context.TODO(), metav1.ListOptions{}); err != nil {
-			//	return fmt.Errorf("CRD GrafanaDashboard is not ready. Reason: %v", err)
-			//}
-
-			// Check GrafanaDashboardTemplate CRD
-			/*if _, err := f.extClient.OpenvizV1alpha1().GrafanaDashboardTemplates(core.NamespaceAll).List(metav1.ListOptions{}); err != nil {
+			if err := f.cc.List(context.TODO(), &api.GrafanaDashboardList{}); err != nil {
 				return fmt.Errorf("CRD GrafanaDashboard is not ready. Reason: %v", err)
-			}*/
+			}
+
+			// Check AppBinding CRD
+			if err := f.cc.List(context.TODO(), &appcatalog.AppBindingList{}); err != nil {
+				return fmt.Errorf("CRD AppBinding is not ready. Reason: %v", err)
+			}
+
+			//// Check GrafanaDatasource CRD
+			//if err := f.cc.List(context.TODO(), &api.GrafanaDatasourceList{}); err != nil {
+			//	return fmt.Errorf("CRD GrafanaDatasource is not ready. Reason: %v", err)
+			//}
 			return nil
 		},
 		time.Minute*2,
