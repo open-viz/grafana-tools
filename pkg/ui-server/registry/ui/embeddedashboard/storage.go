@@ -137,7 +137,7 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 		return nil, apierrors.NewBadRequest(fmt.Sprintf("Status.Dashboard field is missing in GrafanaDashboard %s/%s", dashboard.Namespace, dashboard.Name))
 	}
 
-	grafana, err := openvizapi.GetGrafana(r.kc, dashboard.Spec.GrafanaRef, dashboard.Namespace)
+	grafana, err := openvizapi.GetGrafana(ctx, r.kc, dashboard.Spec.GrafanaRef.WithNamespace(dashboard.Namespace))
 	if err != nil {
 		return nil, err
 	}

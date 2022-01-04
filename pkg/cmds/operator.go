@@ -17,6 +17,7 @@ limitations under the License.
 package cmds
 
 import (
+	"context"
 	"io"
 
 	"go.openviz.dev/grafana-tools/client/clientset/versioned/scheme"
@@ -30,7 +31,7 @@ import (
 	appcatscheme "kmodules.xyz/custom-resources/client/clientset/versioned/scheme"
 )
 
-func NewCmdOperator(out, errOut io.Writer, stopCh <-chan struct{}) *cobra.Command {
+func NewCmdOperator(ctx context.Context, out, errOut io.Writer) *cobra.Command {
 	o := server.NewGrafanaDashboardOptions(out, errOut)
 
 	cmd := &cobra.Command{
@@ -50,7 +51,7 @@ func NewCmdOperator(out, errOut io.Writer, stopCh <-chan struct{}) *cobra.Comman
 			if err := o.Validate(args); err != nil {
 				return err
 			}
-			if err := o.Run(stopCh); err != nil {
+			if err := o.Run(ctx); err != nil {
 				return err
 			}
 			return nil

@@ -20,14 +20,12 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strings"
 
-	api "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
-	admission2 "go.openviz.dev/grafana-tools/pkg/operator/admission"
-	controller2 "go.openviz.dev/grafana-tools/pkg/operator/controller"
-	"go.openviz.dev/grafana-tools/pkg/operator/eventer"
+	openvizinstall "go.openviz.dev/grafana-tools/apis/openviz/install"
+	openvizapi "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
+	uiinstall "go.openviz.dev/grafana-tools/apis/ui/install"
+	openvizcontrollers "go.openviz.dev/grafana-tools/pkg/operator/controllers/openviz"
 
-	admission "k8s.io/api/admission/v1beta1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -35,26 +33,31 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/version"
-	"k8s.io/apiserver/pkg/registry/rest"
 	genericapiserver "k8s.io/apiserver/pkg/server"
-	"k8s.io/client-go/kubernetes"
-	reg_util "kmodules.xyz/client-go/admissionregistration/v1"
-	dynamic_util "kmodules.xyz/client-go/dynamic"
-	hooks "kmodules.xyz/webhook-runtime/admission/v1beta1"
-	admissionreview "kmodules.xyz/webhook-runtime/registry/admissionreview/v1beta1"
-)
-
-const (
-	apiserviceName = "v1alpha1.validators.openviz.dev"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	restclient "k8s.io/client-go/rest"
+	"k8s.io/klog/v2"
+	"k8s.io/klog/v2/klogr"
+	appcatalogapi "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/healthz"
+	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 var (
+	// Scheme defines methods for serializing and deserializing API objects.
 	Scheme = runtime.NewScheme()
+	// Codecs provides methods for retrieving codecs and serializers for specific
+	// versions and content types.
 	Codecs = serializer.NewCodecFactory(Scheme)
 )
 
 func init() {
-	utilruntime.Must(admission.AddToScheme(Scheme))
+	uiinstall.Install(Scheme)
+	openvizinstall.Install(Scheme)
+	utilruntime.Must(clientgoscheme.AddToScheme(Scheme))
+	utilruntime.Must(appcatalogapi.AddToScheme(Scheme))
 
 	// we need to add the options to empty v1
 	// TODO fix the server code to avoid this
@@ -71,202 +74,117 @@ func init() {
 	)
 }
 
+// ExtraConfig holds custom apiserver config
+type ExtraConfig struct {
+	ClientConfig *restclient.Config
+}
+
+// GrafanaOperatorConfig defines the config for the apiserver
 type GrafanaOperatorConfig struct {
 	GenericConfig *genericapiserver.RecommendedConfig
-	ExtraConfig   *controller2.Config
+	ExtraConfig   ExtraConfig
 }
 
 // GrafanaOperator contains state for a Kubernetes cluster master/api server.
 type GrafanaOperator struct {
 	GenericAPIServer *genericapiserver.GenericAPIServer
-	Controller       *controller2.GrafanaController
-}
-
-func (op *GrafanaOperator) Run(stopCh <-chan struct{}) error {
-	go op.Controller.Run(stopCh)
-	return op.GenericAPIServer.PrepareRun().Run(stopCh)
+	Manager          manager.Manager
 }
 
 type completedConfig struct {
 	GenericConfig genericapiserver.CompletedConfig
-	ExtraConfig   *controller2.Config
+	ExtraConfig   *ExtraConfig
 }
 
+// CompletedConfig embeds a private pointer that cannot be instantiated outside of this package.
 type CompletedConfig struct {
-	// Embed a private pointer that cannot be instantiated outside of this package.
 	*completedConfig
 }
 
 // Complete fills in any fields not set that are required to have valid data. It's mutating the receiver.
-func (c *GrafanaOperatorConfig) Complete() CompletedConfig {
-	completedCfg := completedConfig{
-		c.GenericConfig.Complete(),
-		c.ExtraConfig,
+func (cfg *GrafanaOperatorConfig) Complete() CompletedConfig {
+	c := completedConfig{
+		cfg.GenericConfig.Complete(),
+		&cfg.ExtraConfig,
 	}
 
-	completedCfg.GenericConfig.Version = &version.Info{
+	c.GenericConfig.Version = &version.Info{
 		Major: "1",
-		Minor: "1",
+		Minor: "0",
 	}
 
-	return CompletedConfig{&completedCfg}
+	return CompletedConfig{&c}
 }
 
 // New returns a new instance of GrafanaOperator from the given config.
-func (c completedConfig) New() (*GrafanaOperator, error) {
-	genericServer, err := c.GenericConfig.New("vault-apiserver", genericapiserver.NewEmptyDelegate()) // completion is done in Complete, no need for a second time
-	if err != nil {
-		return nil, err
-	}
-	ctrl, err := c.ExtraConfig.New()
+func (c completedConfig) New(ctx context.Context) (*GrafanaOperator, error) {
+	genericServer, err := c.GenericConfig.New("ui-server", genericapiserver.NewEmptyDelegate())
 	if err != nil {
 		return nil, err
 	}
 
-	var admissionHooks []hooks.AdmissionHook
-	if c.ExtraConfig.EnableValidatingWebhook {
-		admissionHooks = append(admissionHooks,
-			&admission2.GrafanaDashboardValidator{},
-		)
+	// ctrl.SetLogger(...)
+	log.SetLogger(klogr.New())
+
+	mgr, err := manager.New(c.ExtraConfig.ClientConfig, manager.Options{
+		Scheme:                 Scheme,
+		MetricsBindAddress:     "",
+		Port:                   0,
+		HealthProbeBindAddress: "",
+		LeaderElection:         false,
+		LeaderElectionID:       "5b87adeb.grafana.openviz.dev",
+		ClientDisableCacheFor: []client.Object{
+			&core.Namespace{},
+			&core.Secret{},
+			&core.Pod{},
+		},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("unable to start manager, reason: %v", err)
 	}
-	if c.ExtraConfig.EnableMutatingWebhook {
-		admissionHooks = append(admissionHooks,
-			&admission2.GrafanaDashboardMutator{},
-		)
+
+	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &appcatalogapi.AppBinding{}, openvizapi.DefaultGrafanaKey, func(rawObj client.Object) []string {
+		app := rawObj.(*appcatalogapi.AppBinding)
+		if v, ok := app.Annotations[openvizapi.DefaultGrafanaKey]; ok && v == "true" {
+			return []string{"true"}
+		}
+		return nil
+	}); err != nil {
+		klog.Error(err, "unable to set up AppBinding Indexer", "field", openvizapi.DefaultGrafanaKey)
+		os.Exit(1)
+	}
+
+	if err = (&openvizcontrollers.GrafanaDashboardReconciler{
+		Client:   mgr.GetClient(),
+		Scheme:   mgr.GetScheme(),
+		Recorder: mgr.GetEventRecorderFor("grafana-dashboard-controller"),
+	}).SetupWithManager(mgr); err != nil {
+		klog.Error(err, "unable to create controller", "controller", "GrafanaDashboard")
+		os.Exit(1)
+	}
+	if err = (&openvizcontrollers.GrafanaDatasourceReconciler{
+		Client:   mgr.GetClient(),
+		Scheme:   mgr.GetScheme(),
+		Recorder: mgr.GetEventRecorderFor("grafana-datasource-controller"),
+	}).SetupWithManager(mgr); err != nil {
+		klog.Error(err, "unable to create controller", "controller", "GrafanaDatasource")
+		os.Exit(1)
+	}
+	//+kubebuilder:scaffold:builder
+
+	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
+		klog.Error(err, "unable to set up health check")
+		os.Exit(1)
+	}
+	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
+		klog.Error(err, "unable to set up ready check")
+		os.Exit(1)
 	}
 
 	s := &GrafanaOperator{
 		GenericAPIServer: genericServer,
-		Controller:       ctrl,
-	}
-
-	for _, versionMap := range admissionHooksByGroupThenVersion(admissionHooks...) {
-		// TODO we're going to need a later k8s.io/apiserver so that we can get discovery to list a different group version for
-		// our endpoint which we'll use to back some custom storage which will consume the AdmissionReview type and give back the correct response
-		apiGroupInfo := genericapiserver.APIGroupInfo{
-			VersionedResourcesStorageMap: map[string]map[string]rest.Storage{},
-			// TODO unhardcode this.  It was hardcoded before, but we need to re-evaluate
-			OptionsExternalVersion: &schema.GroupVersion{Version: "v1"},
-			Scheme:                 Scheme,
-			ParameterCodec:         metav1.ParameterCodec,
-			NegotiatedSerializer:   Codecs,
-		}
-
-		for _, admissionHooks := range versionMap {
-			for i := range admissionHooks {
-				admissionHook := admissionHooks[i]
-				admissionResource, _ := admissionHook.Resource()
-				admissionVersion := admissionResource.GroupVersion()
-
-				// just overwrite the groupversion with a random one.  We don't really care or know.
-				apiGroupInfo.PrioritizedVersions = appendUniqueGroupVersion(apiGroupInfo.PrioritizedVersions, admissionVersion)
-
-				admissionReview := admissionreview.NewREST(admissionHook.Admit)
-				v1alpha1storage, ok := apiGroupInfo.VersionedResourcesStorageMap[admissionVersion.Version]
-				if !ok {
-					v1alpha1storage = map[string]rest.Storage{}
-				}
-				v1alpha1storage[admissionResource.Resource] = admissionReview
-				apiGroupInfo.VersionedResourcesStorageMap[admissionVersion.Version] = v1alpha1storage
-			}
-		}
-
-		if err := s.GenericAPIServer.InstallAPIGroup(&apiGroupInfo); err != nil {
-			return nil, err
-		}
-	}
-
-	for i := range admissionHooks {
-		admissionHook := admissionHooks[i]
-		postStartName := postStartHookName(admissionHook)
-		if len(postStartName) == 0 {
-			continue
-		}
-		s.GenericAPIServer.AddPostStartHookOrDie(postStartName,
-			func(context genericapiserver.PostStartHookContext) error {
-				return admissionHook.Initialize(c.ExtraConfig.ClientConfig, context.StopCh)
-			},
-		)
-	}
-
-	if c.ExtraConfig.EnableValidatingWebhook {
-		s.GenericAPIServer.AddPostStartHookOrDie("validating-webhook-xray",
-			func(ctx genericapiserver.PostStartHookContext) error {
-				go func() {
-					xray := reg_util.NewCreateValidatingWebhookXray(c.ExtraConfig.ClientConfig, apiserviceName, &api.GrafanaDashboard{
-						TypeMeta: metav1.TypeMeta{
-							APIVersion: api.SchemeGroupVersion.String(),
-							Kind:       api.ResourceKindGrafanaDashboard,
-						},
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "test-grafanadashboard-for-webhook-xray",
-							Namespace: "default",
-						},
-						Spec: api.GrafanaDashboardSpec{},
-					}, ctx.StopCh)
-					if err := xray.IsActive(context.TODO()); err != nil {
-						w, _, e2 := dynamic_util.DetectWorkload(
-							context.TODO(),
-							c.ExtraConfig.ClientConfig,
-							core.SchemeGroupVersion.WithResource("pods"),
-							os.Getenv("MY_POD_NAMESPACE"),
-							os.Getenv("MY_POD_NAME"))
-						if e2 == nil {
-							eventer.CreateEventWithLog(
-								kubernetes.NewForConfigOrDie(c.ExtraConfig.ClientConfig),
-								"grafana-tools",
-								w,
-								core.EventTypeWarning,
-								eventer.EventReasonAdmissionWebhookNotActivated,
-								err.Error())
-						}
-						panic(err)
-					}
-				}()
-				return nil
-			},
-		)
+		Manager:          mgr,
 	}
 
 	return s, nil
-}
-
-func appendUniqueGroupVersion(slice []schema.GroupVersion, elems ...schema.GroupVersion) []schema.GroupVersion {
-	m := map[schema.GroupVersion]bool{}
-	for _, gv := range slice {
-		m[gv] = true
-	}
-	for _, e := range elems {
-		m[e] = true
-	}
-	out := make([]schema.GroupVersion, 0, len(m))
-	for gv := range m {
-		out = append(out, gv)
-	}
-	return out
-}
-
-func postStartHookName(hook hooks.AdmissionHook) string {
-	var ns []string
-	gvr, _ := hook.Resource()
-	ns = append(ns, fmt.Sprintf("admit-%s.%s.%s", gvr.Resource, gvr.Version, gvr.Group))
-	if len(ns) == 0 {
-		return ""
-	}
-	return strings.Join(append(ns, "init"), "-")
-}
-
-func admissionHooksByGroupThenVersion(admissionHooks ...hooks.AdmissionHook) map[string]map[string][]hooks.AdmissionHook {
-	ret := map[string]map[string][]hooks.AdmissionHook{}
-	for i := range admissionHooks {
-		hook := admissionHooks[i]
-		gvr, _ := hook.Resource()
-		group, ok := ret[gvr.Group]
-		if !ok {
-			group = map[string][]hooks.AdmissionHook{}
-			ret[gvr.Group] = group
-		}
-		group[gvr.Version] = append(group[gvr.Version], hook)
-	}
-	return ret
 }

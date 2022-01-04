@@ -38,7 +38,8 @@ import (
 )
 
 const (
-	retryTimeout = 1 * time.Minute
+	timeout  = 5 * time.Minute
+	interval = 250 * time.Millisecond
 )
 
 var _ = Describe("GrafanaRef Operator E2E testing", func() {
@@ -58,37 +59,43 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 			return modelData
 		}
 
-		createAppBindingAndSecret = func() {
+		createAppBinding = func() {
 			By("Creating AppBinding " + f.AppBindingName())
-			err := f.CreateAppBinding()
-			Expect(err).NotTo(HaveOccurred())
+			Expect(f.CreateAppBinding()).Should(Succeed())
+		}
 
+		createSecret = func() {
 			By("Creating Secret " + f.SecretName())
-			err = f.CreateSecret(options.apiKey)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(f.CreateSecret(options.apiKey)).Should(Succeed())
+		}
+
+		createDefaultAppBinding = func() {
+			By("Creating Default AppBinding " + f.AppBindingName())
+			Expect(f.CreateDefaultAppBinding()).Should(Succeed())
 		}
 
 		waitForGrafanaDashboardToGetToFinalPhase = func() {
 			By("Waiting for the grafanadashboard to get to final phase")
 			Eventually(func() bool {
 				grafanadashboard, err := f.GetGrafanaDashboard()
-				Expect(err).NotTo(HaveOccurred())
+				if err != nil {
+					return false
+				}
 
-				return grafanadashboard.Status.Phase == api.GrafanaPhaseSuccess || grafanadashboard.Status.Phase == api.GrafanaPhaseFailed
-			}, retryTimeout, 100*time.Millisecond).Should(BeTrue())
-
+				return grafanadashboard.Status.Phase == api.GrafanaPhaseCurrent || grafanadashboard.Status.Phase == api.GrafanaPhaseFailed
+			}, timeout, interval).Should(BeTrue())
 		}
 
-		waitForGrafanaDashboardToBeTerminated = func(grafanadashboard *api.GrafanaDashboard) {
-			By("Deleting grafanadashboard " + grafanadashboard.Name)
-			err := f.DeleteGrafanaDashboard()
+		waitForGrafanaDashboardToBeTerminated = func(gdb *api.GrafanaDashboard) {
+			By("Deleting grafanadashboard " + gdb.Name)
+			err := f.DeleteGrafanaDashboard(gdb)
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Waiting for the grafanadashboard to be terminated")
 			Eventually(func() bool {
 				_, err := f.GetGrafanaDashboard()
 				return kerr.IsNotFound(err)
-			}, retryTimeout, 100*time.Millisecond).Should(BeTrue())
+			}, timeout, interval).Should(BeTrue())
 		}
 	)
 
@@ -109,7 +116,8 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 				},
 				Spec: api.GrafanaDashboardSpec{
 					GrafanaRef: &kmapi.ObjectReference{
-						Name: f.AppBindingName(),
+						Name:      f.AppBindingName(),
+						Namespace: f.AppBindingNamespace(),
 					},
 					Overwrite: true,
 				},
@@ -124,7 +132,8 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 					Raw: model,
 				}
 
-				createAppBindingAndSecret()
+				createAppBinding()
+				createSecret()
 			})
 
 			It("should insert a grafanadashboard into grafana database", func() {
@@ -138,7 +147,39 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 				grafanadashboard, err := f.GetGrafanaDashboard()
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(grafanadashboard.Status.Phase).To(BeEquivalentTo(api.GrafanaPhaseSuccess))
+				Expect(grafanadashboard.Status.Phase).To(BeEquivalentTo(api.GrafanaPhaseCurrent))
+
+				Expect(grafanadashboard.Status.Dashboard.ID).NotTo(BeNil())
+				Expect(grafanadashboard.Status.Dashboard.UID).NotTo(BeNil())
+				Expect(grafanadashboard.Status.Dashboard.Version).To(BeEquivalentTo(pointer.Int64P(grafanadashboard.Status.ObservedGeneration)))
+
+			})
+		})
+
+		Context("Successful creation of a GrafanaDashboard resource with default grafana AppBinding", func() {
+			BeforeEach(func() {
+				model := getModelFromGrafanaDashboardJson("dashboard-with-panels-with-mixed-yaxes.json")
+				grafanadashboard.Spec.Model = &runtime.RawExtension{
+					Raw: model,
+				}
+				grafanadashboard.Spec.GrafanaRef = nil
+
+				createDefaultAppBinding()
+				createSecret()
+			})
+
+			It("should insert a grafanadashboard into grafana database", func() {
+				err := f.CreateGrafanaDashboard(grafanadashboard)
+				Expect(err).NotTo(HaveOccurred())
+
+			})
+
+			AfterEach(func() {
+				By("Verifying grafanadashboard has been succeeded")
+				grafanadashboard, err := f.GetGrafanaDashboard()
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(grafanadashboard.Status.Phase).To(BeEquivalentTo(api.GrafanaPhaseCurrent))
 
 				Expect(grafanadashboard.Status.Dashboard.ID).NotTo(BeNil())
 				Expect(grafanadashboard.Status.Dashboard.UID).NotTo(BeNil())
@@ -155,33 +196,33 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 				}
 
 				options.apiKey = "admin:not-password"
-				createAppBindingAndSecret()
+				createAppBinding()
+				createSecret()
 			})
 
 			It("should not insert a grafanadashboard into grafana database", func() {
 				err := f.CreateGrafanaDashboard(grafanadashboard)
 				Expect(err).NotTo(HaveOccurred())
-
 			})
 
 			AfterEach(func() {
-				grafanadashboard, err := f.GetGrafanaDashboard()
+				gdb, err := f.GetGrafanaDashboard()
 				Expect(err).NotTo(HaveOccurred())
-				Expect(grafanadashboard.Status.Phase).To(BeEquivalentTo(api.GrafanaPhaseFailed))
-				Expect(grafanadashboard.Status.Dashboard).To(BeNil())
+				Expect(gdb.Status.Phase).To(BeEquivalentTo(api.GrafanaPhaseFailed))
+				Expect(gdb.Status.Dashboard).To(BeNil())
 			})
 		})
 
 		Context("Unsuccessful creation of a grafanadashboard resource", func() {
 			BeforeEach(func() {
 				By("Not providing model data")
-				createAppBindingAndSecret()
+				createAppBinding()
+				createSecret()
 			})
 
 			It("should not insert a grafanadashboard into grafana database", func() {
 				err := f.CreateGrafanaDashboard(grafanadashboard)
 				Expect(err).NotTo(HaveOccurred())
-
 			})
 
 			AfterEach(func() {
@@ -209,7 +250,7 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 
 			By("Wait until AppBinding is deleted")
 			ctx := context.TODO()
-			ctx, cancel := context.WithTimeout(ctx, retryTimeout)
+			ctx, cancel := context.WithTimeout(ctx, timeout)
 			defer cancel()
 			ri := dynamic.NewForConfigOrDie(f.RestConfig()).
 				Resource(appcat.SchemeGroupVersion.WithResource(appcat.ResourceApps)).

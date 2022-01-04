@@ -21,18 +21,21 @@ import (
 
 	api "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func (f *Framework) GetGrafanaDashboard() (*api.GrafanaDashboard, error) {
-	return f.extClient.OpenvizV1alpha1().GrafanaDashboards(f.namespace).Get(context.TODO(), f.name, metav1.GetOptions{})
+	db := &api.GrafanaDashboard{}
+	if err := f.cc.Get(context.TODO(), client.ObjectKey{Namespace: f.namespace, Name: f.name}, db); err != nil {
+		return nil, err
+	}
+	return db, nil
 }
 
-func (f *Framework) CreateGrafanaDashboard(grafanadashboard *api.GrafanaDashboard) error {
-	_, err := f.extClient.OpenvizV1alpha1().GrafanaDashboards(grafanadashboard.Namespace).Create(context.TODO(), grafanadashboard, metav1.CreateOptions{})
-	return err
+func (f *Framework) CreateGrafanaDashboard(db *api.GrafanaDashboard) error {
+	return f.cc.Create(context.TODO(), db)
 }
 
-func (f *Framework) DeleteGrafanaDashboard() error {
-	return f.extClient.OpenvizV1alpha1().GrafanaDashboards(f.namespace).Delete(context.TODO(), f.name, metav1.DeleteOptions{})
+func (f *Framework) DeleteGrafanaDashboard(db *api.GrafanaDashboard) error {
+	return f.cc.Delete(context.TODO(), db)
 }

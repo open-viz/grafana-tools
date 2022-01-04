@@ -36,3 +36,10 @@ _testmain.go
 .terraform
 *.tfstate*
 .DS_Store
+
+# ignore directory/file generated from test
+testbin
+cover.out
+
+# configurations environment files
+*.env

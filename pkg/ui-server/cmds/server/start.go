@@ -110,7 +110,7 @@ func (o *UIServerOptions) Config() (*apiserver.Config, error) {
 	return config, nil
 }
 
-// RunUIServer starts a new UIServer given UIServerOptions
+// RunUIServer starts a new GrafanaOperator given UIServerOptions
 func (o UIServerOptions) RunUIServer(ctx context.Context) error {
 	config, err := o.Config()
 	if err != nil {

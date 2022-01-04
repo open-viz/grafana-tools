@@ -20,15 +20,9 @@ import (
 	"flag"
 	"time"
 
-	cs "go.openviz.dev/grafana-tools/client/clientset/versioned"
-	"go.openviz.dev/grafana-tools/pkg/operator/controller"
-
-	prom "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	"github.com/spf13/pflag"
-	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
-	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"kmodules.xyz/client-go/tools/clusterid"
-	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1"
 )
 
 type ExtraOptions struct {
@@ -51,6 +45,26 @@ func NewExtraOptions() *ExtraOptions {
 	}
 }
 
+type config struct {
+	MaxNumRequeues          int
+	NumThreads              int
+	ResyncPeriod            time.Duration
+	EnableValidatingWebhook bool
+	EnableMutatingWebhook   bool
+}
+
+type Config struct {
+	config
+
+	ClientConfig *rest.Config
+}
+
+func NewConfig(cfg *rest.Config) *Config {
+	return &Config{
+		ClientConfig: cfg,
+	}
+}
+
 func (s *ExtraOptions) AddGoFlags(fs *flag.FlagSet) {
 	clusterid.AddGoFlags(fs)
 
@@ -63,14 +77,12 @@ func (s *ExtraOptions) AddGoFlags(fs *flag.FlagSet) {
 }
 
 func (s *ExtraOptions) AddFlags(fs *pflag.FlagSet) {
-	pfs := flag.NewFlagSet("vault-server", flag.ExitOnError)
+	pfs := flag.NewFlagSet("grafana-tools", flag.ExitOnError)
 	s.AddGoFlags(pfs)
 	fs.AddGoFlagSet(pfs)
 }
 
-func (s *ExtraOptions) ApplyTo(cfg *controller.Config) error {
-	var err error
-
+func (s *ExtraOptions) ApplyTo(cfg *Config) error {
 	cfg.MaxNumRequeues = s.MaxNumRequeues
 	cfg.NumThreads = s.NumThreads
 	cfg.ResyncPeriod = s.ResyncPeriod
@@ -79,20 +91,5 @@ func (s *ExtraOptions) ApplyTo(cfg *controller.Config) error {
 	cfg.EnableMutatingWebhook = s.EnableMutatingWebhook
 	cfg.EnableValidatingWebhook = s.EnableValidatingWebhook
 
-	if cfg.KubeClient, err = kubernetes.NewForConfig(cfg.ClientConfig); err != nil {
-		return err
-	}
-	if cfg.ExtClient, err = cs.NewForConfig(cfg.ClientConfig); err != nil {
-		return err
-	}
-	if cfg.CRDClient, err = crd_cs.NewForConfig(cfg.ClientConfig); err != nil {
-		return err
-	}
-	if cfg.PromClient, err = prom.NewForConfig(cfg.ClientConfig); err != nil {
-		return err
-	}
-	if cfg.AppCatalogClient, err = appcat_cs.NewForConfig(cfg.ClientConfig); err != nil {
-		return err
-	}
 	return nil
 }

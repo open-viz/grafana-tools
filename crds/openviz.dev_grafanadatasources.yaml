@@ -55,7 +55,7 @@ spec:
                 type: string
               editable:
                 type: boolean
-              grafana:
+              grafanaRef:
                 description: ObjectReference contains enough information to let you
                   inspect or modify the referred object.
                 properties:
@@ -88,7 +88,7 @@ spec:
                 type: string
             required:
             - access
-            - grafana
+            - grafanaRef
             - name
             - orgId
             - type

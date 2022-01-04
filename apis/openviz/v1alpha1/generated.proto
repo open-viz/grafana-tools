@@ -177,7 +177,7 @@ message GrafanaDatasourceList {
 }
 
 message GrafanaDatasourceSpec {
-  optional kmodules.xyz.client_go.api.v1.ObjectReference grafana = 1;
+  optional kmodules.xyz.client_go.api.v1.ObjectReference grafanaRef = 1;
 
   optional int64 id = 2;
 

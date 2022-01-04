@@ -23,7 +23,7 @@ type GrafanaPhase string
 const (
 	GrafanaPhaseProcessing  GrafanaPhase = "Processing"
 	GrafanaPhaseTerminating GrafanaPhase = "Terminating"
-	GrafanaPhaseSuccess     GrafanaPhase = "Success"
+	GrafanaPhaseCurrent     GrafanaPhase = "Current"
 	GrafanaPhaseFailed      GrafanaPhase = "Failed"
 )
 

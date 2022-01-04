@@ -17,18 +17,23 @@ limitations under the License.
 package e2e_test
 
 import (
+	"log"
 	"testing"
 	"time"
 
-	"go.openviz.dev/grafana-tools/pkg/operator/controller"
+	"go.openviz.dev/grafana-tools/pkg/operator/server"
 	"go.openviz.dev/grafana-tools/test/e2e/framework"
 
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
 	"gomodules.xyz/logs"
+	core "k8s.io/api/core/v1"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"kmodules.xyz/client-go/tools/clientcmd"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 const (
@@ -56,12 +61,28 @@ var _ = BeforeSuite(func() {
 	clientConfig.Burst = 100
 	clientConfig.QPS = 100
 
-	ctrlConfig := controller.NewConfig(clientConfig)
-	err = options.ApplyTo(ctrlConfig)
+	mgr, err := manager.New(clientConfig, manager.Options{
+		Scheme:                 server.Scheme,
+		MetricsBindAddress:     "",
+		Port:                   0,
+		HealthProbeBindAddress: "",
+		LeaderElection:         false,
+		LeaderElectionID:       "5b87adeb.grafana.test.openviz.dev",
+		ClientDisableCacheFor: []client.Object{
+			&core.Namespace{},
+			&core.Secret{},
+			&core.Pod{},
+		},
+	})
 	Expect(err).NotTo(HaveOccurred())
-
 	// Framework
-	root = framework.New(clientConfig, ctrlConfig.KubeClient, ctrlConfig.ExtClient, ctrlConfig.AppCatalogClient)
+	root = framework.New(clientConfig, mgr.GetClient())
+
+	go func() {
+		if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
+			log.Printf("error from manager: %v", err)
+		}
+	}()
 
 	By("Creating namespace " + root.Namespace())
 	err = root.CreateNamespace()
@@ -73,7 +94,6 @@ var _ = BeforeSuite(func() {
 
 	By("Waiting for grafana server to be ready")
 	root.WaitForGrafanaServerToBeReady()
-
 	root.EventuallyCRD().Should(Succeed())
 })
 

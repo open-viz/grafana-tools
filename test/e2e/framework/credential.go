@@ -29,16 +29,19 @@ import (
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	meta_util "kmodules.xyz/client-go/meta"
 	"kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
-	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
+	appcatalogapi "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 )
 
 func (f *Framework) AppBindingName() string {
 	return f.name
 }
 
-func (f *Framework) CreateAppBinding() error {
+func (f *Framework) AppBindingNamespace() string {
+	return f.namespace
+}
+
+func (f *Framework) getAppBinding() (*appcatalogapi.AppBinding, error) {
 	dsConfig := &api.GrafanaConfiguration{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "GrafanaConfiguration",
@@ -49,20 +52,20 @@ func (f *Framework) CreateAppBinding() error {
 	}
 	byteData, err := json.Marshal(dsConfig)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	obj := &appcat.AppBinding{
+	obj := &appcatalogapi.AppBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      f.name,
 			Namespace: f.namespace,
 		},
-		Spec: appcat.AppBindingSpec{
+		Spec: appcatalogapi.AppBindingSpec{
 			Secret: &core.LocalObjectReference{
 				Name: f.name,
 			},
-			ClientConfig: appcat.ClientConfig{
+			ClientConfig: appcatalogapi.ClientConfig{
 				//URL: pointer.StringP(apiURL),
-				Service: &appcat.ServiceReference{
+				Service: &appcatalogapi.ServiceReference{
 					Scheme: "http",
 					Name:   f.name,
 					Port:   3000,
@@ -73,13 +76,33 @@ func (f *Framework) CreateAppBinding() error {
 			},
 		},
 	}
+	return obj, nil
+}
 
-	_, err = f.appcatClient.AppBindings(obj.Namespace).Create(context.TODO(), obj, metav1.CreateOptions{})
-	return err
+func (f *Framework) CreateAppBinding() error {
+	ab, err := f.getAppBinding()
+	if err != nil {
+		return err
+	}
+	return f.cc.Create(context.TODO(), ab)
+}
+
+func (f *Framework) CreateDefaultAppBinding() error {
+	ab, err := f.getAppBinding()
+	if err != nil {
+		return err
+	}
+	ab.ObjectMeta.Annotations = map[string]string{
+		api.DefaultGrafanaKey: "true",
+	}
+	return f.cc.Create(context.TODO(), ab)
 }
 
 func (f *Framework) DeleteAppBinding() error {
-	return f.appcatClient.AppBindings(f.namespace).Delete(context.TODO(), f.name, meta_util.DeleteInForeground())
+	return f.cc.Delete(context.TODO(), &appcatalogapi.AppBinding{ObjectMeta: metav1.ObjectMeta{
+		Name:      f.name,
+		Namespace: f.namespace,
+	}})
 }
 
 func (f *Framework) SecretName() string {
@@ -97,12 +120,14 @@ func (f *Framework) CreateSecret(apiKey string) error {
 			"apiKey": []byte(apiKey),
 		},
 	}
-	_, err := f.kubeClient.CoreV1().Secrets(obj.Namespace).Create(context.TODO(), obj, metav1.CreateOptions{})
-	return err
+	return f.cc.Create(context.TODO(), obj)
 }
 
 func (f *Framework) DeleteSecret() error {
-	return f.kubeClient.CoreV1().Secrets(f.namespace).Delete(context.TODO(), f.name, meta_util.DeleteInForeground())
+	return f.cc.Delete(context.TODO(), &core.Secret{ObjectMeta: metav1.ObjectMeta{
+		Name:      f.name,
+		Namespace: f.namespace,
+	}})
 }
 
 // getApiURLandApiKey extracts ApiURL and ApiKey from appBinding and secret

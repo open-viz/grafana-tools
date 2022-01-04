@@ -1,0 +1,13 @@
+apiVersion: openviz.dev/v1alpha1
+kind: GrafanaDatasource
+metadata:
+  name: ds
+  namespace: demo
+spec:
+  name: prom-ds
+  type: prometheus
+  access: proxy
+  url: http://kube-prometheus-stack-prometheus.monitoring:9090/
+  orgId: 1
+  isDefault: false
+
