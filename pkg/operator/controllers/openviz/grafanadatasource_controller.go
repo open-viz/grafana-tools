@@ -143,7 +143,7 @@ func (r *GrafanaDatasourceReconciler) createOrUpdateDatasource(ctx context.Conte
 		IsDefault: ds.Spec.IsDefault,
 	}
 
-	gc, err := getGrafanaClient(ctx, r.Client, ds.Spec.GrafanaRef)
+	gc, err := getGrafanaClient(ctx, r.Client, ds.Spec.GrafanaRef.WithNamespace(ds.Namespace))
 	if err != nil {
 		return err
 	}
@@ -165,7 +165,7 @@ func (r *GrafanaDatasourceReconciler) createOrUpdateDatasource(ctx context.Conte
 
 func (r *GrafanaDatasourceReconciler) deleteExternalDatasource(ctx context.Context, ds *openvizapi.GrafanaDatasource) error {
 	if ds.Status.GrafanaDatasourceID != nil {
-		gc, err := getGrafanaClient(ctx, r.Client, ds.Spec.GrafanaRef)
+		gc, err := getGrafanaClient(ctx, r.Client, ds.Spec.GrafanaRef.WithNamespace(ds.Namespace))
 		if err != nil {
 			return err
 		}

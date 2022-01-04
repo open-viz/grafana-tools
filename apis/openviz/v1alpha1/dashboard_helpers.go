@@ -35,17 +35,12 @@ func (_ GrafanaDashboard) CustomResourceDefinition() *apiextensions.CustomResour
 	return crds.MustCustomResourceDefinition(SchemeGroupVersion.WithResource(ResourceGrafanaDashboards))
 }
 
-func GetGrafana(ctx context.Context, kc client.Client, ref *kmapi.ObjectReference, defaultNS string) (*appcatalogapi.AppBinding, error) {
+func GetGrafana(ctx context.Context, kc client.Client, ref *kmapi.ObjectReference) (*appcatalogapi.AppBinding, error) {
 	if ref != nil {
-		ns := ref.Namespace
-		if ns == "" {
-			ns = defaultNS
-		}
 		var grafana appcatalogapi.AppBinding
-		key := client.ObjectKey{Namespace: ns, Name: ref.Name}
-		err := kc.Get(ctx, key, &grafana)
+		err := kc.Get(ctx, ref.ObjectKey(), &grafana)
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to fetch AppBinding %s", key)
+			return nil, errors.Wrapf(err, "failed to fetch AppBinding %s", ref.ObjectKey())
 		}
 		return &grafana, nil
 	}

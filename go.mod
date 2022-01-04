@@ -10,7 +10,7 @@ require (
 	k8s.io/apimachinery v0.21.1
 	k8s.io/client-go v0.21.1
 	k8s.io/klog/v2 v2.9.0
-	kmodules.xyz/client-go v0.0.0-20220104114408-2a3a05dbe89f
+	kmodules.xyz/client-go v0.0.0-20220104201203-bbfc181fb438
 	kmodules.xyz/custom-resources v0.0.0-20211221073415-ab9b13cfc659
 	sigs.k8s.io/controller-runtime v0.9.0
 )

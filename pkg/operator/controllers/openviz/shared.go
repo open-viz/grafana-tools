@@ -29,7 +29,7 @@ import (
 )
 
 func getGrafanaClient(ctx context.Context, cc client.Client, ref *kmapi.ObjectReference) (*sdk.Client, error) {
-	ab, err := openvizapi.GetGrafana(ctx, cc, ref, core.NamespaceDefault)
+	ab, err := openvizapi.GetGrafana(ctx, cc, ref)
 	if err != nil {
 		return nil, err
 	}
