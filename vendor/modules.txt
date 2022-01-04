@@ -79,9 +79,6 @@ github.com/go-errors/errors
 # github.com/go-logr/logr v0.4.0
 ## explicit; go 1.14
 github.com/go-logr/logr
-# github.com/go-logr/zapr v0.4.0
-## explicit
-github.com/go-logr/zapr
 # github.com/go-openapi/jsonpointer v0.19.5 => github.com/go-openapi/jsonpointer v0.19.3
 ## explicit; go 1.13
 github.com/go-openapi/jsonpointer
@@ -1133,7 +1130,6 @@ sigs.k8s.io/controller-runtime/pkg/internal/objectutil
 sigs.k8s.io/controller-runtime/pkg/internal/recorder
 sigs.k8s.io/controller-runtime/pkg/leaderelection
 sigs.k8s.io/controller-runtime/pkg/log
-sigs.k8s.io/controller-runtime/pkg/log/zap
 sigs.k8s.io/controller-runtime/pkg/manager
 sigs.k8s.io/controller-runtime/pkg/manager/signals
 sigs.k8s.io/controller-runtime/pkg/metrics

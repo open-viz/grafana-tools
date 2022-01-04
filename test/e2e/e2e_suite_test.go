@@ -17,25 +17,23 @@ limitations under the License.
 package e2e_test
 
 import (
-	"context"
 	"log"
 	"testing"
 	"time"
 
-	openvizapi "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
-	"go.openviz.dev/grafana-tools/pkg/operator/cmds/server"
+	"go.openviz.dev/grafana-tools/pkg/operator/server"
 	"go.openviz.dev/grafana-tools/test/e2e/framework"
 
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
 	"gomodules.xyz/logs"
-	crdv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
-	kerr "k8s.io/apimachinery/pkg/api/errors"
+	core "k8s.io/api/core/v1"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"kmodules.xyz/client-go/tools/clientcmd"
-	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 const (
@@ -63,14 +61,22 @@ var _ = BeforeSuite(func() {
 	clientConfig.Burst = 100
 	clientConfig.QPS = 100
 
-	mgr, err := server.GetManager()
+	mgr, err := manager.New(clientConfig, manager.Options{
+		Scheme:                 server.Scheme,
+		MetricsBindAddress:     "",
+		Port:                   0,
+		HealthProbeBindAddress: "",
+		LeaderElection:         false,
+		LeaderElectionID:       "5b87adeb.grafana.test.openviz.dev",
+		ClientDisableCacheFor: []client.Object{
+			&core.Namespace{},
+			&core.Secret{},
+			&core.Pod{},
+		},
+	})
 	Expect(err).NotTo(HaveOccurred())
-	restConfig := mgr.GetConfig()
-	restConfig.Burst = 100
-	restConfig.QPS = 100
-
 	// Framework
-	root = framework.New(restConfig, mgr.GetClient())
+	root = framework.New(clientConfig, mgr.GetClient())
 
 	go func() {
 		if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
@@ -89,20 +95,20 @@ var _ = BeforeSuite(func() {
 	By("Waiting for grafana server to be ready")
 	root.WaitForGrafanaServerToBeReady()
 
-	// crd installation
-	crds := []crdv1.CustomResourceDefinition{
-		*appcatalog.AppBinding{}.CustomResourceDefinition().V1,
-		*openvizapi.GrafanaDashboard{}.CustomResourceDefinition().V1,
-		*openvizapi.GrafanaDatasource{}.CustomResourceDefinition().V1,
-	}
-	cc := mgr.GetClient()
-	for _, c := range crds {
-		err := cc.Create(context.TODO(), &c)
-		if kerr.IsAlreadyExists(err) {
-			continue
-		}
-		Expect(err).NotTo(HaveOccurred())
-	}
+	//// crd installation
+	//crds := []crdv1.CustomResourceDefinition{
+	//	*appcatalog.AppBinding{}.CustomResourceDefinition().V1,
+	//	*openvizapi.GrafanaDashboard{}.CustomResourceDefinition().V1,
+	//	*openvizapi.GrafanaDatasource{}.CustomResourceDefinition().V1,
+	//}
+	//cc := mgr.GetClient()
+	//for _, c := range crds {
+	//	err := cc.Create(context.TODO(), &c)
+	//	if kerr.IsAlreadyExists(err) {
+	//		continue
+	//	}
+	//	Expect(err).NotTo(HaveOccurred())
+	//}
 
 	root.EventuallyCRD().Should(Succeed())
 })

@@ -32,7 +32,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/dynamic"
-	"k8s.io/klog/v2"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
@@ -82,8 +81,6 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 				if err != nil {
 					return false
 				}
-
-				klog.Info(grafanadashboard.Status.Phase)
 
 				return grafanadashboard.Status.Phase == api.GrafanaPhaseCurrent || grafanadashboard.Status.Phase == api.GrafanaPhaseFailed
 			}, timeout, interval).Should(BeTrue())

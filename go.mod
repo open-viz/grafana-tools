@@ -7,7 +7,6 @@ require (
 	github.com/onsi/gomega v1.17.0
 	go.openviz.dev/grafana-sdk v0.0.2-0.20211230105712-cb2296c5a379
 	k8s.io/api v0.21.1
-	k8s.io/apiextensions-apiserver v0.21.1
 	k8s.io/apimachinery v0.21.1
 	k8s.io/client-go v0.21.1
 	k8s.io/klog/v2 v2.9.0
@@ -23,7 +22,6 @@ require (
 	github.com/Azure/go-autorest/logger v0.2.1 // indirect
 	github.com/evanphx/json-patch v4.12.0+incompatible
 	github.com/form3tech-oss/jwt-go v3.2.3+incompatible // indirect
-	github.com/go-logr/zapr v0.4.0 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/spec v0.19.5
 	github.com/gogo/protobuf v1.3.2
@@ -136,6 +134,7 @@ require (
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	k8s.io/apiextensions-apiserver v0.21.1 // indirect
 	k8s.io/cli-runtime v0.21.1 // indirect
 	k8s.io/component-base v0.21.1 // indirect
 	k8s.io/component-helpers v0.21.1 // indirect

@@ -33,7 +33,7 @@ func NewRootCmd() *cobra.Command {
 
 	rootCmd.AddCommand(v.NewCmdVersion())
 	ctx := genericapiserver.SetupSignalContext()
-	rootCmd.AddCommand(NewCmdOperator(os.Stdout, os.Stderr, ctx.Done()))
+	rootCmd.AddCommand(NewCmdOperator(ctx, os.Stdout, os.Stderr))
 	rootCmd.AddCommand(NewCmdUIServer(ctx, os.Stdout, os.Stderr))
 
 	return rootCmd

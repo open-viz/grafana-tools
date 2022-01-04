@@ -18,191 +18,115 @@ package server
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"io"
-	"os"
+	"net"
 
 	openvizapi "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
-	openvizv1alpha1 "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
-	openvizcontrollers "go.openviz.dev/grafana-tools/pkg/operator/controllers/openviz"
+
+	"go.openviz.dev/grafana-tools/pkg/operator/server"
+	"go.openviz.dev/grafana-tools/pkg/ui-server/apiserver"
 
 	"github.com/spf13/pflag"
-	crdv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	"k8s.io/apiserver/pkg/endpoints/openapi"
 	"k8s.io/apiserver/pkg/features"
+	genericapiserver "k8s.io/apiserver/pkg/server"
+	genericoptions "k8s.io/apiserver/pkg/server/options"
 	"k8s.io/apiserver/pkg/util/feature"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
-	appcatalogapi "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
+	"kmodules.xyz/client-go/tools/clientcmd"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/healthz"
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
-type GrafanaDashboardOptions struct {
-	//RecommendedOptions *genericoptions.RecommendedOptions
-	ExtraOptions *ExtraOptions
+const defaultEtcdPathPrefix = "/registry/openviz.dev"
+
+type GrafanaOperatorOptions struct {
+	RecommendedOptions *genericoptions.RecommendedOptions
+	ExtraOptions       *ExtraOptions
 
 	StdOut io.Writer
 	StdErr io.Writer
 }
 
-func NewGrafanaDashboardOptions(out, errOut io.Writer) *GrafanaDashboardOptions {
+func NewGrafanaDashboardOptions(out, errOut io.Writer) *GrafanaOperatorOptions {
 	_ = feature.DefaultMutableFeatureGate.Set(fmt.Sprintf("%s=false", features.APIPriorityAndFairness))
-	o := &GrafanaDashboardOptions{
+	o := &GrafanaOperatorOptions{
 		// TODO we will nil out the etcd storage options.  This requires a later level of k8s.io/apiserver
-		//RecommendedOptions: genericoptions.NewRecommendedOptions(
-		//	defaultEtcdPathPrefix,
-		//	server.Codecs.LegacyCodec(admissionv1beta1.SchemeGroupVersion),
-		//),
+		RecommendedOptions: genericoptions.NewRecommendedOptions(
+			defaultEtcdPathPrefix,
+			server.Codecs.LegacyCodec(admissionv1beta1.SchemeGroupVersion),
+		),
 		ExtraOptions: NewExtraOptions(),
 		StdOut:       out,
 		StdErr:       errOut,
 	}
-	//o.RecommendedOptions.Etcd = nil
-	//o.RecommendedOptions.Admission = nil
+	o.RecommendedOptions.Etcd = nil
+	o.RecommendedOptions.Admission = nil
 
 	return o
 }
 
-func (o GrafanaDashboardOptions) AddFlags(fs *pflag.FlagSet) {
-	//o.RecommendedOptions.AddFlags(fs)
+func (o GrafanaOperatorOptions) AddFlags(fs *pflag.FlagSet) {
+	o.RecommendedOptions.AddFlags(fs)
 	o.ExtraOptions.AddFlags(fs)
 }
 
-func (o GrafanaDashboardOptions) Validate(args []string) error {
+func (o GrafanaOperatorOptions) Validate(args []string) error {
 	return nil
 }
 
-func (o *GrafanaDashboardOptions) Complete() error {
+func (o *GrafanaOperatorOptions) Complete() error {
 	return nil
 }
 
-//
-//func (o GrafanaDashboardOptions) Config() (*server.GrafanaOperatorConfig, error) {
-//	// TODO have a "real" external address
-//	if err := o.RecommendedOptions.SecureServing.MaybeDefaultWithSelfSignedCerts("localhost", nil, []net.IP{net.ParseIP("127.0.0.1")}); err != nil {
-//		return nil, fmt.Errorf("error creating self-signed certificates: %v", err)
-//	}
-//
-//	serverConfig := genericapiserver.NewRecommendedConfig(server.Codecs)
-//	serverConfig.EnableMetrics = true
-//	if err := o.RecommendedOptions.ApplyTo(serverConfig); err != nil {
-//		return nil, err
-//	}
-//	// Fixes https://github.com/Azure/AKS/issues/522
-//	clientcmd.Fix(serverConfig.ClientConfig)
-//
-//	extraConfig := controller.NewConfig(serverConfig.ClientConfig)
-//	if err := o.ExtraOptions.ApplyTo(extraConfig); err != nil {
-//		return nil, err
-//	}
-//
-//	config := &server.GrafanaOperatorConfig{
-//		GenericConfig: serverConfig,
-//		ExtraConfig:   extraConfig,
-//	}
-//	return config, nil
-//}
+func (o GrafanaOperatorOptions) Config() (*server.GrafanaOperatorConfig, error) {
+	// TODO have a "real" external address
+	if err := o.RecommendedOptions.SecureServing.MaybeDefaultWithSelfSignedCerts("localhost", nil, []net.IP{net.ParseIP("127.0.0.1")}); err != nil {
+		return nil, fmt.Errorf("error creating self-signed certificates: %v", err)
+	}
 
-var (
-	scheme               = runtime.NewScheme()
-	setupLog             = ctrl.Log.WithName("setup")
-	metricsAddr          string
-	enableLeaderElection bool
-	probeAddr            string
-)
-
-func init() {
-	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
-	utilruntime.Must(appcatalog.AddToScheme(scheme))
-	utilruntime.Must(openvizv1alpha1.AddToScheme(scheme))
-	utilruntime.Must(crdv1.AddToScheme(scheme))
-	//+kubebuilder:scaffold:scheme
-
-	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
-	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
-	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
-		"Enable leader election for controller manager. "+
-			"Enabling this will ensure there is only one active controller manager.")
-}
-
-func GetManager() (manager.Manager, error) {
-	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
-		Scheme:                 scheme,
-		MetricsBindAddress:     metricsAddr,
-		Port:                   9443,
-		HealthProbeBindAddress: probeAddr,
-		LeaderElection:         enableLeaderElection,
-		LeaderElectionID:       "d2899bc8.appscode.com",
-	})
-	if err != nil {
+	serverConfig := genericapiserver.NewRecommendedConfig(apiserver.Codecs)
+	if err := o.RecommendedOptions.ApplyTo(serverConfig); err != nil {
 		return nil, err
 	}
-	return mgr, nil
+	// Fixes https://github.com/Azure/AKS/issues/522
+	clientcmd.Fix(serverConfig.ClientConfig)
+
+	extraConfig := NewConfig(serverConfig.ClientConfig)
+	if err := o.ExtraOptions.ApplyTo(extraConfig); err != nil {
+		return nil, err
+	}
+
+	serverConfig.OpenAPIConfig = genericapiserver.DefaultOpenAPIConfig(
+		openvizapi.GetOpenAPIDefinitions,
+		openapi.NewDefinitionNamer(server.Scheme))
+	serverConfig.OpenAPIConfig.Info.Title = "grafana-operator"
+	serverConfig.OpenAPIConfig.Info.Version = "v0.0.1"
+
+	cfg := &server.GrafanaOperatorConfig{
+		GenericConfig: serverConfig,
+		ExtraConfig: server.ExtraConfig{
+			ClientConfig: serverConfig.ClientConfig,
+		},
+	}
+	return cfg, nil
 }
 
-func (o GrafanaDashboardOptions) Run(stopCh <-chan struct{}) error {
-	opts := zap.Options{
-		Development: true,
-	}
-	opts.BindFlags(flag.CommandLine)
-	flag.Parse()
+var (
+	setupLog = ctrl.Log.WithName("setup")
+)
 
-	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
-
-	mgr, err := GetManager()
+func (o GrafanaOperatorOptions) Run(ctx context.Context) error {
+	config, err := o.Config()
 	if err != nil {
-		setupLog.Error(err, "unable to start manager")
-		os.Exit(1)
+		return err
 	}
 
-	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &appcatalogapi.AppBinding{}, openvizapi.DefaultGrafanaKey, func(rawObj client.Object) []string {
-		app := rawObj.(*appcatalogapi.AppBinding)
-		if v, ok := app.Annotations[openvizapi.DefaultGrafanaKey]; ok && v == "true" {
-			return []string{"true"}
-		}
-		return nil
-	}); err != nil {
-		setupLog.Error(err, "unable to set up AppBinding Indexer", "field", openvizapi.DefaultGrafanaKey)
-		os.Exit(1)
-	}
-
-	if err = (&openvizcontrollers.GrafanaDashboardReconciler{
-		Client:   mgr.GetClient(),
-		Scheme:   mgr.GetScheme(),
-		Recorder: mgr.GetEventRecorderFor("grafana-dashboard-controller"),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "GrafanaDashboard")
-		os.Exit(1)
-	}
-	if err = (&openvizcontrollers.GrafanaDatasourceReconciler{
-		Client:   mgr.GetClient(),
-		Scheme:   mgr.GetScheme(),
-		Recorder: mgr.GetEventRecorderFor("grafana-datasource-controller"),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "GrafanaDatasource")
-		os.Exit(1)
-	}
-	//+kubebuilder:scaffold:builder
-
-	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
-		setupLog.Error(err, "unable to set up health check")
-		os.Exit(1)
-	}
-	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
-		setupLog.Error(err, "unable to set up ready check")
-		os.Exit(1)
+	s, err := config.Complete().New(ctx)
+	if err != nil {
+		return err
 	}
 
 	setupLog.Info("starting manager")
-	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
-		setupLog.Error(err, "problem running manager")
-		os.Exit(1)
-	}
-	return nil
+	return s.Manager.Start(ctx)
 }

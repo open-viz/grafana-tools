@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/spf13/pflag"
+	"k8s.io/client-go/rest"
 	"kmodules.xyz/client-go/tools/clusterid"
 )
 
@@ -44,6 +45,26 @@ func NewExtraOptions() *ExtraOptions {
 	}
 }
 
+type config struct {
+	MaxNumRequeues          int
+	NumThreads              int
+	ResyncPeriod            time.Duration
+	EnableValidatingWebhook bool
+	EnableMutatingWebhook   bool
+}
+
+type Config struct {
+	config
+
+	ClientConfig *rest.Config
+}
+
+func NewConfig(cfg *rest.Config) *Config {
+	return &Config{
+		ClientConfig: cfg,
+	}
+}
+
 func (s *ExtraOptions) AddGoFlags(fs *flag.FlagSet) {
 	clusterid.AddGoFlags(fs)
 
@@ -56,36 +77,19 @@ func (s *ExtraOptions) AddGoFlags(fs *flag.FlagSet) {
 }
 
 func (s *ExtraOptions) AddFlags(fs *pflag.FlagSet) {
-	pfs := flag.NewFlagSet("vault-server", flag.ExitOnError)
+	pfs := flag.NewFlagSet("grafana-tools", flag.ExitOnError)
 	s.AddGoFlags(pfs)
 	fs.AddGoFlagSet(pfs)
 }
 
-//func (s *ExtraOptions) ApplyTo(cfg *controller.Config) error {
-//	var err error
-//
-//	cfg.MaxNumRequeues = s.MaxNumRequeues
-//	cfg.NumThreads = s.NumThreads
-//	cfg.ResyncPeriod = s.ResyncPeriod
-//	cfg.ClientConfig.QPS = float32(s.QPS)
-//	cfg.ClientConfig.Burst = s.Burst
-//	cfg.EnableMutatingWebhook = s.EnableMutatingWebhook
-//	cfg.EnableValidatingWebhook = s.EnableValidatingWebhook
-//
-//	if cfg.KubeClient, err = kubernetes.NewForConfig(cfg.ClientConfig); err != nil {
-//		return err
-//	}
-//	if cfg.ExtClient, err = cs.NewForConfig(cfg.ClientConfig); err != nil {
-//		return err
-//	}
-//	if cfg.CRDClient, err = crd_cs.NewForConfig(cfg.ClientConfig); err != nil {
-//		return err
-//	}
-//	if cfg.PromClient, err = prom.NewForConfig(cfg.ClientConfig); err != nil {
-//		return err
-//	}
-//	if cfg.AppCatalogClient, err = appcat_cs.NewForConfig(cfg.ClientConfig); err != nil {
-//		return err
-//	}
-//	return nil
-//}
+func (s *ExtraOptions) ApplyTo(cfg *Config) error {
+	cfg.MaxNumRequeues = s.MaxNumRequeues
+	cfg.NumThreads = s.NumThreads
+	cfg.ResyncPeriod = s.ResyncPeriod
+	cfg.ClientConfig.QPS = float32(s.QPS)
+	cfg.ClientConfig.Burst = s.Burst
+	cfg.EnableMutatingWebhook = s.EnableMutatingWebhook
+	cfg.EnableValidatingWebhook = s.EnableValidatingWebhook
+
+	return nil
+}
