@@ -47,7 +47,6 @@ require (
 	k8s.io/kube-openapi v0.0.0-20211115234752-e816edb12b65
 	kmodules.xyz/authorizer v0.0.0-20211121124031-167d0ef7c671
 	kmodules.xyz/crd-schema-fuzz v0.0.0-20210618002152-fae23aef5fb4
-	kmodules.xyz/webhook-runtime v0.0.0-20211116181908-909a755cc9d1
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.0 // indirect
 	sigs.k8s.io/yaml v1.3.0
 )
