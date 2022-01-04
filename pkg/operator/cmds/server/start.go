@@ -23,7 +23,6 @@ import (
 	"net"
 
 	openvizapi "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
-
 	"go.openviz.dev/grafana-tools/pkg/operator/server"
 	"go.openviz.dev/grafana-tools/pkg/ui-server/apiserver"
 

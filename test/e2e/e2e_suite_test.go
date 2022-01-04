@@ -94,22 +94,6 @@ var _ = BeforeSuite(func() {
 
 	By("Waiting for grafana server to be ready")
 	root.WaitForGrafanaServerToBeReady()
-
-	//// crd installation
-	//crds := []crdv1.CustomResourceDefinition{
-	//	*appcatalog.AppBinding{}.CustomResourceDefinition().V1,
-	//	*openvizapi.GrafanaDashboard{}.CustomResourceDefinition().V1,
-	//	*openvizapi.GrafanaDatasource{}.CustomResourceDefinition().V1,
-	//}
-	//cc := mgr.GetClient()
-	//for _, c := range crds {
-	//	err := cc.Create(context.TODO(), &c)
-	//	if kerr.IsAlreadyExists(err) {
-	//		continue
-	//	}
-	//	Expect(err).NotTo(HaveOccurred())
-	//}
-
 	root.EventuallyCRD().Should(Succeed())
 })
 

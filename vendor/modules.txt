@@ -315,7 +315,7 @@ go.etcd.io/etcd/raft/quorum
 go.etcd.io/etcd/raft/raftpb
 go.etcd.io/etcd/raft/tracker
 go.etcd.io/etcd/version
-# go.openviz.dev/grafana-sdk v0.0.2-0.20211230105712-cb2296c5a379
+# go.openviz.dev/grafana-sdk v0.0.2-0.20220104120714-39fed04f2f2f
 ## explicit; go 1.17
 go.openviz.dev/grafana-sdk
 # go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5
@@ -1070,7 +1070,7 @@ k8s.io/utils/trace
 kmodules.xyz/authorizer/rbac
 kmodules.xyz/authorizer/rbac/helpers
 kmodules.xyz/authorizer/rbac/validation
-# kmodules.xyz/client-go v0.0.0-20220102213152-0f74863899e3
+# kmodules.xyz/client-go v0.0.0-20220104114408-2a3a05dbe89f
 ## explicit; go 1.17
 kmodules.xyz/client-go
 kmodules.xyz/client-go/api/v1

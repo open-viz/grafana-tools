@@ -5,12 +5,12 @@ go 1.17
 require (
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.17.0
-	go.openviz.dev/grafana-sdk v0.0.2-0.20211230105712-cb2296c5a379
+	go.openviz.dev/grafana-sdk v0.0.2-0.20220104120714-39fed04f2f2f
 	k8s.io/api v0.21.1
 	k8s.io/apimachinery v0.21.1
 	k8s.io/client-go v0.21.1
 	k8s.io/klog/v2 v2.9.0
-	kmodules.xyz/client-go v0.0.0-20220102213152-0f74863899e3
+	kmodules.xyz/client-go v0.0.0-20220104114408-2a3a05dbe89f
 	kmodules.xyz/custom-resources v0.0.0-20211221073415-ab9b13cfc659
 	sigs.k8s.io/controller-runtime v0.9.0
 )

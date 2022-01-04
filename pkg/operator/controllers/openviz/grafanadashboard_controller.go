@@ -1,5 +1,5 @@
 /*
-Copyright 2021.
+Copyright AppsCode Inc. and Contributors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -50,10 +50,6 @@ type GrafanaDashboardReconciler struct {
 	Recorder record.EventRecorder
 }
 
-//+kubebuilder:rbac:groups=openviz.appscode.com,resources=grafanadashboards,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=openviz.appscode.com,resources=grafanadashboards/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=openviz.appscode.com,resources=grafanadashboards/finalizers,verbs=update
-
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 //
@@ -73,7 +69,7 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	// Add or remove finalizer based on deletion timestamp
 	if db.ObjectMeta.DeletionTimestamp.IsZero() {
 		if !containsString(db.GetFinalizers(), GrafanaDashboardFinalizer) {
-			_, _, err := kmc.CreateOrPatch(r.Client, db, func(obj client.Object, createOp bool) client.Object {
+			_, _, err := kmc.CreateOrPatch(ctx, r.Client, db, func(obj client.Object, createOp bool) client.Object {
 				controllerutil.AddFinalizer(obj, GrafanaDashboardFinalizer)
 				return obj
 			})
@@ -85,7 +81,7 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		}
 	} else {
 		if containsString(db.GetFinalizers(), GrafanaDashboardFinalizer) {
-			_, _, err := kmc.PatchStatus(r.Client, db, func(obj client.Object, createOp bool) client.Object {
+			_, _, err := kmc.PatchStatus(ctx, r.Client, db, func(obj client.Object, createOp bool) client.Object {
 				in := obj.(*openvizapi.GrafanaDashboard)
 				in.Status.Phase = openvizapi.GrafanaPhaseTerminating
 				in.Status.ObservedGeneration = in.Generation
@@ -99,7 +95,7 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 				return ctrl.Result{}, err
 			}
 
-			_, _, err = kmc.CreateOrPatch(r.Client, db, func(obj client.Object, createOp bool) client.Object {
+			_, _, err = kmc.CreateOrPatch(ctx, r.Client, db, func(obj client.Object, createOp bool) client.Object {
 				controllerutil.RemoveFinalizer(obj, GrafanaDashboardFinalizer)
 				return obj
 			})
@@ -112,7 +108,7 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}
 
 	if !meta_util.MustAlreadyReconciled(db) {
-		_, _, err := kmc.PatchStatus(r.Client, db, func(obj client.Object, createOp bool) client.Object {
+		_, _, err := kmc.PatchStatus(ctx, r.Client, db, func(obj client.Object, createOp bool) client.Object {
 			in := obj.(*openvizapi.GrafanaDashboard)
 			in.Status.Phase = openvizapi.GrafanaPhaseProcessing
 			in.Status.ObservedGeneration = in.Generation
@@ -125,7 +121,7 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		klog.Infof("Reconciling for: %s", key.String())
 
 		if err := r.setDashboard(ctx, db); err != nil {
-			r.handleFailureEvent(db, err.Error())
+			r.handleFailureEvent(ctx, db, err.Error())
 			return ctrl.Result{}, err
 		}
 	}
@@ -202,7 +198,7 @@ func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, db *openv
 		return err
 	}
 
-	_, _, err = kmc.PatchStatus(r.Client, db, func(obj client.Object, createOp bool) client.Object {
+	_, _, err = kmc.PatchStatus(ctx, r.Client, db, func(obj client.Object, createOp bool) client.Object {
 		in := obj.(*openvizapi.GrafanaDashboard)
 		in.Status.Dashboard = &openvizapi.GrafanaDashboardReference{
 			ID:      pointer.Int64P(int64(pointer.Int(resp.ID))),
@@ -284,7 +280,7 @@ func replaceDatasource(model []byte, ds string) ([]byte, error) {
 	return json.Marshal(val)
 }
 
-func (r *GrafanaDashboardReconciler) handleFailureEvent(db *openvizapi.GrafanaDashboard, reason string) {
+func (r *GrafanaDashboardReconciler) handleFailureEvent(ctx context.Context, db *openvizapi.GrafanaDashboard, reason string) {
 	r.Recorder.Eventf(
 		db,
 		core.EventTypeWarning,
@@ -292,7 +288,7 @@ func (r *GrafanaDashboardReconciler) handleFailureEvent(db *openvizapi.GrafanaDa
 		`Failed to complete operation for GrafanaDashboard: "%v", Reason: "%v"`,
 		db.Name,
 		reason)
-	_, _, err := kmc.PatchStatus(r.Client, db, func(obj client.Object, createOp bool) client.Object {
+	_, _, err := kmc.PatchStatus(ctx, r.Client, db, func(obj client.Object, createOp bool) client.Object {
 		in := obj.(*openvizapi.GrafanaDashboard)
 		in.Status.Phase = openvizapi.GrafanaPhaseFailed
 		in.Status.Reason = reason

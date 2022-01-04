@@ -1,5 +1,5 @@
 /*
-Copyright 2021.
+Copyright AppsCode Inc. and Contributors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -48,10 +48,6 @@ type GrafanaDatasourceReconciler struct {
 	Recorder record.EventRecorder
 }
 
-//+kubebuilder:rbac:groups=openviz.openviz.dev,resources=grafanadatasources,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=openviz.openviz.dev,resources=grafanadatasources/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=openviz.openviz.dev,resources=grafanadatasources/finalizers,verbs=update
-
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 //
@@ -71,7 +67,7 @@ func (r *GrafanaDatasourceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	// Add or remove finalizer based on deletion timestamp
 	if ds.ObjectMeta.DeletionTimestamp.IsZero() {
 		if !containsString(ds.GetFinalizers(), GrafanaDatasourceFinalizer) {
-			_, _, err := kmc.CreateOrPatch(r.Client, ds, func(obj client.Object, createOp bool) client.Object {
+			_, _, err := kmc.CreateOrPatch(ctx, r.Client, ds, func(obj client.Object, createOp bool) client.Object {
 				controllerutil.AddFinalizer(obj, GrafanaDatasourceFinalizer)
 				return obj
 			})
@@ -83,7 +79,7 @@ func (r *GrafanaDatasourceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		}
 	} else {
 		if containsString(ds.GetFinalizers(), GrafanaDatasourceFinalizer) {
-			_, _, err := kmc.PatchStatus(r.Client, ds, func(obj client.Object, createOp bool) client.Object {
+			_, _, err := kmc.PatchStatus(ctx, r.Client, ds, func(obj client.Object, createOp bool) client.Object {
 				in := obj.(*openvizapi.GrafanaDatasource)
 				in.Status.Phase = openvizapi.GrafanaPhaseTerminating
 				return in
@@ -96,7 +92,7 @@ func (r *GrafanaDatasourceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 				return ctrl.Result{}, err
 			}
 
-			_, _, err = kmc.CreateOrPatch(r.Client, ds, func(obj client.Object, createOp bool) client.Object {
+			_, _, err = kmc.CreateOrPatch(ctx, r.Client, ds, func(obj client.Object, createOp bool) client.Object {
 				controllerutil.RemoveFinalizer(obj, GrafanaDatasourceFinalizer)
 				return obj
 			})
@@ -109,7 +105,7 @@ func (r *GrafanaDatasourceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	}
 
 	if !meta_util.MustAlreadyReconciled(ds) {
-		_, _, err := kmc.PatchStatus(r.Client, ds, func(obj client.Object, createOp bool) client.Object {
+		_, _, err := kmc.PatchStatus(ctx, r.Client, ds, func(obj client.Object, createOp bool) client.Object {
 			in := obj.(*openvizapi.GrafanaDatasource)
 			in.Status.Phase = openvizapi.GrafanaPhaseProcessing
 			in.Status.Conditions = []kmapi.Condition{}
@@ -122,7 +118,7 @@ func (r *GrafanaDatasourceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		klog.Infof("Reconciling for: %s", key.String())
 
 		if err := r.createOrUpdateDatasource(ctx, ds); err != nil {
-			r.handleFailureEvent(ds, err.Error())
+			r.handleFailureEvent(ctx, ds, err.Error())
 			return ctrl.Result{}, err
 		}
 	}
@@ -188,7 +184,7 @@ func (r *GrafanaDatasourceReconciler) createDatasource(ctx context.Context, gc *
 	}
 	klog.Infof("GrafanaDatasource is created with message: %s\n", pointer.String(statusMsg.Message))
 
-	_, _, err = kmc.PatchStatus(r.Client, ds, func(obj client.Object, createOp bool) client.Object {
+	_, _, err = kmc.PatchStatus(ctx, r.Client, ds, func(obj client.Object, createOp bool) client.Object {
 		in := obj.(*openvizapi.GrafanaDatasource)
 		in.Status.Phase = openvizapi.GrafanaPhaseCurrent
 		in.Status.Reason = "Successfully created Grafana Datasource"
@@ -209,7 +205,7 @@ func (r *GrafanaDatasourceReconciler) updateDatasource(ctx context.Context, gc *
 		return fmt.Errorf("failed to update remote datasource, reason: %v", err)
 	}
 	klog.Infof("GrafanaDatasource is updated with message: %s\n", pointer.String(statusMsg.Message))
-	_, _, err = kmc.PatchStatus(r.Client, ds, func(obj client.Object, createOp bool) client.Object {
+	_, _, err = kmc.PatchStatus(ctx, r.Client, ds, func(obj client.Object, createOp bool) client.Object {
 		in := obj.(*openvizapi.GrafanaDatasource)
 		in.Status.Phase = openvizapi.GrafanaPhaseCurrent
 		in.Status.Reason = "Successfully updated GrafanaDatasource"
@@ -222,7 +218,7 @@ func (r *GrafanaDatasourceReconciler) updateDatasource(ctx context.Context, gc *
 	return nil
 }
 
-func (r *GrafanaDatasourceReconciler) handleFailureEvent(ds *openvizapi.GrafanaDatasource, reason string) {
+func (r *GrafanaDatasourceReconciler) handleFailureEvent(ctx context.Context, ds *openvizapi.GrafanaDatasource, reason string) {
 	r.Recorder.Eventf(
 		ds,
 		core.EventTypeWarning,
@@ -230,7 +226,7 @@ func (r *GrafanaDatasourceReconciler) handleFailureEvent(ds *openvizapi.GrafanaD
 		`Failed to complete operation for GrafanaDatasource: "%v", Reason: "%v"`,
 		ds.Name,
 		reason)
-	_, _, err := kmc.PatchStatus(r.Client, ds, func(obj client.Object, createOp bool) client.Object {
+	_, _, err := kmc.PatchStatus(ctx, r.Client, ds, func(obj client.Object, createOp bool) client.Object {
 		in := obj.(*openvizapi.GrafanaDatasource)
 		in.Status.Phase = openvizapi.GrafanaPhaseFailed
 		in.Status.Reason = reason
