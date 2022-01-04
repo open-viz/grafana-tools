@@ -17,10 +17,9 @@ limitations under the License.
 package framework
 
 import (
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	"gomodules.xyz/x/crypto/rand"
 	"k8s.io/client-go/rest"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type Framework struct {

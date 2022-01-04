@@ -28,6 +28,7 @@ import (
 	openvizcontrollers "go.openviz.dev/grafana-tools/pkg/operator/controllers/openviz"
 
 	"github.com/spf13/pflag"
+	crdv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apiserver/pkg/features"
@@ -120,6 +121,7 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 	utilruntime.Must(appcatalog.AddToScheme(scheme))
 	utilruntime.Must(openvizv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(crdv1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")

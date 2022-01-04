@@ -20,11 +20,11 @@ import (
 	"context"
 	"time"
 
-	apps "k8s.io/api/apps/v1"
+	sdk "go.openviz.dev/grafana-sdk"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	sdk "go.openviz.dev/grafana-sdk"
+	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"

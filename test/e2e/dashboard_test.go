@@ -22,8 +22,6 @@ import (
 	"os"
 	"time"
 
-	kmapi "kmodules.xyz/client-go/api/v1"
-
 	api "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
 	"go.openviz.dev/grafana-tools/test/e2e/framework"
 
@@ -34,12 +32,15 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/dynamic"
+	"k8s.io/klog/v2"
+	kmapi "kmodules.xyz/client-go/api/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 )
 
 const (
-	retryTimeout = time.Minute
+	timeout  = 5 * time.Minute
+	interval = 250 * time.Millisecond
 )
 
 var _ = Describe("GrafanaRef Operator E2E testing", func() {
@@ -82,8 +83,10 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 					return false
 				}
 
+				klog.Info(grafanadashboard.Status.Phase)
+
 				return grafanadashboard.Status.Phase == api.GrafanaPhaseCurrent || grafanadashboard.Status.Phase == api.GrafanaPhaseFailed
-			}, retryTimeout, 100*time.Millisecond).Should(BeTrue())
+			}, timeout, interval).Should(BeTrue())
 		}
 
 		waitForGrafanaDashboardToBeTerminated = func(gdb *api.GrafanaDashboard) {
@@ -95,7 +98,7 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 			Eventually(func() bool {
 				_, err := f.GetGrafanaDashboard()
 				return kerr.IsNotFound(err)
-			}, retryTimeout, 100*time.Millisecond).Should(BeTrue())
+			}, timeout, interval).Should(BeTrue())
 		}
 	)
 
@@ -250,7 +253,7 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 
 			By("Wait until AppBinding is deleted")
 			ctx := context.TODO()
-			ctx, cancel := context.WithTimeout(ctx, retryTimeout)
+			ctx, cancel := context.WithTimeout(ctx, timeout)
 			defer cancel()
 			ri := dynamic.NewForConfigOrDie(f.RestConfig()).
 				Resource(appcat.SchemeGroupVersion.WithResource(appcat.ResourceApps)).

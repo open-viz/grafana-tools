@@ -19,9 +19,9 @@ package framework
 import (
 	"context"
 
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	api "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
+
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func (f *Framework) GetGrafanaDashboard() (*api.GrafanaDashboard, error) {

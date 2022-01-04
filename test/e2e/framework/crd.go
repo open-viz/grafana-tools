@@ -23,9 +23,8 @@ import (
 
 	api "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
 
-	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
-
 	. "github.com/onsi/gomega"
+	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 )
 
 func (f *Framework) EventuallyCRD() GomegaAsyncAssertion {
