@@ -39,8 +39,8 @@ func NewExtraOptions() *ExtraOptions {
 	return &ExtraOptions{
 		MaxNumRequeues: 5,
 		NumThreads:     2,
-		QPS:            100,
-		Burst:          100,
+		QPS:            1e6,
+		Burst:          1e6,
 		ResyncPeriod:   10 * time.Minute,
 	}
 }
