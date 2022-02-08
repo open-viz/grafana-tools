@@ -26,13 +26,11 @@ import (
 )
 
 type ExtraOptions struct {
-	MaxNumRequeues          int
-	NumThreads              int
-	QPS                     float64
-	Burst                   int
-	ResyncPeriod            time.Duration
-	EnableValidatingWebhook bool
-	EnableMutatingWebhook   bool
+	MaxNumRequeues int
+	NumThreads     int
+	QPS            float64
+	Burst          int
+	ResyncPeriod   time.Duration
 }
 
 func NewExtraOptions() *ExtraOptions {
@@ -46,11 +44,9 @@ func NewExtraOptions() *ExtraOptions {
 }
 
 type config struct {
-	MaxNumRequeues          int
-	NumThreads              int
-	ResyncPeriod            time.Duration
-	EnableValidatingWebhook bool
-	EnableMutatingWebhook   bool
+	MaxNumRequeues int
+	NumThreads     int
+	ResyncPeriod   time.Duration
 }
 
 type Config struct {
@@ -71,9 +67,6 @@ func (s *ExtraOptions) AddGoFlags(fs *flag.FlagSet) {
 	fs.Float64Var(&s.QPS, "qps", s.QPS, "The maximum QPS to the master from this client")
 	fs.IntVar(&s.Burst, "burst", s.Burst, "The maximum burst for throttle")
 	fs.DurationVar(&s.ResyncPeriod, "resync-period", s.ResyncPeriod, "If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out.")
-
-	fs.BoolVar(&s.EnableMutatingWebhook, "enable-mutating-webhook", s.EnableMutatingWebhook, "If true, enables mutating webhooks for KubeVault CRDs.")
-	fs.BoolVar(&s.EnableValidatingWebhook, "enable-validating-webhook", s.EnableValidatingWebhook, "If true, enables validating webhooks for KubeVault CRDs.")
 }
 
 func (s *ExtraOptions) AddFlags(fs *pflag.FlagSet) {
@@ -88,8 +81,6 @@ func (s *ExtraOptions) ApplyTo(cfg *Config) error {
 	cfg.ResyncPeriod = s.ResyncPeriod
 	cfg.ClientConfig.QPS = float32(s.QPS)
 	cfg.ClientConfig.Burst = s.Burst
-	cfg.EnableMutatingWebhook = s.EnableMutatingWebhook
-	cfg.EnableValidatingWebhook = s.EnableValidatingWebhook
 
 	return nil
 }
