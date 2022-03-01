@@ -25,7 +25,7 @@ import (
 )
 
 func NewRootCmd() *cobra.Command {
-	var rootCmd = &cobra.Command{
+	rootCmd := &cobra.Command{
 		Use:               "grafana-tools [command]",
 		Short:             `GrafanaRef Operator by AppsCode`,
 		DisableAutoGenTag: true,

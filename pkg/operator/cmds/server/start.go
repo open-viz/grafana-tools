@@ -111,9 +111,7 @@ func (o GrafanaOperatorOptions) Config() (*server.GrafanaOperatorConfig, error) 
 	return cfg, nil
 }
 
-var (
-	setupLog = ctrl.Log.WithName("setup")
-)
+var setupLog = ctrl.Log.WithName("setup")
 
 func (o GrafanaOperatorOptions) Run(ctx context.Context) error {
 	config, err := o.Config()
