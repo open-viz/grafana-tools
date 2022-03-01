@@ -43,9 +43,7 @@ const (
 )
 
 var _ = Describe("GrafanaRef Operator E2E testing", func() {
-	var (
-		f *framework.Invocation
-	)
+	var f *framework.Invocation
 
 	var (
 		getModelFromGrafanaDashboardJson = func(filename string) []byte {
@@ -104,9 +102,7 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 	})
 
 	Describe("GrafanaDashboard Operation", func() {
-		var (
-			grafanadashboard *api.GrafanaDashboard
-		)
+		var grafanadashboard *api.GrafanaDashboard
 
 		BeforeEach(func() {
 			grafanadashboard = &api.GrafanaDashboard{
@@ -122,7 +118,6 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 					Overwrite: true,
 				},
 			}
-
 		})
 
 		Context("Successful creation of a grafanadashboard resource", func() {
@@ -139,7 +134,6 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 			It("should insert a grafanadashboard into grafana database", func() {
 				err := f.CreateGrafanaDashboard(grafanadashboard)
 				Expect(err).NotTo(HaveOccurred())
-
 			})
 
 			AfterEach(func() {
@@ -152,7 +146,6 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 				Expect(grafanadashboard.Status.Dashboard.ID).NotTo(BeNil())
 				Expect(grafanadashboard.Status.Dashboard.UID).NotTo(BeNil())
 				Expect(grafanadashboard.Status.Dashboard.Version).To(BeEquivalentTo(pointer.Int64P(grafanadashboard.Status.ObservedGeneration)))
-
 			})
 		})
 
@@ -171,7 +164,6 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 			It("should insert a grafanadashboard into grafana database", func() {
 				err := f.CreateGrafanaDashboard(grafanadashboard)
 				Expect(err).NotTo(HaveOccurred())
-
 			})
 
 			AfterEach(func() {
@@ -184,7 +176,6 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 				Expect(grafanadashboard.Status.Dashboard.ID).NotTo(BeNil())
 				Expect(grafanadashboard.Status.Dashboard.UID).NotTo(BeNil())
 				Expect(grafanadashboard.Status.Dashboard.Version).To(BeEquivalentTo(pointer.Int64P(grafanadashboard.Status.ObservedGeneration)))
-
 			})
 		})
 

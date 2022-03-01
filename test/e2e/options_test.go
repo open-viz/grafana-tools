@@ -34,20 +34,18 @@ type E2EOptions struct {
 	apiKey string
 }
 
-var (
-	options = &E2EOptions{
-		ExtraOptions: server.NewExtraOptions(),
+var options = &E2EOptions{
+	ExtraOptions: server.NewExtraOptions(),
 
-		kubeConfig: func() string {
-			kubecfg := os.Getenv("KUBECONFIG")
-			if kubecfg != "" {
-				return kubecfg
-			}
-			return filepath.Join(homedir.HomeDir(), ".kube", "config")
-		}(),
-		apiKey: "admin:admin",
-	}
-)
+	kubeConfig: func() string {
+		kubecfg := os.Getenv("KUBECONFIG")
+		if kubecfg != "" {
+			return kubecfg
+		}
+		return filepath.Join(homedir.HomeDir(), ".kube", "config")
+	}(),
+	apiKey: "admin:admin",
+}
 
 /*
 func init() {

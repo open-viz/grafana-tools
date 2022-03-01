@@ -50,9 +50,11 @@ type Storage struct {
 	gr schema.GroupResource
 }
 
-var _ rest.GroupVersionKindProvider = &Storage{}
-var _ rest.Scoper = &Storage{}
-var _ rest.Creater = &Storage{}
+var (
+	_ rest.GroupVersionKindProvider = &Storage{}
+	_ rest.Scoper                   = &Storage{}
+	_ rest.Creater                  = &Storage{}
+)
 
 func NewStorage(kc client.Client, a authorizer.Authorizer) *Storage {
 	return &Storage{
@@ -201,7 +203,7 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 		q.Add("panelId", strconv.Itoa(int(p.ID)))
 		baseURL.RawQuery = q.Encode()
 
-		//url-example:  http://kube-prometheus-stack-grafana.monitoring.svc:80/d-solo/7oanhmhnk/kubedb-postgres-summary?
+		// url-example:  http://kube-prometheus-stack-grafana.monitoring.svc:80/d-solo/7oanhmhnk/kubedb-postgres-summary?
 		//              from=1638527684&ordID=1&panelId=36&to=1638527684&var-postgres=dbnamehere&var-namespace=demo
 
 		panelURL := uiapi.PanelURL{

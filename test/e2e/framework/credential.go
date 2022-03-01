@@ -64,7 +64,7 @@ func (f *Framework) getAppBinding() (*appcatalogapi.AppBinding, error) {
 				Name: f.name,
 			},
 			ClientConfig: appcatalogapi.ClientConfig{
-				//URL: pointer.StringP(apiURL),
+				// URL: pointer.StringP(apiURL),
 				Service: &appcatalogapi.ServiceReference{
 					Scheme: "http",
 					Name:   f.name,
