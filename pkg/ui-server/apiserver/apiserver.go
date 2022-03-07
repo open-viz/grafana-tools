@@ -43,6 +43,7 @@ import (
 	"k8s.io/klog/v2/klogr"
 	"kmodules.xyz/authorizer/rbac"
 	appcatalogapi "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
+	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -147,16 +148,16 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 	}
 	ctrlClient := mgr.GetClient()
 
-	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &appcatalogapi.AppBinding{}, openvizapi.DefaultGrafanaKey, func(rawObj client.Object) []string {
+	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &appcatalogapi.AppBinding{}, mona.DefaultGrafanaKey, func(rawObj client.Object) []string {
 		app := rawObj.(*appcatalogapi.AppBinding)
-		if v, ok := app.Annotations[openvizapi.DefaultGrafanaKey]; ok && v == "true" {
+		if v, ok := app.Annotations[mona.DefaultGrafanaKey]; ok && v == "true" {
 			return []string{"true"}
 		}
 		return nil
 	}); err != nil {
 		return nil, err
 	}
-	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &openvizapi.GrafanaDashboard{}, openvizapi.DefaultGrafanaKey, func(rawObj client.Object) []string {
+	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &openvizapi.GrafanaDashboard{}, mona.DefaultGrafanaKey, func(rawObj client.Object) []string {
 		dashboard := rawObj.(*openvizapi.GrafanaDashboard)
 		if dashboard.Spec.GrafanaRef == nil {
 			return []string{"true"}

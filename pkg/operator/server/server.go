@@ -22,7 +22,6 @@ import (
 	"os"
 
 	openvizinstall "go.openviz.dev/grafana-tools/apis/openviz/install"
-	openvizapi "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
 	uiinstall "go.openviz.dev/grafana-tools/apis/ui/install"
 	openvizcontrollers "go.openviz.dev/grafana-tools/pkg/operator/controllers/openviz"
 
@@ -39,6 +38,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/klog/v2/klogr"
 	appcatalogapi "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
+	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -143,14 +143,14 @@ func (c completedConfig) New(ctx context.Context) (*GrafanaOperator, error) {
 		return nil, fmt.Errorf("unable to start manager, reason: %v", err)
 	}
 
-	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &appcatalogapi.AppBinding{}, openvizapi.DefaultGrafanaKey, func(rawObj client.Object) []string {
+	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &appcatalogapi.AppBinding{}, mona.DefaultGrafanaKey, func(rawObj client.Object) []string {
 		app := rawObj.(*appcatalogapi.AppBinding)
-		if v, ok := app.Annotations[openvizapi.DefaultGrafanaKey]; ok && v == "true" {
+		if v, ok := app.Annotations[mona.DefaultGrafanaKey]; ok && v == "true" {
 			return []string{"true"}
 		}
 		return nil
 	}); err != nil {
-		klog.Error(err, "unable to set up AppBinding Indexer", "field", openvizapi.DefaultGrafanaKey)
+		klog.Error(err, "unable to set up AppBinding Indexer", "field", mona.DefaultGrafanaKey)
 		os.Exit(1)
 	}
 

@@ -28,6 +28,7 @@ import (
 	kmapi "kmodules.xyz/client-go/api/v1"
 	"kmodules.xyz/client-go/apiextensions"
 	appcatalogapi "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
+	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -48,7 +49,7 @@ func GetGrafana(ctx context.Context, kc client.Client, ref *kmapi.ObjectReferenc
 	var grafanaList appcatalogapi.AppBindingList
 	// any namespace, default Grafana AppBinding
 	if err := kc.List(ctx, &grafanaList, client.MatchingFields{
-		DefaultGrafanaKey: "true",
+		mona.DefaultGrafanaKey: "true",
 	}); err != nil {
 		return nil, err
 	}
