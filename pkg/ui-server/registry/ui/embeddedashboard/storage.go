@@ -41,6 +41,7 @@ import (
 	"k8s.io/apiserver/pkg/registry/rest"
 	"kmodules.xyz/custom-resources/apis/appcatalog"
 	appcatalogapi "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
+	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -96,7 +97,7 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 		var dashboardList openvizapi.GrafanaDashboardList
 		// any namespace, using default grafana and with the given title
 		if err := r.kc.List(ctx, &dashboardList, client.MatchingFields{
-			openvizapi.DefaultGrafanaKey:        "true",
+			mona.DefaultGrafanaKey:              "true",
 			openvizapi.GrafanaDashboardTitleKey: in.Request.Dashboard.Title,
 		}); err != nil {
 			return nil, err

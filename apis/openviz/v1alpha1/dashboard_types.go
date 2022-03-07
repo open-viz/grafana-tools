@@ -32,7 +32,6 @@ const (
 	GrafanaNamespaceKey      = ".grafana.namespace"
 	GrafanaNameKey           = ".grafana.name"
 	GrafanaDashboardTitleKey = ".dashboard.title"
-	DefaultGrafanaKey        = "openviz.dev/is-default-grafana"
 )
 
 // +genclient

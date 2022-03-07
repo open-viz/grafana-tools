@@ -10,8 +10,9 @@ require (
 	k8s.io/apimachinery v0.21.1
 	k8s.io/client-go v0.21.1
 	k8s.io/klog/v2 v2.9.0
-	kmodules.xyz/client-go v0.0.0-20220104201203-bbfc181fb438
-	kmodules.xyz/custom-resources v0.0.0-20211221073415-ab9b13cfc659
+	kmodules.xyz/client-go v0.0.0-20220302084100-4d54605d5701
+	kmodules.xyz/custom-resources v0.0.0-20220307091238-ea82eb5973a0
+	kmodules.xyz/monitoring-agent-api v0.0.0-20220307213519-a6beb8e40d26
 	sigs.k8s.io/controller-runtime v0.9.0
 )
 
@@ -104,7 +105,7 @@ require (
 	github.com/prometheus/procfs v0.6.0 // indirect
 	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be // indirect
 	github.com/russross/blackfriday/v2 v2.0.1 // indirect
-	github.com/sergi/go-diff v1.1.0 // indirect
+	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
 	github.com/stretchr/testify v1.7.0 // indirect
 	github.com/xlab/treeprint v0.0.0-20181112141820-a009c3971eca // indirect

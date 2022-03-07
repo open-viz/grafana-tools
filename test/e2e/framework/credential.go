@@ -31,6 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcatalogapi "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
+	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
 func (f *Framework) AppBindingName() string {
@@ -93,7 +94,7 @@ func (f *Framework) CreateDefaultAppBinding() error {
 		return err
 	}
 	ab.ObjectMeta.Annotations = map[string]string{
-		api.DefaultGrafanaKey: "true",
+		mona.DefaultGrafanaKey: "true",
 	}
 	return f.cc.Create(context.TODO(), ab)
 }
