@@ -40,6 +40,7 @@ const (
 
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:path=grafanadashboards,singular=grafanadashboard,categories={grafana,openviz,appscode}
+// +kubebuilder:printcolumn:name="Title",type="string",JSONPath=".spec.model.title"
 // +kubebuilder:printcolumn:name="Status",type="string",JSONPath=".status.phase"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
