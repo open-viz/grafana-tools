@@ -19,17 +19,12 @@ package framework
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"net/url"
-	"strconv"
 
 	api "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
 
-	"gomodules.xyz/pointer"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcatalogapi "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
@@ -129,25 +124,4 @@ func (f *Framework) DeleteSecret() error {
 		Name:      f.name,
 		Namespace: f.namespace,
 	}})
-}
-
-// getApiURLandApiKey extracts ApiURL and ApiKey from appBinding and secret
-func (f *Framework) getApiURLandApiKey(appBinding *v1alpha1.AppBinding, secret *core.Secret) (apiURL, apiKey string, err error) {
-	cfg := appBinding.Spec.ClientConfig
-	if cfg.URL != nil {
-		apiURL = pointer.String(cfg.URL)
-	} else if cfg.Service != nil {
-		apiurl := url.URL{
-			Scheme:   cfg.Service.Scheme,
-			Host:     cfg.Service.Name + "." + appBinding.Namespace + "." + "svc" + ":" + strconv.Itoa(int(cfg.Service.Port)),
-			Path:     cfg.Service.Path,
-			RawQuery: cfg.Service.Query,
-		}
-		apiURL = apiurl.String()
-	}
-	apiKey = string(secret.Data["apiKey"])
-	if len(apiURL) == 0 || len(apiKey) == 0 {
-		err = fmt.Errorf("apiURL or apiKey not provided")
-	}
-	return
 }

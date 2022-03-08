@@ -21,6 +21,7 @@ import (
 	"time"
 
 	sdk "go.openviz.dev/grafana-sdk"
+	"go.openviz.dev/grafana-tools/pkg/operator/controllers/openviz"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -41,7 +42,7 @@ func (f *Framework) GetGrafanaClient() (*sdk.Client, error) {
 		return nil, err
 	}
 
-	apiURL, apiKey, err := f.getApiURLandApiKey(ab, auth)
+	apiURL, apiKey, err := openviz.ExtractGrafanaConfig(ab, auth)
 	if err != nil {
 		return nil, err
 	}
