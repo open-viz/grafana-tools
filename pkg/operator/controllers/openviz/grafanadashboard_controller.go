@@ -33,10 +33,14 @@ import (
 	kmapi "kmodules.xyz/client-go/api/v1"
 	kmc "kmodules.xyz/client-go/client"
 	meta_util "kmodules.xyz/client-go/meta"
+	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 const (
@@ -130,8 +134,30 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *GrafanaDashboardReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	appHandler := handler.EnqueueRequestsFromMapFunc(func(a client.Object) []reconcile.Request {
+		var dashboardList openvizapi.GrafanaDashboardList
+		err := r.Client.List(context.TODO(), &dashboardList, client.InNamespace(a.GetNamespace()))
+		if err != nil {
+			return nil
+		}
+
+		var req []reconcile.Request
+		for _, db := range dashboardList.Items {
+			ab, err := openvizapi.GetGrafana(context.TODO(), r.Client, db.Spec.GrafanaRef.WithNamespace(db.Namespace))
+			if err != nil {
+				return nil
+			}
+			if ab.Name == a.GetName() &&
+				ab.Namespace == a.GetNamespace() &&
+				db.Status.Phase == openvizapi.GrafanaPhaseFailed {
+				req = append(req, reconcile.Request{NamespacedName: client.ObjectKeyFromObject(&db)})
+			}
+		}
+		return req
+	})
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&openvizapi.GrafanaDashboard{}).
+		Watches(&source.Kind{Type: &appcatalog.AppBinding{}}, appHandler).
 		Complete(r)
 }
 
