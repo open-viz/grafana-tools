@@ -31,7 +31,8 @@ type E2EOptions struct {
 	kubeContext string
 	kubeConfig  string
 
-	apiKey string
+	username string
+	password string
 }
 
 var options = &E2EOptions{
@@ -44,7 +45,8 @@ var options = &E2EOptions{
 		}
 		return filepath.Join(homedir.HomeDir(), ".kube", "config")
 	}(),
-	apiKey: "admin:admin",
+	username: "admin",
+	password: "admin",
 }
 
 /*

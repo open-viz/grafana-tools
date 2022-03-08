@@ -62,9 +62,10 @@ func (f *Framework) getAppBinding() (*appcatalogapi.AppBinding, error) {
 			ClientConfig: appcatalogapi.ClientConfig{
 				// URL: pointer.StringP(apiURL),
 				Service: &appcatalogapi.ServiceReference{
-					Scheme: "http",
-					Name:   f.name,
-					Port:   3000,
+					Scheme:    "http",
+					Name:      f.name,
+					Namespace: f.namespace,
+					Port:      3000,
 				},
 			},
 			Parameters: &runtime.RawExtension{
@@ -105,7 +106,7 @@ func (f *Framework) SecretName() string {
 	return f.name
 }
 
-func (f *Framework) CreateSecret(apiKey string) error {
+func (f *Framework) CreateSecret(username, password string) error {
 	obj := &core.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      f.name,
@@ -113,7 +114,8 @@ func (f *Framework) CreateSecret(apiKey string) error {
 		},
 		Type: core.SecretTypeOpaque,
 		Data: map[string][]byte{
-			"apiKey": []byte(apiKey),
+			core.BasicAuthUsernameKey: []byte(username),
+			core.BasicAuthPasswordKey: []byte(password),
 		},
 	}
 	return f.cc.Create(context.TODO(), obj)
