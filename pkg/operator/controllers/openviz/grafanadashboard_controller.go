@@ -166,7 +166,7 @@ func (r *GrafanaDashboardReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 func (r *GrafanaDashboardReconciler) deleteExternalDashboard(ctx context.Context, db *openvizapi.GrafanaDashboard) error {
 	if db.Status.Dashboard != nil && db.Status.Dashboard.UID != nil {
-		gc, err := getGrafanaClient(ctx, r.Client, db.Spec.GrafanaRef.WithNamespace(db.Namespace))
+		gc, err := NewGrafanaClient(ctx, r.Client, db.Spec.GrafanaRef.WithNamespace(db.Namespace))
 		if err != nil {
 			return err
 		}
@@ -208,7 +208,7 @@ func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, db *openv
 	}
 
 	// collect grafana url and auth info from app binding
-	gc, err := getGrafanaClient(ctx, r.Client, db.Spec.GrafanaRef.WithNamespace(db.Namespace))
+	gc, err := NewGrafanaClient(ctx, r.Client, db.Spec.GrafanaRef.WithNamespace(db.Namespace))
 	if err != nil {
 		return err
 	}

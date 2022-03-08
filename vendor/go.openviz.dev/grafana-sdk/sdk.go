@@ -24,20 +24,30 @@ import (
 	"net/http"
 	"net/url"
 	"path"
-	"strings"
 
 	"github.com/go-resty/resty/v2"
 	"gomodules.xyz/pointer"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
+// AuthConfig configures an HTTP client.
+type AuthConfig struct {
+	// The HTTP basic authentication credentials for the targets.
+	BasicAuth *BasicAuth
+	// The bearer token for the targets.
+	BearerToken string
+}
+
+// BasicAuth contains basic HTTP authentication credentials.
+type BasicAuth struct {
+	Username string `yaml:"username" json:"username"`
+	Password string `yaml:"password,omitempty" json:"password,omitempty"`
+}
+
 type Client struct {
-	baseURL     string
-	key         string
-	isBasicAuth bool
-	username    string
-	password    string
-	client      *resty.Client
+	baseURL string
+	auth    *AuthConfig
+	client  *resty.Client
 }
 
 type GrafanaDashboard struct {
@@ -94,33 +104,16 @@ type Datasource struct {
 // NewClient initializes client for interacting with an instance of Grafana server;
 // apiKeyOrBasicAuth accepts either 'username:password' basic authentication credentials,
 // or a Grafana API key. If it is an empty string then no authentication is used.
-func NewClient(hostURL string, keyOrBasicAuth string) (*Client, error) {
-	isBasicAuth := strings.Contains(keyOrBasicAuth, ":")
+func NewClient(hostURL string, auth *AuthConfig) (*Client, error) {
 	baseURL, err := url.Parse(hostURL)
 	if err != nil {
 		return nil, err
 	}
-	client := &Client{
-		baseURL:     baseURL.String(),
-		key:         "",
-		isBasicAuth: isBasicAuth,
-		username:    "",
-		password:    "",
-		client:      resty.New(),
-	}
-	if len(keyOrBasicAuth) > 0 {
-		if !isBasicAuth {
-			client.key = keyOrBasicAuth
-		} else {
-			auths := strings.Split(keyOrBasicAuth, ":")
-			if len(auths) != 2 {
-				return nil, errors.New("given basic auth format is invalid. expected format: <username>:<password>")
-			}
-			client.username = auths[0]
-			client.password = auths[1]
-		}
-	}
-	return client, nil
+	return &Client{
+		baseURL: baseURL.String(),
+		auth:    auth,
+		client:  resty.New(),
+	}, nil
 }
 
 // SetDashboard will create or update grafana dashboard
@@ -204,10 +197,12 @@ func (c *Client) GetHealth(ctx context.Context) (*HealthResponse, error) {
 
 func (c *Client) do(ctx context.Context, method string, url string, body interface{}) (*resty.Response, error) {
 	req := c.client.R().SetContext(ctx).SetBody(body)
-	if c.isBasicAuth {
-		req = req.SetBasicAuth(c.username, c.password)
-	} else {
-		req = req.SetAuthToken(c.key)
+	if c.auth != nil {
+		if c.auth.BasicAuth != nil {
+			req = req.SetBasicAuth(c.auth.BasicAuth.Username, c.auth.BasicAuth.Password)
+		} else {
+			req = req.SetAuthToken(c.auth.BearerToken)
+		}
 	}
 
 	var resp *resty.Response
