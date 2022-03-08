@@ -20,15 +20,11 @@ import (
 	"context"
 	"io"
 
-	"go.openviz.dev/grafana-tools/client/clientset/versioned/scheme"
 	"go.openviz.dev/grafana-tools/pkg/operator/cmds/server"
 
 	"github.com/spf13/cobra"
 	v "gomodules.xyz/x/version"
-	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/klog/v2"
-	appcatscheme "kmodules.xyz/custom-resources/client/clientset/versioned/scheme"
 )
 
 func NewCmdOperator(ctx context.Context, out, errOut io.Writer) *cobra.Command {
@@ -38,10 +34,6 @@ func NewCmdOperator(ctx context.Context, out, errOut io.Writer) *cobra.Command {
 		Use:               "operator",
 		Short:             "Launch the GrafanaRef operator",
 		DisableAutoGenTag: true,
-		PersistentPreRun: func(c *cobra.Command, args []string) {
-			utilruntime.Must(scheme.AddToScheme(clientsetscheme.Scheme))
-			utilruntime.Must(appcatscheme.AddToScheme(clientsetscheme.Scheme))
-		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			klog.Infof("Starting operator version %s+%s ...", v.Version.Version, v.Version.CommitHash)
 
