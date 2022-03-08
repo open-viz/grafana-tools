@@ -111,7 +111,6 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		_, _, err := kmc.PatchStatus(ctx, r.Client, db, func(obj client.Object, createOp bool) client.Object {
 			in := obj.(*openvizapi.GrafanaDashboard)
 			in.Status.Phase = openvizapi.GrafanaPhaseProcessing
-			in.Status.ObservedGeneration = in.Generation
 			in.Status.Conditions = []kmapi.Condition{}
 			return in
 		})
@@ -209,6 +208,7 @@ func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, db *openv
 			Version: pointer.Int64P(int64(pointer.Int(resp.Version))),
 		}
 		in.Status.Phase = openvizapi.GrafanaPhaseCurrent
+		in.Status.ObservedGeneration = in.Generation
 		return in
 	})
 	if err != nil {
