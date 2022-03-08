@@ -30,9 +30,9 @@ type GrafanaConfiguration struct {
 
 	// Datasource defines the Grafana datasource name.
 	// +optional
-	Datasource string `json:"datasource,omitempty" protobuf:"bytes,1,opt,name=datasource"`
+	Datasource string `json:"datasource,omitempty"`
 
 	// FolderID defines the Grafana folder id.
 	// +optional
-	FolderID *int64 `json:"folderID,omitempty" protobuf:"varint,2,opt,name=folderID"`
+	FolderID *int64 `json:"folderID,omitempty"`
 }
