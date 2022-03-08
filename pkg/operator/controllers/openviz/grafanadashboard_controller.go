@@ -35,10 +35,12 @@ import (
 	meta_util "kmodules.xyz/client-go/meta"
 	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
@@ -111,7 +113,7 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{}, nil
 	}
 
-	if !meta_util.MustAlreadyReconciled(db) {
+	if db.Status.Phase != openvizapi.GrafanaPhaseFailed {
 		_, _, err := kmc.PatchStatus(ctx, r.Client, db, func(obj client.Object, createOp bool) client.Object {
 			in := obj.(*openvizapi.GrafanaDashboard)
 			in.Status.Phase = openvizapi.GrafanaPhaseProcessing
@@ -121,12 +123,12 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		if err != nil {
 			return ctrl.Result{}, err
 		}
-		klog.Infof("Reconciling for: %s", key.String())
+	}
+	klog.Infof("Reconciling for: %s", key.String())
 
-		if err := r.setDashboard(ctx, db); err != nil {
-			r.handleFailureEvent(ctx, db, err.Error())
-			return ctrl.Result{}, err
-		}
+	if err := r.setDashboard(ctx, db); err != nil {
+		r.handleFailureEvent(ctx, db, err.Error())
+		return ctrl.Result{}, err
 	}
 
 	return ctrl.Result{}, nil
@@ -156,7 +158,10 @@ func (r *GrafanaDashboardReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		return req
 	})
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&openvizapi.GrafanaDashboard{}).
+		For(&openvizapi.GrafanaDashboard{}, builder.WithPredicates(predicate.NewPredicateFuncs(func(obj client.Object) bool {
+			return !meta_util.MustAlreadyReconciled(obj) ||
+				obj.(*openvizapi.GrafanaDashboard).Status.Phase == openvizapi.GrafanaPhaseFailed
+		}))).
 		Watches(&source.Kind{Type: &appcatalog.AppBinding{}}, appHandler).
 		Complete(r)
 }
