@@ -113,16 +113,14 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{}, nil
 	}
 
-	if db.Status.Phase != openvizapi.GrafanaPhaseFailed {
+	if db.Status.Phase != openvizapi.GrafanaPhaseFailed && db.Status.Phase != openvizapi.GrafanaPhaseProcessing {
 		_, _, err := kmc.PatchStatus(ctx, r.Client, db, func(obj client.Object, createOp bool) client.Object {
 			in := obj.(*openvizapi.GrafanaDashboard)
 			in.Status.Phase = openvizapi.GrafanaPhaseProcessing
 			in.Status.Conditions = []kmapi.Condition{}
 			return in
 		})
-		if err != nil {
-			return ctrl.Result{}, err
-		}
+		return ctrl.Result{}, err
 	}
 	klog.Infof("Reconciling for: %s", key.String())
 
@@ -323,6 +321,7 @@ func (r *GrafanaDashboardReconciler) handleFailureEvent(ctx context.Context, db 
 		in := obj.(*openvizapi.GrafanaDashboard)
 		in.Status.Phase = openvizapi.GrafanaPhaseFailed
 		in.Status.Reason = reason
+		in.Status.ObservedGeneration = in.Generation
 		in.Status.Conditions = kmapi.SetCondition(in.Status.Conditions, kmapi.Condition{
 			Type:    kmapi.ConditionFailed,
 			Status:  core.ConditionTrue,
