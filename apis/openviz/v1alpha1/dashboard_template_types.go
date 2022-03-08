@@ -35,24 +35,24 @@ const (
 // +kubebuilder:subresource:status
 type GrafanaDashboardTemplate struct {
 	metav1.TypeMeta   `json:",inline,omitempty"`
-	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-	Spec              GrafanaDashboardTemplateSpec `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+	Spec              GrafanaDashboardTemplateSpec `json:"spec,omitempty"`
 }
 
 type GrafanaDashboardTemplateSpec struct {
-	GrafanaDashboardTemplate GrafanaDashboardTemplateReference `json:"grafanadashboardtemplate" protobuf:"bytes,1,opt,name=grafanadashboardtemplate"`
-	FolderID                 int64                             `json:"folderID" protobuf:"varint,2,opt,name=folderID"`
-	Overwrite                bool                              `json:"overwrite" protobuf:"varint,3,opt,name=overwrite"`
+	GrafanaDashboardTemplate GrafanaDashboardTemplateReference `json:"grafanadashboardtemplate"`
+	FolderID                 int64                             `json:"folderID"`
+	Overwrite                bool                              `json:"overwrite"`
 }
 
 type GrafanaDashboardTemplateReference struct {
-	ID            *int64   `json:"id" protobuf:"varint,1,opt,name=id"`
-	UID           *string  `json:"uid" protobuf:"bytes,2,opt,name=uid"`
-	Title         string   `json:"title" protobuf:"bytes,3,opt,name=title"`
-	Tags          []string `json:"tags" protobuf:"bytes,4,rep,name=tags"`
-	Timezone      string   `json:"timezone" protobuf:"bytes,5,opt,name=timezone"`
-	SchemaVersion int64    `json:"schemaVersion" protobuf:"varint,6,opt,name=schemaVersion"`
-	Version       int64    `json:"version" protobuf:"varint,7,opt,name=version"`
+	ID            *int64   `json:"id"`
+	UID           *string  `json:"uid"`
+	Title         string   `json:"title"`
+	Tags          []string `json:"tags"`
+	Timezone      string   `json:"timezone"`
+	SchemaVersion int64    `json:"schemaVersion"`
+	Version       int64    `json:"version"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -60,6 +60,6 @@ type GrafanaDashboardTemplateReference struct {
 
 type GrafanaDashboardTemplateList struct {
 	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-	Items           []GrafanaDashboardTemplate `json:"items,omitempty" protobuf:"bytes,2,rep,name=items"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []GrafanaDashboardTemplate `json:"items,omitempty"`
 }

@@ -28,26 +28,26 @@ const (
 )
 
 type EmbeddedDashboardRequest struct {
-	Target    kmapi.ObjectID `json:"target" protobuf:"bytes,1,opt,name=target"`
-	Dashboard DashboardRef   `json:"dashboard" protobuf:"bytes,2,opt,name=dashboard"`
+	Target    kmapi.ObjectID `json:"target"`
+	Dashboard DashboardRef   `json:"dashboard"`
 	// +optional
-	Panels []string `json:"panels,omitempty" protobuf:"bytes,3,rep,name=panels"`
+	Panels []string `json:"panels,omitempty"`
 }
 
 type DashboardRef struct {
 	// +optional
-	*kmapi.ObjectReference `json:",inline" protobuf:"bytes,1,opt,name=objectReference"`
+	*kmapi.ObjectReference `json:",inline"`
 	// +optional
-	Title string `json:"title,omitempty" protobuf:"bytes,2,opt,name=title"`
+	Title string `json:"title,omitempty"`
 }
 
 type PanelURL struct {
-	Title       string `json:"title,omitempty" protobuf:"bytes,1,opt,name=title"`
-	EmbeddedURL string `json:"embeddedURL,omitempty" protobuf:"bytes,2,opt,name=embeddedURL"`
+	Title       string `json:"title,omitempty"`
+	EmbeddedURL string `json:"embeddedURL,omitempty"`
 }
 
 type EmbeddedDashboardResponse struct {
-	URLs []PanelURL `json:"urls,omitempty" protobuf:"bytes,1,rep,name=urls"`
+	URLs []PanelURL `json:"urls,omitempty"`
 }
 
 // EmbeddedDashboard is the Schema for the EmbeddedDashboards API
@@ -56,6 +56,6 @@ type EmbeddedDashboardResponse struct {
 type EmbeddedDashboard struct {
 	metav1.TypeMeta `json:",inline"`
 
-	Request  *EmbeddedDashboardRequest  `json:"request,omitempty" protobuf:"bytes,1,opt,name=request"`
-	Response *EmbeddedDashboardResponse `json:"response,omitempty" protobuf:"bytes,2,opt,name=response"`
+	Request  *EmbeddedDashboardRequest  `json:"request,omitempty"`
+	Response *EmbeddedDashboardResponse `json:"response,omitempty"`
 }

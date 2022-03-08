@@ -38,27 +38,27 @@ const (
 // +kubebuilder:subresource:status
 type GrafanaDatasource struct {
 	metav1.TypeMeta   `json:",inline,omitempty"`
-	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-	Spec              GrafanaDatasourceSpec   `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
-	Status            GrafanaDatasourceStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+	Spec              GrafanaDatasourceSpec   `json:"spec,omitempty"`
+	Status            GrafanaDatasourceStatus `json:"status,omitempty"`
 }
 
 type GrafanaDatasourceSpec struct {
-	GrafanaRef        *kmapi.ObjectReference      `json:"grafanaRef" protobuf:"bytes,1,opt,name=grafanaRef"`
-	ID                int64                       `json:"id,omitempty" protobuf:"bytes,2,opt,name=id"`
-	OrgID             int64                       `json:"orgId" protobuf:"bytes,3,opt,name=orgId"`
-	Name              string                      `json:"name" protobuf:"bytes,4,opt,name=name"`
-	Type              GrafanaDatasourceType       `json:"type" protobuf:"bytes,5,opt,name=type"`
-	Access            GrafanaDatasourceAccessType `json:"access" protobuf:"bytes,6,opt,name=access"`
-	URL               string                      `json:"url" protobuf:"bytes,7,opt,name=url"`
-	Password          string                      `json:"password,omitempty" protobuf:"bytes,8,opt,name=password"`
-	User              string                      `json:"user,omitempty" protobuf:"bytes,9,opt,name=user"`
-	Database          string                      `json:"database,omitempty" protobuf:"bytes,10,opt,name=database"`
-	BasicAuth         bool                        `json:"basicAuth,omitempty" protobuf:"bytes,11,opt,name=basicAuth"`
-	BasicAuthUser     string                      `json:"basicAuthUser,omitempty" protobuf:"bytes,12,opt,name=basicAuthUser"`
-	BasicAuthPassword string                      `json:"basicAuthPassword,omitempty" protobuf:"bytes,13,opt,name=basicAuthPassword"`
-	IsDefault         bool                        `json:"isDefault,omitempty" protobuf:"bytes,14,opt,name=isDefault"`
-	Editable          bool                        `json:"editable,omitempty" protobuf:"bytes,15,opt,name=editable"`
+	GrafanaRef        *kmapi.ObjectReference      `json:"grafanaRef"`
+	ID                int64                       `json:"id,omitempty"`
+	OrgID             int64                       `json:"orgId"`
+	Name              string                      `json:"name"`
+	Type              GrafanaDatasourceType       `json:"type"`
+	Access            GrafanaDatasourceAccessType `json:"access"`
+	URL               string                      `json:"url"`
+	Password          string                      `json:"password,omitempty"`
+	User              string                      `json:"user,omitempty"`
+	Database          string                      `json:"database,omitempty"`
+	BasicAuth         bool                        `json:"basicAuth,omitempty"`
+	BasicAuthUser     string                      `json:"basicAuthUser,omitempty"`
+	BasicAuthPassword string                      `json:"basicAuthPassword,omitempty"`
+	IsDefault         bool                        `json:"isDefault,omitempty"`
+	Editable          bool                        `json:"editable,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -66,17 +66,17 @@ type GrafanaDatasourceSpec struct {
 
 type GrafanaDatasourceList struct {
 	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-	Items           []GrafanaDatasource `json:"items,omitempty" protobuf:"bytes,2,rep,name=items"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []GrafanaDatasource `json:"items,omitempty"`
 }
 
 type GrafanaDatasourceStatus struct {
 	// ObservedGeneration is the most recent generation observed for this resource. It corresponds to the
 	// resource's generation, which is updated on mutation by the API Server.
 	// +optional
-	ObservedGeneration  int64             `json:"observedGeneration,omitempty" protobuf:"varint,1,opt,name=observedGeneration"`
-	GrafanaDatasourceID *int64            `json:"grafanadatasourceId,omitempty" protobuf:"bytes,2,opt,name=grafanadatasourceID"`
-	Phase               GrafanaPhase      `json:"phase,omitempty" protobuf:"bytes,3,opt,name=phase"`
-	Reason              string            `json:"reason,omitempty" protobuf:"bytes,4,opt,name=reason"`
-	Conditions          []kmapi.Condition `json:"conditions,omitempty" protobuf:"bytes,5,rep,name=conditions"`
+	ObservedGeneration  int64             `json:"observedGeneration,omitempty"`
+	GrafanaDatasourceID *int64            `json:"grafanadatasourceId,omitempty"`
+	Phase               GrafanaPhase      `json:"phase,omitempty"`
+	Reason              string            `json:"reason,omitempty"`
+	Conditions          []kmapi.Condition `json:"conditions,omitempty"`
 }
