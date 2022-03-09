@@ -18,10 +18,18 @@ package framework
 
 import (
 	"context"
+	"errors"
+	"time"
 
 	api "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
 
+	"gomodules.xyz/wait"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+)
+
+const (
+	interval = time.Second * 5
+	timeout  = time.Minute * 5
 )
 
 func (f *Framework) GetGrafanaDashboard() (*api.GrafanaDashboard, error) {
@@ -38,4 +46,23 @@ func (f *Framework) CreateGrafanaDashboard(db *api.GrafanaDashboard) error {
 
 func (f *Framework) DeleteGrafanaDashboard(db *api.GrafanaDashboard) error {
 	return f.cc.Delete(context.TODO(), db)
+}
+
+func (f *Framework) WaitForGrafanaPhaseToBeCurrent() error {
+	return wait.PollImmediate(interval, timeout, func() (bool, error) {
+		gdb, err := f.GetGrafanaDashboard()
+		if err != nil {
+			return false, nil
+		}
+		if gdb.Status.Phase != api.GrafanaPhaseCurrent {
+			return false, nil
+		}
+		if gdb.Status.Dashboard.ID == nil {
+			return false, errors.New("dashboard ID should not be nil")
+		}
+		if gdb.Status.Dashboard.UID == nil {
+			return false, errors.New("dashboard UID should not be nil")
+		}
+		return true, nil
+	})
 }

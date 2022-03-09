@@ -27,7 +27,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"gomodules.xyz/pointer"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -64,7 +63,7 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 
 		createSecret = func() {
 			By("Creating Secret " + f.SecretName())
-			Expect(f.CreateSecret(options.apiKey)).Should(Succeed())
+			Expect(f.CreateSecret(options.username, options.password)).Should(Succeed())
 		}
 
 		createDefaultAppBinding = func() {
@@ -127,8 +126,8 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 					Raw: model,
 				}
 
-				createAppBinding()
 				createSecret()
+				createAppBinding()
 			})
 
 			It("should insert a grafanadashboard into grafana database", func() {
@@ -138,14 +137,8 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 
 			AfterEach(func() {
 				By("Verifying grafanadashboard has been succeeded")
-				grafanadashboard, err := f.GetGrafanaDashboard()
+				err := f.WaitForGrafanaPhaseToBeCurrent()
 				Expect(err).NotTo(HaveOccurred())
-
-				Expect(grafanadashboard.Status.Phase).To(BeEquivalentTo(api.GrafanaPhaseCurrent))
-
-				Expect(grafanadashboard.Status.Dashboard.ID).NotTo(BeNil())
-				Expect(grafanadashboard.Status.Dashboard.UID).NotTo(BeNil())
-				Expect(grafanadashboard.Status.Dashboard.Version).To(BeEquivalentTo(pointer.Int64P(grafanadashboard.Status.ObservedGeneration)))
 			})
 		})
 
@@ -157,8 +150,8 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 				}
 				grafanadashboard.Spec.GrafanaRef = nil
 
-				createDefaultAppBinding()
 				createSecret()
+				createDefaultAppBinding()
 			})
 
 			It("should insert a grafanadashboard into grafana database", func() {
@@ -167,15 +160,9 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 			})
 
 			AfterEach(func() {
-				By("Verifying grafanadashboard has been succeeded")
-				grafanadashboard, err := f.GetGrafanaDashboard()
+				By("Verifying GrafanaDashboard has been succeeded")
+				err := f.WaitForGrafanaPhaseToBeCurrent()
 				Expect(err).NotTo(HaveOccurred())
-
-				Expect(grafanadashboard.Status.Phase).To(BeEquivalentTo(api.GrafanaPhaseCurrent))
-
-				Expect(grafanadashboard.Status.Dashboard.ID).NotTo(BeNil())
-				Expect(grafanadashboard.Status.Dashboard.UID).NotTo(BeNil())
-				Expect(grafanadashboard.Status.Dashboard.Version).To(BeEquivalentTo(pointer.Int64P(grafanadashboard.Status.ObservedGeneration)))
 			})
 		})
 
@@ -186,7 +173,8 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 					Raw: model,
 				}
 
-				options.apiKey = "admin:not-password"
+				options.username = "admin"
+				options.password = "not-password"
 				createAppBinding()
 				createSecret()
 			})
