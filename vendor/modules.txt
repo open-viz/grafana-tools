@@ -1086,8 +1086,8 @@ kmodules.xyz/client-go/tools/clusterid
 # kmodules.xyz/crd-schema-fuzz v0.0.0-20210618002152-fae23aef5fb4
 ## explicit; go 1.15
 kmodules.xyz/crd-schema-fuzz
-# kmodules.xyz/custom-resources v0.0.0-20220307091238-ea82eb5973a0
-## explicit; go 1.16
+# kmodules.xyz/custom-resources v0.0.0-20220314103517-150ada19b198
+## explicit; go 1.17
 kmodules.xyz/custom-resources/apis/appcatalog
 kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1
 kmodules.xyz/custom-resources/crds
