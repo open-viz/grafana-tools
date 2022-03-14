@@ -225,8 +225,9 @@ github.com/google/go-cmp v0.5.6/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/
 github.com/google/go-querystring v1.0.0/go.mod h1:odCYkC5MyYFN7vkCjXpyrEuKhc/BUO6wN/zVPAxq5ck=
 github.com/google/go-querystring v1.1.0/go.mod h1:Kcdr2DB4koayq7X8pmAG4sNG59So17icRSOU623lUBU=
 github.com/google/gofuzz v1.0.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/M65Eg=
-github.com/google/gofuzz v1.1.0 h1:Hsa8mG0dQ46ij8Sl2AYJDUv1oA9/d6Vk+3LG99Oe02g=
 github.com/google/gofuzz v1.1.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/M65Eg=
+github.com/google/gofuzz v1.2.0 h1:xRy4A+RhZaiKjJ1bPfwQ8sedCA+YS2YcCHW6ec7JMi0=
+github.com/google/gofuzz v1.2.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/M65Eg=
 github.com/google/martian v2.1.0+incompatible/go.mod h1:9I4somxYTbIHy5NJKHRl3wXiIaQGbYVAs8BPL6v8lEs=
 github.com/google/pprof v0.0.0-20200229191704-1ebb73c60ed3/go.mod h1:ZgVRPoUq/hfqzAqh7sHMqb3I9Rq5C59dIz2SbBwJ4eM=
 github.com/google/renameio v0.1.0/go.mod h1:KWCgfxg9yswjAJkECMjeO8J8rahYeXnNhOm40UhjYkI=
@@ -288,6 +289,7 @@ github.com/hashicorp/logutils v1.0.0/go.mod h1:QIAnNjmIWmVIIkWDTG1z5v++HQmx9WQRO
 github.com/hashicorp/mdns v1.0.0/go.mod h1:tL+uN++7HEJ6SQLQ2/p+z2pH24WQKWjBPkE0mNTz8vQ=
 github.com/hashicorp/memberlist v0.1.3/go.mod h1:ajVTdAv/9Im8oMAAj5G31PhhMCZJV2pPBoIllUwCN7I=
 github.com/hashicorp/serf v0.8.2/go.mod h1:6hOLApaqBFA1NXqRQAsxw9QxuDEvNxSQRwA/JwenrHc=
+github.com/hexops/gotextdiff v1.0.3/go.mod h1:pSWU5MAI3yDq+fZBTazCSJysOMbxWL1BSow5/V2vxeg=
 github.com/howeyc/gopass v0.0.0-20190910152052-7cb4b85ec19c/go.mod h1:lADxMC39cJJqL93Duh1xhAs4I2Zs8mKS89XWXFGp9cs=
 github.com/howeyc/gopass v0.0.0-20210920133722-c8aef6fb66ef/go.mod h1:lADxMC39cJJqL93Duh1xhAs4I2Zs8mKS89XWXFGp9cs=
 github.com/hpcloud/tail v1.0.0/go.mod h1:ab1qPbhIpdTxEkNHXyeSf5vhxWSCs/tWer42PpOxQnU=
@@ -320,12 +322,13 @@ github.com/julienschmidt/httprouter v1.3.0/go.mod h1:JR6WtHb+2LUe8TCKY3cZOxFyyO8
 github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88/go.mod h1:3w7q1U84EfirKl04SVQ/s7nPm1ZPhiXd34z40TNz36k=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
+github.com/klauspost/cpuid/v2 v2.0.9/go.mod h1:FInQzS24/EEf25PyTYn52gqo7WaD8xa0213Md/qVLRg=
 github.com/kmodules/apimachinery v0.21.2-rc.0.0.20210617231004-332981b97d2d h1:6Yzcd8c16QYTv0rd0TSNWLNJ+WeJM5qp41eT9XIu78s=
 github.com/kmodules/apimachinery v0.21.2-rc.0.0.20210617231004-332981b97d2d/go.mod h1:jbreFvJo3ov9rj7eWT7+sYiRx+qZuCYXwWT1bcDswPY=
 github.com/kmodules/apiserver v0.21.2-0.20210716212718-83e5493ac170 h1:JnFBVfamGETJErVnJ4WoE3q+n1+4hrq61uY23HsV3c4=
 github.com/kmodules/apiserver v0.21.2-0.20210716212718-83e5493ac170/go.mod h1:nLLYZvMWn35glJ4/FZRhzLG/3MPxAaZTgV4FJZdr+tY=
-github.com/kmodules/controller-runtime v0.9.1-0.20220308094157-549765510cd6 h1:nK6jrqtslBHBXP9fve6gqs8QGru7F2w8NKHDF7J9PKU=
-github.com/kmodules/controller-runtime v0.9.1-0.20220308094157-549765510cd6/go.mod h1:TgkfvrhhEw3PlI0BRL/5xM+89y3/yc0ZDfdbTl84si8=
+github.com/kmodules/controller-runtime v0.9.1-0.20220314225952-be0b6d7fec6a h1:BEWI7aCzvpHeJ76tliUN5sUEZ0f2hbENh3QMlMlJ5mg=
+github.com/kmodules/controller-runtime v0.9.1-0.20220314225952-be0b6d7fec6a/go.mod h1:TgkfvrhhEw3PlI0BRL/5xM+89y3/yc0ZDfdbTl84si8=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/konsorten/go-windows-terminal-sequences v1.0.3/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/kr/fs v0.1.0/go.mod h1:FFnZGqtBN9Gxj7eW1uZ42v5BccTP0vu6NEaFoC2HwRg=
@@ -563,6 +566,7 @@ github.com/yudai/pp v2.0.1+incompatible/go.mod h1:PuxR/8QJ7cyCkFp/aUDS+JY727OFEZ
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
+github.com/zeebo/xxh3 v1.0.1/go.mod h1:8VHV24/3AZLn3b6Mlp/KuC33LWH687Wq6EnziEB+rsA=
 go.bytebuilders.dev/license-verifier v0.9.7/go.mod h1:GpIW0o8O0wpiBVt7IIz4z7bcPuG8nza8/bCDkaupDn8=
 go.etcd.io/bbolt v1.3.2/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 go.etcd.io/bbolt v1.3.3/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
@@ -796,6 +800,7 @@ golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898/go.mod h1:I/5z698sn9Ka8T
 golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 h1:go1bK/D/BFZV2I8cIQd1NKEZ+0owSTG1fDTci4IqFcE=
 golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
+gomodules.xyz/atomic-writer v0.0.2/go.mod h1:FO58qUk5UoXwTWbrErUkFVjQARn/BqjdMCuWXkjsQy8=
 gomodules.xyz/clock v0.0.0-20200817085942-06523dba733f h1:hTyhR4r+tj1Uq7/PpFxLTzbeA0LhMVp7bEYfhkzFjdY=
 gomodules.xyz/clock v0.0.0-20200817085942-06523dba733f/go.mod h1:K3m7N+nBOlf91/tpv8REUGwsAgaKFwElQCuiLhm12AQ=
 gomodules.xyz/encoding v0.0.2/go.mod h1:ZD+5Llh/9P/xTqoiurjs2w3XfAV2jNtsh04FbucIpLw=
@@ -820,6 +825,7 @@ gomodules.xyz/pointer v0.1.0/go.mod h1:sPLsC0+yLTRecUiC5yVlyvXhZ6LAGojNCRWNNqopl
 gomodules.xyz/runtime v0.2.0 h1:fzoGf/lnQ2F/rakbCjNfrZZFiNQ8XVLrR5YrtuhrtkU=
 gomodules.xyz/runtime v0.2.0/go.mod h1:/R/Dw906YIUHKJ5cfKUaJgJrojFjpRU+n0s3Wjn1tqs=
 gomodules.xyz/sets v0.0.0-20200930152147-4f4543544799/go.mod h1:jKgNp01/iDs+svOWXaPk5cKP3VXy0mWUoTF/ore+aMc=
+gomodules.xyz/sets v0.0.0-20210218105342-2efe2fb519a2/go.mod h1:jKgNp01/iDs+svOWXaPk5cKP3VXy0mWUoTF/ore+aMc=
 gomodules.xyz/sets v0.2.0/go.mod h1:jKgNp01/iDs+svOWXaPk5cKP3VXy0mWUoTF/ore+aMc=
 gomodules.xyz/sets v0.2.1 h1:vK3oUWoGVrZKLDKO/bzEo/ucHFdCE7+DxWPeWxK72KQ=
 gomodules.xyz/sets v0.2.1/go.mod h1:jKgNp01/iDs+svOWXaPk5cKP3VXy0mWUoTF/ore+aMc=
@@ -921,14 +927,14 @@ kmodules.xyz/authorizer v0.0.0-20211121124031-167d0ef7c671 h1:Qw9ieMLu00H/ll8ho3
 kmodules.xyz/authorizer v0.0.0-20211121124031-167d0ef7c671/go.mod h1:Niv46qWTo/eaE7ovvL4K2JWgq/5ke35dycCmCc8BgVA=
 kmodules.xyz/client-go v0.0.0-20210617233340-13d22e91512b/go.mod h1:A6GAK6xP5zBuWK6A/vUkkjKzcuywkms7fIxRf5wblO4=
 kmodules.xyz/client-go v0.0.0-20220215012708-9963581d69a7/go.mod h1:sOq5P3AkZdv6D/skvUPwEG15NDYy5olwBllH/JXfhGI=
-kmodules.xyz/client-go v0.0.0-20220302084100-4d54605d5701 h1:/ejsbEMVqbHyK8PvqNIKIxpyEYdQXJK3giTDXndSCpw=
-kmodules.xyz/client-go v0.0.0-20220302084100-4d54605d5701/go.mod h1:hu7eGess/SEbiss671Y062QBc8O45Qh0IGv19/0kPXM=
+kmodules.xyz/client-go v0.0.0-20220308080632-2543b61b64fd h1:9sOSO9moUpqn2CKeXh+GYP8ol1nU5IsLHJvZtNIzKz0=
+kmodules.xyz/client-go v0.0.0-20220308080632-2543b61b64fd/go.mod h1:hu7eGess/SEbiss671Y062QBc8O45Qh0IGv19/0kPXM=
 kmodules.xyz/crd-schema-fuzz v0.0.0-20210618002152-fae23aef5fb4 h1:vg6VZCnkHu3kJKdUe/oswi7MhjUVcZpyP/aXYhKFZ7M=
 kmodules.xyz/crd-schema-fuzz v0.0.0-20210618002152-fae23aef5fb4/go.mod h1:IIkUctlfoptoci0BOrsUf8ya+MOG5uaeh1PE4uzaIbA=
 kmodules.xyz/custom-resources v0.0.0-20220314103517-150ada19b198 h1:muwQ01epOKYHvcen/fwTVS3ztpdXRg/4PQYh3N3SXh8=
 kmodules.xyz/custom-resources v0.0.0-20220314103517-150ada19b198/go.mod h1:cDD2gsimPPj+Uu/6pzzw/wXjxLZyA0B/eM+UA3wWE9A=
-kmodules.xyz/monitoring-agent-api v0.0.0-20220307213519-a6beb8e40d26 h1:kz23WeFSmvL3HmhhRa1fIZvMAQhlrDaoedY+I6TV7E4=
-kmodules.xyz/monitoring-agent-api v0.0.0-20220307213519-a6beb8e40d26/go.mod h1:8nXVze9ykArwyJULEzqOa9SCf6d63u/1s984yPcTWV8=
+kmodules.xyz/monitoring-agent-api v0.0.0-20220314131012-05a1a33d1e2c h1:VZAJNa1Cr6Gxxx3RVRgKqdHOSkR3igR3XEg4UhETVco=
+kmodules.xyz/monitoring-agent-api v0.0.0-20220314131012-05a1a33d1e2c/go.mod h1:WNYoKFYBpCjl2Pj6md5/nVbKEaG+hsYVqz5oqRmK3sw=
 kmodules.xyz/offshoot-api v0.0.0-20210829122105-6f4d481b0c61/go.mod h1:3LECbAL3FgbyK80NP3V3Pmiuo/a3hFWg/PR6SPFhTns=
 kmodules.xyz/resource-metrics v0.0.8/go.mod h1:M7rWuo2qh3BpHhogiEVPnvGY9Xx4Pfygqn1Rex8YbgM=
 rsc.io/quote/v3 v3.1.0/go.mod h1:yEA65RcK8LyAZtP9Kv3t0HmxON59tX3rD+tICJqUlj0=
