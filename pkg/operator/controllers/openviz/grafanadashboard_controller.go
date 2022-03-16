@@ -19,7 +19,6 @@ package openviz
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	sdk "go.openviz.dev/grafana-sdk"
@@ -190,15 +189,16 @@ func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, db *openv
 		return err
 	}
 
+	dsConfig := &openvizapi.GrafanaConfiguration{}
+	if ab.Spec.Parameters != nil {
+		if err := json.Unmarshal(ab.Spec.Parameters.Raw, dsConfig); err != nil {
+			return fmt.Errorf("failed to unmarshal app binding parameters, reason: %v", err)
+		}
+	}
+
 	if db.Spec.Templatize != nil && db.Spec.Templatize.Datasource {
-		dsConfig := &openvizapi.GrafanaConfiguration{}
-		if ab.Spec.Parameters != nil {
-			err := json.Unmarshal(ab.Spec.Parameters.Raw, &dsConfig)
-			if err != nil {
-				return fmt.Errorf("failed to unmarshal app binding parameters, reason: %v", err)
-			}
-		} else {
-			return errors.New("failed to templatize dashboard, reason: dashboard parameter is not provided in the app binding")
+		if ab.Spec.Parameters == nil {
+			return fmt.Errorf("failed to templatize dashboard, reason: datasource parameter is not provided in app binding %s/%s", ab.Namespace, ab.Name)
 		}
 		model, err := replaceDatasource(db.Spec.Model.Raw, dsConfig.Datasource)
 		if err != nil {
@@ -214,7 +214,7 @@ func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, db *openv
 	}
 	gDB := &sdk.GrafanaDashboard{
 		Dashboard: db.Spec.Model,
-		FolderId:  int(pointer.Int64(db.Spec.FolderID)),
+		FolderId:  int(pointer.Int64(dsConfig.FolderID)),
 		Overwrite: true,
 	}
 	resp, err := gc.SetDashboard(ctx, gDB)
