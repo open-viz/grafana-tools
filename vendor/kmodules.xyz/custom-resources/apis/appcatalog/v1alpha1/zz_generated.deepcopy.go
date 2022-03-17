@@ -57,7 +57,7 @@ func (in *AddKeysFromTransform) DeepCopyInto(out *AddKeysFromTransform) {
 	*out = *in
 	if in.SecretRef != nil {
 		in, out := &in.SecretRef, &out.SecretRef
-		*out = new(v1.LocalObjectReference)
+		*out = new(ObjectReference)
 		**out = **in
 	}
 	return
@@ -153,11 +153,6 @@ func (in *AppBindingSpec) DeepCopyInto(out *AppBindingSpec) {
 		in, out := &in.Parameters, &out.Parameters
 		*out = new(runtime.RawExtension)
 		(*in).DeepCopyInto(*out)
-	}
-	if in.TLSSecret != nil {
-		in, out := &in.TLSSecret, &out.TLSSecret
-		*out = new(v1.LocalObjectReference)
-		**out = **in
 	}
 	return
 }
