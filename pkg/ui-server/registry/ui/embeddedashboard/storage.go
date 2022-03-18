@@ -179,7 +179,8 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 
 	in.Response = &uiapi.EmbeddedDashboardResponse{}
 	requestedPanels := sets.NewString(in.Request.Panels...)
-	now := time.Now().Unix()
+	from := strconv.FormatInt(time.Now().Add(-time.Hour*1).UnixMilli(), 10)
+	to := strconv.FormatInt(time.Now().UnixMilli(), 10)
 
 	for _, p := range board.Panels {
 		if p.Type == "row" {
@@ -189,6 +190,8 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 			continue
 		}
 
+		// <iframe src="http://localhost:3000/d-solo/200ac8fdbfbb74b39aff88118e4d1c2c/kubernetes-compute-resources-node-pods?orgId=1&refresh=10s&from=1647592158580&to=1647595758580&panelId=1" width="450" height="200" frameborder="0"></iframe>
+
 		baseURL, err := url.Parse(grafanaHost)
 		if err != nil {
 			return nil, apierrors.NewInternalError(err)
@@ -196,16 +199,15 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 
 		baseURL.Path = path.Join(baseURL.Path, "d-solo", *dashboard.Status.Dashboard.UID, *dashboard.Status.Dashboard.Slug)
 		q := url.Values{}
-		q.Add("ordID", strconv.Itoa(int(*dashboard.Status.Dashboard.OrgID)))
-		q.Add("var-namespace", in.Request.Target.Namespace)
-		q.Add("var-dbtype", in.Request.Target.Name)
-		q.Add("from", strconv.Itoa(int(now)))
-		q.Add("to", strconv.Itoa(int(now)))
+		q.Add("orgId", strconv.Itoa(int(*dashboard.Status.Dashboard.OrgID)))
+		q.Add("refresh", "15s")
+		q.Add("from", from)
+		q.Add("to", to)
 		q.Add("panelId", strconv.Itoa(int(p.ID)))
+		q.Add("var-namespace", in.Request.Target.Namespace)
+		// q.Add("var-name", in.Request.Target.Name)
+		q.Add("var-dbtype", in.Request.Target.Name)
 		baseURL.RawQuery = q.Encode()
-
-		// url-example:  http://kube-prometheus-stack-grafana.monitoring.svc:80/d-solo/7oanhmhnk/kubedb-postgres-summary?
-		//              from=1638527684&ordID=1&panelId=36&to=1638527684&var-postgres=dbnamehere&var-namespace=demo
 
 		panelURL := uiapi.PanelURL{
 			Title:       p.Title,
