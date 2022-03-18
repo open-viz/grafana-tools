@@ -199,7 +199,7 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 		baseURL.Path = path.Join(baseURL.Path, "d-solo", *dashboard.Status.Dashboard.UID, *dashboard.Status.Dashboard.Slug)
 		q := url.Values{}
 		q.Add("orgId", strconv.Itoa(int(*dashboard.Status.Dashboard.OrgID)))
-		q.Add("refresh", "15s")
+		q.Add("refresh", "30s")
 		q.Add("from", "now-1h")
 		q.Add("to", "now")
 		q.Add("panelId", strconv.Itoa(int(p.ID)))
