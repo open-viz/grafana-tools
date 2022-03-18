@@ -205,7 +205,7 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 		q.Add("panelId", strconv.Itoa(int(p.ID)))
 		q.Add("var-namespace", in.Request.Target.Namespace)
 		// q.Add("var-name", in.Request.Target.Name)
-		q.Add("var-dbtype", in.Request.Target.Name)
+		q.Add("var-"+strings.ToLower(in.Request.Target.Kind), in.Request.Target.Name)
 		baseURL.RawQuery = q.Encode()
 
 		panelURL := uiapi.PanelURL{
