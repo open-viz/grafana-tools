@@ -24,7 +24,6 @@ import (
 	"path"
 	"strconv"
 	"strings"
-	"time"
 
 	openvizapi "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
 	uiapi "go.openviz.dev/grafana-tools/apis/ui/v1alpha1"
@@ -179,8 +178,8 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 
 	in.Response = &uiapi.EmbeddedDashboardResponse{}
 	requestedPanels := sets.NewString(in.Request.Panels...)
-	from := strconv.FormatInt(time.Now().Add(-time.Hour*1).UnixMilli(), 10)
-	to := strconv.FormatInt(time.Now().UnixMilli(), 10)
+	// from := strconv.FormatInt(time.Now().Add(-time.Hour*1).UnixMilli(), 10)
+	// to := strconv.FormatInt(time.Now().UnixMilli(), 10)
 
 	for _, p := range board.Panels {
 		if p.Type == "row" {
@@ -201,8 +200,8 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 		q := url.Values{}
 		q.Add("orgId", strconv.Itoa(int(*dashboard.Status.Dashboard.OrgID)))
 		q.Add("refresh", "15s")
-		q.Add("from", from)
-		q.Add("to", to)
+		// q.Add("from", from)
+		// q.Add("to", to)
 		q.Add("panelId", strconv.Itoa(int(p.ID)))
 		q.Add("var-namespace", in.Request.Target.Namespace)
 		// q.Add("var-name", in.Request.Target.Name)
