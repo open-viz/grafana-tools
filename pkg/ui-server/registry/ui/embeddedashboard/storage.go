@@ -200,8 +200,8 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 		q := url.Values{}
 		q.Add("orgId", strconv.Itoa(int(*dashboard.Status.Dashboard.OrgID)))
 		q.Add("refresh", "15s")
-		// q.Add("from", from)
-		// q.Add("to", to)
+		q.Add("from", "now-1h")
+		q.Add("to", "now")
 		q.Add("panelId", strconv.Itoa(int(p.ID)))
 		q.Add("var-namespace", in.Request.Target.Namespace)
 		// q.Add("var-name", in.Request.Target.Name)
