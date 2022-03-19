@@ -22,6 +22,7 @@ import (
 
 	sdk "go.openviz.dev/grafana-sdk"
 	openvizapi "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
+	"go.openviz.dev/grafana-tools/pkg/grafana"
 
 	"gomodules.xyz/pointer"
 	core "k8s.io/api/core/v1"
@@ -143,7 +144,7 @@ func (r *GrafanaDatasourceReconciler) createOrUpdateDatasource(ctx context.Conte
 		IsDefault: ds.Spec.IsDefault,
 	}
 
-	gc, err := NewGrafanaClient(ctx, r.Client, ds.Spec.GrafanaRef.WithNamespace(ds.Namespace))
+	gc, err := grafana.NewGrafanaClient(ctx, r.Client, ds.Spec.GrafanaRef.WithNamespace(ds.Namespace))
 	if err != nil {
 		return err
 	}
@@ -165,7 +166,7 @@ func (r *GrafanaDatasourceReconciler) createOrUpdateDatasource(ctx context.Conte
 
 func (r *GrafanaDatasourceReconciler) deleteExternalDatasource(ctx context.Context, ds *openvizapi.GrafanaDatasource) error {
 	if ds.Status.GrafanaDatasourceID != nil {
-		gc, err := NewGrafanaClient(ctx, r.Client, ds.Spec.GrafanaRef.WithNamespace(ds.Namespace))
+		gc, err := grafana.NewGrafanaClient(ctx, r.Client, ds.Spec.GrafanaRef.WithNamespace(ds.Namespace))
 		if err != nil {
 			return err
 		}
