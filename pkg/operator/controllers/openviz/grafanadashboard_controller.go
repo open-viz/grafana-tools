@@ -23,6 +23,7 @@ import (
 
 	sdk "go.openviz.dev/grafana-sdk"
 	openvizapi "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
+	"go.openviz.dev/grafana-tools/pkg/grafana"
 
 	"gomodules.xyz/pointer"
 	core "k8s.io/api/core/v1"
@@ -165,7 +166,7 @@ func (r *GrafanaDashboardReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 func (r *GrafanaDashboardReconciler) deleteExternalDashboard(ctx context.Context, db *openvizapi.GrafanaDashboard) error {
 	if db.Status.Dashboard != nil && db.Status.Dashboard.UID != nil {
-		gc, err := NewGrafanaClient(ctx, r.Client, db.Spec.GrafanaRef.WithNamespace(db.Namespace))
+		gc, err := grafana.NewGrafanaClient(ctx, r.Client, db.Spec.GrafanaRef.WithNamespace(db.Namespace))
 		if err != nil {
 			return err
 		}
@@ -208,7 +209,7 @@ func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, db *openv
 	}
 
 	// collect grafana url and auth info from app binding
-	gc, err := NewGrafanaClient(ctx, r.Client, db.Spec.GrafanaRef.WithNamespace(db.Namespace))
+	gc, err := grafana.NewGrafanaClient(ctx, r.Client, db.Spec.GrafanaRef.WithNamespace(db.Namespace))
 	if err != nil {
 		return err
 	}
