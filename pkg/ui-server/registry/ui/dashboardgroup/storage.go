@@ -65,7 +65,7 @@ func NewStorage(kc client.Client, a authorizer.Authorizer) *Storage {
 }
 
 func (r *Storage) GroupVersionKind(_ schema.GroupVersion) schema.GroupVersionKind {
-	return uiapi.SchemeGroupVersion.WithKind(uiapi.ResourceKindDashboardGroupLink)
+	return uiapi.SchemeGroupVersion.WithKind(uiapi.ResourceKindDashboardGroup)
 }
 
 func (r *Storage) NamespaceScoped() bool {
@@ -73,17 +73,17 @@ func (r *Storage) NamespaceScoped() bool {
 }
 
 func (r *Storage) New() runtime.Object {
-	return &uiapi.DashboardGroupLink{}
+	return &uiapi.DashboardGroup{}
 }
 
 func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.ValidateObjectFunc, _ *metav1.CreateOptions) (runtime.Object, error) {
-	in := obj.(*uiapi.DashboardGroupLink)
+	in := obj.(*uiapi.DashboardGroup)
 	if in.Request == nil {
 		return nil, apierrors.NewBadRequest("missing apirequest")
 	}
 
-	in.Response = &uiapi.DashboardGroupLinkResponse{
-		Dashboards: make([]uiapi.DashboardLinkResponse, 0, len(in.Request.Dashboards)),
+	in.Response = &uiapi.DashboardGroupResponse{
+		Dashboards: make([]uiapi.DashboardResponse, 0, len(in.Request.Dashboards)),
 	}
 	for _, req := range in.Request.Dashboards {
 		resp, err := r.getDashboardLink(ctx, &req, in.Request.RefreshInterval, in.Request.TimeRange, in.Request.EmbeddedLink)
@@ -99,11 +99,11 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 
 func (r *Storage) getDashboardLink(
 	ctx context.Context,
-	req *uiapi.DashboardLinkRequest,
+	req *uiapi.DashboardRequest,
 	refreshInterval string,
 	timeRange *uiapi.TimeRange,
 	embed bool,
-) (*uiapi.DashboardLinkResponse, error) {
+) (*uiapi.DashboardResponse, error) {
 	var d openvizapi.GrafanaDashboard
 	if req.ObjectReference != nil {
 		ns := req.Namespace
@@ -198,7 +198,7 @@ func (r *Storage) getDashboardLink(
 		return nil, fmt.Errorf("failed to unmarshal model for GrafanaDashboard %s/%s, reason: %v", d.Namespace, d.Name, err)
 	}
 
-	resp := &uiapi.DashboardLinkResponse{
+	resp := &uiapi.DashboardResponse{
 		DashboardRef: req.DashboardRef,
 	}
 	if embed {

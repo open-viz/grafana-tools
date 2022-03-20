@@ -39,12 +39,12 @@ message DashboardRef {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 message DashboardLink {
-  optional DashboardLinkRequest request = 1;
+  optional DashboardRequest request = 1;
 
-  optional DashboardLinkResponse response = 2;
+  optional DashboardResponse response = 2;
 }
 
-message DashboardLinkRequest {
+message DashboardRequest {
   optional kmodules.xyz.client_go.api.v1.ObjectID target = 1;
 
   optional DashboardRef dashboard = 2;
@@ -53,7 +53,7 @@ message DashboardLinkRequest {
   repeated string panels = 3;
 }
 
-message DashboardLinkResponse {
+message DashboardResponse {
   repeated PanelURL urls = 1;
 }
 

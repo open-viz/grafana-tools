@@ -22,23 +22,23 @@ import (
 )
 
 const (
-	ResourceKindDashboardGroupLink = "DashboardGroupLink"
-	ResourceDashboardGroupLink     = "dashboardGroupLink"
-	ResourceDashboardGroupLinks    = "dashboardGroupLinks"
+	ResourceKindDashboardGroup = "DashboardGroup"
+	ResourceDashboardGroup     = "dashboardgroup"
+	ResourceDashboardGroups    = "dashboardgroups"
 )
 
-// DashboardGroupLink is the Schema for the DashboardGroupLinks API
+// DashboardGroup is the Schema for the DashboardGroups API
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-type DashboardGroupLink struct {
+type DashboardGroup struct {
 	metav1.TypeMeta `json:",inline"`
 
-	Request  *DashboardGroupLinkRequest  `json:"request,omitempty"`
-	Response *DashboardGroupLinkResponse `json:"response,omitempty"`
+	Request  *DashboardGroupRequest  `json:"request,omitempty"`
+	Response *DashboardGroupResponse `json:"response,omitempty"`
 }
 
-type DashboardGroupLinkRequest struct {
-	Dashboards []DashboardLinkRequest `json:"dashboards"`
+type DashboardGroupRequest struct {
+	Dashboards []DashboardRequest `json:"dashboards"`
 	// +optional
 	// +kubebuilder:default="30s"
 	RefreshInterval string `json:"refreshInterval,omitempty"`
@@ -55,7 +55,7 @@ type TimeRange struct {
 	To   string `json:"to,omitempty"`
 }
 
-type DashboardLinkRequest struct {
+type DashboardRequest struct {
 	DashboardRef `json:",inline"`
 	// +optional
 	Vars []DashboardVar `json:"vars,omitempty"`
@@ -86,11 +86,11 @@ type DashboardVar struct {
 	Type DashboardVarType `json:"type,omitempty"`
 }
 
-type DashboardGroupLinkResponse struct {
-	Dashboards []DashboardLinkResponse `json:"dashboards"`
+type DashboardGroupResponse struct {
+	Dashboards []DashboardResponse `json:"dashboards"`
 }
 
-type DashboardLinkResponse struct {
+type DashboardResponse struct {
 	DashboardRef `json:",inline"`
 	// +optional
 	Link string `json:"link,omitempty"`
