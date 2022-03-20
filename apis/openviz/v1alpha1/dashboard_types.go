@@ -29,8 +29,6 @@ const (
 )
 
 const (
-	GrafanaNamespaceKey      = ".grafana.namespace"
-	GrafanaNameKey           = ".grafana.name"
 	GrafanaDashboardTitleKey = ".dashboard.title"
 )
 

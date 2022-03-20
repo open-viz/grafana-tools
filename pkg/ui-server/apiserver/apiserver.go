@@ -26,7 +26,7 @@ import (
 	"go.openviz.dev/grafana-tools/apis/ui"
 	uiinstall "go.openviz.dev/grafana-tools/apis/ui/install"
 	uiapi "go.openviz.dev/grafana-tools/apis/ui/v1alpha1"
-	emdashstorage "go.openviz.dev/grafana-tools/pkg/ui-server/registry/ui/embeddedashboard"
+	dashgroupstorage "go.openviz.dev/grafana-tools/pkg/ui-server/registry/ui/dashboardgroup"
 
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -161,30 +161,15 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 		dashboard := rawObj.(*openvizapi.GrafanaDashboard)
 		if dashboard.Spec.GrafanaRef == nil {
 			return []string{"true"}
+		} else {
+			var app appcatalogapi.AppBinding
+			if err := ctrlClient.Get(ctx, dashboard.Spec.GrafanaRef.ObjectKey(), &app); err == nil {
+				if v, ok := app.Annotations[mona.DefaultGrafanaKey]; ok && v == "true" {
+					return []string{"true"}
+				}
+			}
 		}
 		return nil
-	}); err != nil {
-		return nil, err
-	}
-	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &openvizapi.GrafanaDashboard{}, openvizapi.GrafanaNamespaceKey, func(rawObj client.Object) []string {
-		dashboard := rawObj.(*openvizapi.GrafanaDashboard)
-		if dashboard.Spec.GrafanaRef == nil {
-			return nil
-		}
-		ns := dashboard.Spec.GrafanaRef.Namespace
-		if ns == "" {
-			ns = dashboard.Namespace
-		}
-		return []string{ns}
-	}); err != nil {
-		return nil, err
-	}
-	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &openvizapi.GrafanaDashboard{}, openvizapi.GrafanaNameKey, func(rawObj client.Object) []string {
-		dashboard := rawObj.(*openvizapi.GrafanaDashboard)
-		if dashboard.Spec.GrafanaRef == nil {
-			return nil
-		}
-		return []string{dashboard.Spec.GrafanaRef.Name}
 	}); err != nil {
 		return nil, err
 	}
@@ -216,7 +201,7 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 		apiGroupInfo := genericapiserver.NewDefaultAPIGroupInfo(ui.GroupName, Scheme, metav1.ParameterCodec, Codecs)
 
 		v1alpha1storage := map[string]rest.Storage{}
-		v1alpha1storage[uiapi.ResourceEmbeddedDashboards] = emdashstorage.NewStorage(ctrlClient, rbacAuthorizer)
+		v1alpha1storage[uiapi.ResourceDashboardGroupLinks] = dashgroupstorage.NewStorage(ctrlClient, rbacAuthorizer)
 		apiGroupInfo.VersionedResourcesStorageMap["v1alpha1"] = v1alpha1storage
 
 		if err := s.GenericAPIServer.InstallAPIGroup(&apiGroupInfo); err != nil {

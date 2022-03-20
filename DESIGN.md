@@ -1,4 +1,4 @@
-# Detect EmbeddedDashboard for Resource
+# Detect DashboardLink for Resource
 
 I think I have a clear idea how to solve the Grafana AppBinding / Datasource / Dashboard connection issues. This is how:
 
@@ -18,6 +18,6 @@ I think I have a clear idea how to solve the Grafana AppBinding / Datasource / D
 
     A: We can extend the config in AppBinding params to include double opt-in usage policy fields.
 
-- EmbeddedDashboards will refer to a Dashboard via only its title or (namespace/name). If only title is defined, then we find the GrafanaDashbaord that uses the default Grafana AppBinding  with that title and use that. 
+- DashboardLinks will refer to a Dashboard via only its title or (namespace/name). If only title is defined, then we find the GrafanaDashbaord that uses the default Grafana AppBinding  with that title and use that. 
 
 - Resource-metadata YAMLs will be extended to provide the full API object for these calls. We already have a way to define Query for the GraphQL stuff. So, we can just extend it further using a requestTemplate that is rendered using the Target object (say, database).
