@@ -14,20 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package fuzzer
+package v1alpha1
 
-import (
-	"go.openviz.dev/grafana-tools/apis/ui/v1alpha1"
+import "strings"
 
-	fuzz "github.com/google/gofuzz"
-	runtimeserializer "k8s.io/apimachinery/pkg/runtime/serializer"
-)
-
-// Funcs returns the fuzzer functions for this api group.
-var Funcs = func(codecs runtimeserializer.CodecFactory) []interface{} {
-	return []interface{}{
-		func(s *v1alpha1.DashboardGroupLink, c fuzz.Continue) {
-			c.FuzzNoCustom(s) // fuzz self without calling this function again
-		},
+func (v DashboardVar) VarName() string {
+	if strings.HasPrefix(v.Name, "var-") {
+		return v.Name
 	}
+	return "var-" + v.Name
 }
