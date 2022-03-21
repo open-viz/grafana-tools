@@ -18,6 +18,7 @@ package e2e_test
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"time"
@@ -238,7 +239,7 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 		Context("Unsuccessful creation of a grafanaDashboard resource", func() {
 			It("should not insert a grafanaDashboard into grafana database with invalid grafana auth", func() {
 				By("Crating Secret with invalid Grafana auth")
-				createSecret("admin", "wrong-grafanaPassword")
+				createSecret("admin", "wrong-password")
 
 				By("Creating Grafana AppBinding")
 				createAppBinding()
@@ -252,11 +253,16 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 				waitForGrafanaDashboardToGetToFinalPhase()
 
 				By("Checking GrafanaDashboard failed status")
-				Expect(gDashboard.Status.Phase).To(BeEquivalentTo(api.GrafanaPhaseFailed))
-				Expect(gDashboard.Status.Dashboard).To(BeNil())
+				gdb, err := f.GetGrafanaDashboard()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(gdb.Status.Phase).To(Equal(api.GrafanaPhaseFailed))
+				Expect(gdb.Status.Dashboard).To(BeNil())
+
+				By("Deleting grafanaDashboard")
+				waitForGrafanaDashboardToBeTerminated(gDashboard)
 			})
 
-			It("should not insert a grafanaDashboard into grafana database without model data", func() {
+			It("should not insert a grafanaDashboard into grafana database with no model data", func() {
 				By("Crating Secret with Grafana auth")
 				createSecret(options.grafanaUsername, options.grafanaPassword)
 
@@ -266,6 +272,7 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 				By("Creating Dashboard")
 				gDashboard := getInitialGrafanaDashboardResource()
 				gDashboard.Spec.Model = nil
+				fmt.Println(gDashboard.Spec.Model)
 				err := f.CreateOrUpdateGrafanaDashboard(gDashboard)
 				Expect(err).NotTo(HaveOccurred())
 
@@ -273,8 +280,13 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 				waitForGrafanaDashboardToGetToFinalPhase()
 
 				By("Checking GrafanaDashboard failed status")
-				Expect(gDashboard.Status.Phase).To(BeEquivalentTo(api.GrafanaPhaseFailed))
-				Expect(gDashboard.Status.Dashboard).To(BeNil())
+				gdb, err := f.GetGrafanaDashboard()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(gdb.Status.Phase).To(BeEquivalentTo(api.GrafanaPhaseFailed))
+				Expect(gdb.Status.Dashboard).To(BeNil())
+
+				By("Deleting grafanaDashboard")
+				waitForGrafanaDashboardToBeTerminated(gDashboard)
 			})
 		})
 

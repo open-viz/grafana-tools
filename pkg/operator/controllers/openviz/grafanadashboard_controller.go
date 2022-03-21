@@ -132,7 +132,6 @@ func (r *GrafanaDashboardReconciler) handleSetDashboardError(ctx context.Context
 		in := obj.(*openvizapi.GrafanaDashboard)
 		in.Status.Phase = openvizapi.GrafanaPhaseFailed
 		in.Status.Reason = reason
-		in.Status.ObservedGeneration = in.Generation
 		in.Status.Conditions = kmapi.SetCondition(in.Status.Conditions, kmapi.Condition{
 			Type:    kmapi.ConditionFailed,
 			Status:  core.ConditionTrue,
