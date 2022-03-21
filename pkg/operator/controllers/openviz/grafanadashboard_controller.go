@@ -80,6 +80,7 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			_, _, err := kmc.PatchStatus(ctx, r.Client, db, func(obj client.Object, createOp bool) client.Object {
 				in := obj.(*openvizapi.GrafanaDashboard)
 				in.Status.Phase = openvizapi.GrafanaPhaseTerminating
+				in.Status.Reason = "Resource has been going to be deleted"
 				return in
 			})
 			return ctrl.Result{}, err
@@ -244,6 +245,7 @@ func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, db *openv
 
 	_, _, err = kmc.PatchStatus(ctx, r.Client, db, func(obj client.Object, createOp bool) client.Object {
 		in := obj.(*openvizapi.GrafanaDashboard)
+		reason := "Dashboard is successfully created"
 		in.Status.Dashboard = &openvizapi.GrafanaDashboardReference{
 			ID:      pointer.Int64P(int64(pointer.Int(resp.ID))),
 			UID:     resp.UID,
@@ -257,9 +259,10 @@ func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, db *openv
 		in.Status.Conditions = kmapi.SetCondition(in.Status.Conditions, kmapi.Condition{
 			Type:    kmapi.ConditionReady,
 			Status:  core.ConditionTrue,
-			Reason:  "Dashboard is successfully created",
-			Message: "Dashboard is successfully created",
+			Reason:  reason,
+			Message: reason,
 		})
+		in.Status.Reason = reason
 		return in
 	})
 	return ctrl.Result{}, err
