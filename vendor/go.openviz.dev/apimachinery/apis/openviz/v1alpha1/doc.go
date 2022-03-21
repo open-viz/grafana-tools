@@ -1,5 +1,5 @@
 /*
-Copyright AppsCode Inc. and Contributors.
+Copyright AppsCode Inc. and Contributors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,16 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package apiserver
+// Package v1alpha1 is the v1alpha1 version of the API.
 
-import (
-	"testing"
+// +k8s:deepcopy-gen=package,register
+// +k8s:conversion-gen=go.openviz.dev/apimachinery/apis/openviz
+// +k8s:openapi-gen=true
+// +k8s:defaulter-gen=TypeMeta
 
-	uifuzzer "go.openviz.dev/apimachinery/apis/ui/fuzzer"
-
-	"k8s.io/apimachinery/pkg/api/apitesting/roundtrip"
-)
-
-func TestRoundTripTypes(t *testing.T) {
-	roundtrip.RoundTripTestForScheme(t, Scheme, uifuzzer.Funcs)
-}
+// +groupName=openviz.dev
+package v1alpha1

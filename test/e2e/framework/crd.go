@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"time"
 
-	api "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
+	api "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 
 	. "github.com/onsi/gomega"
 	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"

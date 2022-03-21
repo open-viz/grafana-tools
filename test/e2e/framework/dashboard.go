@@ -21,7 +21,7 @@ import (
 	"errors"
 	"time"
 
-	api "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
+	api "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 
 	"gomodules.xyz/wait"
 	"sigs.k8s.io/controller-runtime/pkg/client"

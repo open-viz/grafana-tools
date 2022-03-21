@@ -21,11 +21,11 @@ import (
 	"encoding/json"
 	"fmt"
 
-	openvizinstall "go.openviz.dev/grafana-tools/apis/openviz/install"
-	openvizapi "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
-	"go.openviz.dev/grafana-tools/apis/ui"
-	uiinstall "go.openviz.dev/grafana-tools/apis/ui/install"
-	uiapi "go.openviz.dev/grafana-tools/apis/ui/v1alpha1"
+	openvizinstall "go.openviz.dev/apimachinery/apis/openviz/install"
+	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
+	"go.openviz.dev/apimachinery/apis/ui"
+	uiinstall "go.openviz.dev/apimachinery/apis/ui/install"
+	uiapi "go.openviz.dev/apimachinery/apis/ui/v1alpha1"
 	dashgroupstorage "go.openviz.dev/grafana-tools/pkg/ui-server/registry/ui/dashboardgroup"
 
 	core "k8s.io/api/core/v1"
