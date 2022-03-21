@@ -231,7 +231,7 @@ func (r *Storage) getDashboardLink(
 				q.Add("refresh", refreshInterval)
 			}
 			if timeRange == nil {
-				q.Add("from", "now-1h")
+				q.Add("from", "now-3h")
 				q.Add("to", "now")
 			} else {
 				q.Add("from", timeRange.From)
@@ -265,7 +265,7 @@ func (r *Storage) getDashboardLink(
 			q.Add("refresh", refreshInterval)
 		}
 		if timeRange == nil {
-			q.Add("from", "now-1h")
+			q.Add("from", "now-3h")
 			q.Add("to", "now")
 		} else {
 			q.Add("from", timeRange.From)
