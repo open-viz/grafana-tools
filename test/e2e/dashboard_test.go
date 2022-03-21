@@ -18,7 +18,6 @@ package e2e_test
 
 import (
 	"context"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"time"
@@ -45,6 +44,7 @@ const (
 const (
 	grafanaDashboardJsonFile        = "dashboard-with-panels-with-mixed-yaxes.json"
 	updatedGrafanaDashboardJsonFile = "updated-dashboard-with-panels.json"
+	invalidGrafanaDashboardJsonFile = "invalid-dashboard.json"
 )
 
 var _ = Describe("GrafanaRef Operator E2E testing", func() {
@@ -62,8 +62,8 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 			return modelData
 		}
 
-		getInitialGrafanaDashboardResource = func() *api.GrafanaDashboard {
-			model := getModelFromGrafanaDashboardJson(grafanaDashboardJsonFile)
+		getInitialGrafanaDashboardResource = func(jsonFilePath string) *api.GrafanaDashboard {
+			model := getModelFromGrafanaDashboardJson(jsonFilePath)
 			grafanaDashboard := &api.GrafanaDashboard{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      f.Name(),
@@ -133,7 +133,7 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 				createAppBinding()
 
 				By("Creating Dashboard")
-				gDashboard := getInitialGrafanaDashboardResource()
+				gDashboard := getInitialGrafanaDashboardResource(grafanaDashboardJsonFile)
 				err := f.CreateOrUpdateGrafanaDashboard(gDashboard)
 				Expect(err).NotTo(HaveOccurred())
 
@@ -156,7 +156,7 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 				createAppBinding()
 
 				By("Creating Dashboard")
-				gDashboard := getInitialGrafanaDashboardResource()
+				gDashboard := getInitialGrafanaDashboardResource(grafanaDashboardJsonFile)
 				err := f.CreateOrUpdateGrafanaDashboard(gDashboard)
 				Expect(err).NotTo(HaveOccurred())
 
@@ -188,7 +188,7 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 				createDefaultAppBinding()
 
 				By("Creating Dashboard")
-				gDashboard := getInitialGrafanaDashboardResource()
+				gDashboard := getInitialGrafanaDashboardResource(grafanaDashboardJsonFile)
 				gDashboard.Spec.GrafanaRef = nil
 				err := f.CreateOrUpdateGrafanaDashboard(gDashboard)
 				Expect(err).NotTo(HaveOccurred())
@@ -212,7 +212,7 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 				createDefaultAppBinding()
 
 				By("Creating Dashboard")
-				gDashboard := getInitialGrafanaDashboardResource()
+				gDashboard := getInitialGrafanaDashboardResource(grafanaDashboardJsonFile)
 				gDashboard.Spec.GrafanaRef = nil
 				err := f.CreateOrUpdateGrafanaDashboard(gDashboard)
 				Expect(err).NotTo(HaveOccurred())
@@ -245,7 +245,7 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 				createAppBinding()
 
 				By("Creating Dashboard")
-				gDashboard := getInitialGrafanaDashboardResource()
+				gDashboard := getInitialGrafanaDashboardResource(grafanaDashboardJsonFile)
 				err := f.CreateOrUpdateGrafanaDashboard(gDashboard)
 				Expect(err).NotTo(HaveOccurred())
 
@@ -270,9 +270,8 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 				createAppBinding()
 
 				By("Creating Dashboard")
-				gDashboard := getInitialGrafanaDashboardResource()
+				gDashboard := getInitialGrafanaDashboardResource(grafanaDashboardJsonFile)
 				gDashboard.Spec.Model = nil
-				fmt.Println(gDashboard.Spec.Model)
 				err := f.CreateOrUpdateGrafanaDashboard(gDashboard)
 				Expect(err).NotTo(HaveOccurred())
 
@@ -284,6 +283,33 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 				Expect(err).NotTo(HaveOccurred())
 				Expect(gdb.Status.Phase).To(BeEquivalentTo(api.GrafanaPhaseFailed))
 				Expect(gdb.Status.Dashboard).To(BeNil())
+
+				By("Deleting grafanaDashboard")
+				waitForGrafanaDashboardToBeTerminated(gDashboard)
+			})
+
+			It("should not insert a grafanaDashboard into grafana database with invalid dashboard json data", func() {
+				By("Crating Secret with Grafana auth")
+				createSecret(options.grafanaUsername, options.grafanaPassword)
+
+				By("Creating Grafana AppBinding")
+				createAppBinding()
+
+				By("Creating Dashboard")
+				gDashboard := getInitialGrafanaDashboardResource(invalidGrafanaDashboardJsonFile)
+				err := f.CreateOrUpdateGrafanaDashboard(gDashboard)
+				Expect(err).NotTo(HaveOccurred())
+
+				By("Wait for GrafanaDashboardPhase to get Final phase")
+				waitForGrafanaDashboardToGetToFinalPhase()
+
+				By("Checking GrafanaDashboard failed status with updated observed generation")
+				gdb, err := f.GetGrafanaDashboard()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(gdb.Status.Phase).To(BeEquivalentTo(api.GrafanaPhaseFailed))
+				Expect(gdb.Status.Dashboard).To(BeNil())
+				// As the given dashboard json is invalid, observer generation should be updated by the controller
+				Expect(gdb.Status.ObservedGeneration).To(Equal(gdb.Generation))
 
 				By("Deleting grafanaDashboard")
 				waitForGrafanaDashboardToBeTerminated(gDashboard)
