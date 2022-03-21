@@ -18,8 +18,13 @@ package framework
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
+
+	. "github.com/onsi/gomega"
+
+	grafana_sdk "go.openviz.dev/grafana-sdk"
 
 	"gomodules.xyz/pointer"
 	apps "k8s.io/api/apps/v1"
@@ -140,5 +145,10 @@ func (f *Framework) isGrafanaReady() bool {
 	if err != nil {
 		return false
 	}
-	return resp.StatusCode == http.StatusOK
+	gHealth := &grafana_sdk.HealthResponse{}
+
+	err = json.NewDecoder(resp.Body).Decode(gHealth)
+	Expect(err).ShouldNot(HaveOccurred())
+
+	return resp.StatusCode == http.StatusOK && gHealth.Database == "ok" // Ref: https://grafana.com/docs/grafana/latest/http_api/other/#health-api
 }
