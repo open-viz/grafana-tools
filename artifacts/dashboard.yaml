@@ -4,9 +4,6 @@ metadata:
   name: db
   namespace: demo
 spec:
-  grafanaRef:
-    name: grafana-apb
-    namespace: demo
   model:
     annotations:
       list:

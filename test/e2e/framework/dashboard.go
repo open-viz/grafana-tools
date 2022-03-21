@@ -24,6 +24,7 @@ import (
 	api "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 
 	"gomodules.xyz/wait"
+	kmc "kmodules.xyz/client-go/client"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -40,8 +41,11 @@ func (f *Framework) GetGrafanaDashboard() (*api.GrafanaDashboard, error) {
 	return db, nil
 }
 
-func (f *Framework) CreateGrafanaDashboard(db *api.GrafanaDashboard) error {
-	return f.cc.Create(context.TODO(), db)
+func (f *Framework) CreateOrUpdateGrafanaDashboard(db *api.GrafanaDashboard) error {
+	_, _, err := kmc.CreateOrPatch(context.TODO(), f.cc, db, func(obj client.Object, createOp bool) client.Object {
+		return db
+	})
+	return err
 }
 
 func (f *Framework) DeleteGrafanaDashboard(db *api.GrafanaDashboard) error {

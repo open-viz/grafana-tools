@@ -66,70 +66,82 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	key := req.NamespacedName
 
-	db := &openvizapi.GrafanaDashboard{}
-	if err := r.Client.Get(ctx, key, db); err != nil {
+	obj := &openvizapi.GrafanaDashboard{}
+	if err := r.Client.Get(ctx, key, obj); err != nil {
 		klog.Infof("Grafana Dashboard %q doesn't exist anymore", req.NamespacedName.String())
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
+	db := obj.DeepCopy()
 
-	// Add or remove finalizer based on deletion timestamp
-	if db.ObjectMeta.DeletionTimestamp.IsZero() {
-		if !containsString(db.GetFinalizers(), GrafanaDashboardFinalizer) {
-			_, _, err := kmc.CreateOrPatch(ctx, r.Client, db, func(obj client.Object, createOp bool) client.Object {
-				controllerutil.AddFinalizer(obj, GrafanaDashboardFinalizer)
-				return obj
-			})
-			if err != nil {
-				return ctrl.Result{}, err
-			}
-
-			return ctrl.Result{}, nil
-		}
-	} else {
-		if containsString(db.GetFinalizers(), GrafanaDashboardFinalizer) {
+	if db.ObjectMeta.DeletionTimestamp != nil {
+		// Change the Phase to Terminating if not
+		if db.Status.Phase != openvizapi.GrafanaPhaseTerminating {
 			_, _, err := kmc.PatchStatus(ctx, r.Client, db, func(obj client.Object, createOp bool) client.Object {
 				in := obj.(*openvizapi.GrafanaDashboard)
 				in.Status.Phase = openvizapi.GrafanaPhaseTerminating
-				in.Status.ObservedGeneration = in.Generation
 				return in
 			})
-			if err != nil {
-				return ctrl.Result{}, err
-			}
-
-			if err := r.deleteExternalDashboard(ctx, db); err != nil {
-				return ctrl.Result{}, err
-			}
-
-			_, _, err = kmc.CreateOrPatch(ctx, r.Client, db, func(obj client.Object, createOp bool) client.Object {
-				controllerutil.RemoveFinalizer(obj, GrafanaDashboardFinalizer)
-				return obj
-			})
-			if err != nil {
-				return ctrl.Result{}, err
-			}
+			return ctrl.Result{}, err
+		}
+		// Delete the external dashboard
+		if err := r.deleteExternalDashboard(ctx, db); err != nil {
+			return ctrl.Result{}, err
 		}
 
-		return ctrl.Result{}, nil
+		// Remove finalizer as the external Dashboard is successfully deleted
+		_, _, err := kmc.CreateOrPatch(ctx, r.Client, db, func(obj client.Object, createOp bool) client.Object {
+			controllerutil.RemoveFinalizer(obj, GrafanaDashboardFinalizer)
+			return obj
+		})
+		return ctrl.Result{}, err
 	}
 
-	if db.Status.Phase != openvizapi.GrafanaPhaseFailed && db.Status.Phase != openvizapi.GrafanaPhaseProcessing {
+	// Add finalizer if not set
+	if !containsString(db.GetFinalizers(), GrafanaDashboardFinalizer) {
+		_, _, err := kmc.CreateOrPatch(ctx, r.Client, db, func(obj client.Object, createOp bool) client.Object {
+			controllerutil.AddFinalizer(obj, GrafanaDashboardFinalizer)
+			return obj
+		})
+		return ctrl.Result{}, err
+	}
+
+	// Set the Phase to Processing if the dashboard is going to be processed for the first time.
+	// If the dashboard phase is already failed then setting Phase is skipped.
+	if db.Status.Phase != openvizapi.GrafanaPhaseProcessing && db.Status.Phase != openvizapi.GrafanaPhaseFailed {
 		_, _, err := kmc.PatchStatus(ctx, r.Client, db, func(obj client.Object, createOp bool) client.Object {
 			in := obj.(*openvizapi.GrafanaDashboard)
 			in.Status.Phase = openvizapi.GrafanaPhaseProcessing
-			in.Status.Conditions = []kmapi.Condition{}
 			return in
 		})
 		return ctrl.Result{}, err
 	}
-	klog.Infof("Reconciling for: %s", key.String())
 
-	if err := r.setDashboard(ctx, db); err != nil {
-		r.handleFailureEvent(ctx, db, err.Error())
-		return ctrl.Result{}, err
+	klog.Infof("Reconciling for: %s", key.String())
+	err := r.setDashboard(ctx, db)
+	if err != nil {
+		return r.handleSetDashboardError(ctx, db, err)
 	}
 
 	return ctrl.Result{}, nil
+}
+
+func (r *GrafanaDashboardReconciler) handleSetDashboardError(ctx context.Context, db *openvizapi.GrafanaDashboard, err error) (ctrl.Result, error) {
+	reason := err.Error()
+	r.recordFailureEvent(db, reason)
+	_, _, patchErr := kmc.PatchStatus(ctx, r.Client, db, func(obj client.Object, createOp bool) client.Object {
+		in := obj.(*openvizapi.GrafanaDashboard)
+		in.Status.Phase = openvizapi.GrafanaPhaseFailed
+		in.Status.Reason = reason
+		in.Status.ObservedGeneration = in.Generation
+		in.Status.Conditions = kmapi.SetCondition(in.Status.Conditions, kmapi.Condition{
+			Type:    kmapi.ConditionFailed,
+			Status:  core.ConditionTrue,
+			Reason:  reason,
+			Message: reason,
+		})
+		return in
+	})
+	return ctrl.Result{}, patchErr
 }
 
 // SetupWithManager sets up the controller with the Manager.
@@ -239,10 +251,16 @@ func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, db *openv
 		}
 		in.Status.Phase = openvizapi.GrafanaPhaseCurrent
 		in.Status.ObservedGeneration = in.Generation
+		in.Status.Conditions = kmapi.SetCondition(in.Status.Conditions, kmapi.Condition{
+			Type:    kmapi.ConditionReady,
+			Status:  core.ConditionTrue,
+			Reason:  "Dashboard is successfully created",
+			Message: "Dashboard is successfully created",
+		})
 		return in
 	})
 	if err != nil {
-		return err
+		klog.Errorf("failed to update Phase to current.reason: %v", err.Error())
 	}
 	return nil
 }
@@ -310,7 +328,7 @@ func replaceDatasource(model []byte, ds string) ([]byte, error) {
 	return json.Marshal(val)
 }
 
-func (r *GrafanaDashboardReconciler) handleFailureEvent(ctx context.Context, db *openvizapi.GrafanaDashboard, reason string) {
+func (r *GrafanaDashboardReconciler) recordFailureEvent(db *openvizapi.GrafanaDashboard, reason string) {
 	r.Recorder.Eventf(
 		db,
 		core.EventTypeWarning,
@@ -318,20 +336,4 @@ func (r *GrafanaDashboardReconciler) handleFailureEvent(ctx context.Context, db 
 		`Failed to complete operation for GrafanaDashboard: "%v", Reason: "%v"`,
 		db.Name,
 		reason)
-	_, _, err := kmc.PatchStatus(ctx, r.Client, db, func(obj client.Object, createOp bool) client.Object {
-		in := obj.(*openvizapi.GrafanaDashboard)
-		in.Status.Phase = openvizapi.GrafanaPhaseFailed
-		in.Status.Reason = reason
-		in.Status.ObservedGeneration = in.Generation
-		in.Status.Conditions = kmapi.SetCondition(in.Status.Conditions, kmapi.Condition{
-			Type:    kmapi.ConditionFailed,
-			Status:  core.ConditionTrue,
-			Reason:  reason,
-			Message: reason,
-		})
-		return in
-	})
-	if err != nil {
-		r.Recorder.Eventf(db, core.EventTypeWarning, "failed to update status", err.Error())
-	}
 }
