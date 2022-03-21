@@ -56,13 +56,13 @@ func (f *Framework) GetGrafanaClient() (*sdk.Client, error) {
 }
 
 func (f *Framework) DeployGrafanaServer() error {
-	By("Creating grafana deployment")
-	if err := f.CreateGrafanaDeployment(); err != nil {
+	By("Creating grafana service")
+	if err := f.CreateGrafanaService(); err != nil {
 		return err
 	}
 
-	By("Creating grafana service")
-	if err := f.CreateGrafanaService(); err != nil {
+	By("Creating grafana deployment")
+	if err := f.CreateGrafanaDeployment(); err != nil {
 		return err
 	}
 
@@ -105,4 +105,16 @@ func (f *Framework) WaitForGrafanaServerToBeReady() {
 		}
 		return true
 	}, gSvrTimeout, gSvrInterval).Should(BeTrue())
+
+	Eventually(func() bool {
+		svc := &core.Service{}
+		err := f.cc.Get(context.TODO(), client.ObjectKey{Namespace: f.namespace, Name: f.name}, svc)
+		Expect(client.IgnoreNotFound(err)).NotTo(HaveOccurred())
+
+		return err == nil
+	}, gSvrTimeout, gSvrInterval)
+
+	Eventually(func() bool {
+		return f.isGrafanaReady()
+	}, gSvrTimeout, gSvrInterval)
 }
