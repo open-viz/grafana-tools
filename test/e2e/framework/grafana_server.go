@@ -31,6 +31,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+const (
+	gSvrInterval = time.Millisecond * 250
+	gSvrTimeout  = time.Minute * 20
+)
+
 func (f *Framework) GetGrafanaClient() (*sdk.Client, error) {
 	ab := &appcatalog.AppBinding{}
 	if err := f.cc.Get(context.TODO(), client.ObjectKey{Namespace: f.namespace, Name: f.name}, ab); err != nil {
@@ -99,5 +104,5 @@ func (f *Framework) WaitForGrafanaServerToBeReady() {
 			}
 		}
 		return true
-	}, 5*time.Minute, 100*time.Millisecond).Should(BeTrue())
+	}, gSvrTimeout, gSvrInterval).Should(BeTrue())
 }

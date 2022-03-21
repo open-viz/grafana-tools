@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 
 	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 	sdk "go.openviz.dev/grafana-sdk"
@@ -117,21 +118,19 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}
 
 	klog.Infof("Reconciling for: %s", key.String())
-	err := r.setDashboard(ctx, db)
-	if err != nil {
-		return r.handleSetDashboardError(ctx, db, err)
-	}
-
-	return ctrl.Result{}, nil
+	return r.setDashboard(ctx, db)
 }
 
-func (r *GrafanaDashboardReconciler) handleSetDashboardError(ctx context.Context, db *openvizapi.GrafanaDashboard, err error) (ctrl.Result, error) {
+func (r *GrafanaDashboardReconciler) handleSetDashboardError(ctx context.Context, db *openvizapi.GrafanaDashboard, err error, updateGeneration bool) (ctrl.Result, error) {
 	reason := err.Error()
 	r.recordFailureEvent(db, reason)
 	_, _, patchErr := kmc.PatchStatus(ctx, r.Client, db, func(obj client.Object, createOp bool) client.Object {
 		in := obj.(*openvizapi.GrafanaDashboard)
 		in.Status.Phase = openvizapi.GrafanaPhaseFailed
 		in.Status.Reason = reason
+		if updateGeneration {
+			in.Status.ObservedGeneration = in.Generation
+		}
 		in.Status.Conditions = kmapi.SetCondition(in.Status.Conditions, kmapi.Condition{
 			Type:    kmapi.ConditionFailed,
 			Status:  core.ConditionTrue,
@@ -188,33 +187,33 @@ func (r *GrafanaDashboardReconciler) deleteExternalDashboard(ctx context.Context
 	return nil
 }
 
-func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, db *openvizapi.GrafanaDashboard) error {
+func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, db *openvizapi.GrafanaDashboard) (ctrl.Result, error) {
 	if db.Status.Dashboard != nil {
 		model, err := addDashboardID(db.Spec.Model.Raw, *db.Status.Dashboard.ID, *db.Status.Dashboard.UID)
 		if err != nil {
-			return err
+			return r.handleSetDashboardError(ctx, db, err, false)
 		}
 		db.Spec.Model = &runtime.RawExtension{Raw: model}
 	}
 	ab, err := openvizapi.GetGrafana(ctx, r.Client, db.Spec.GrafanaRef.WithNamespace(db.Namespace))
 	if err != nil {
-		return err
+		return r.handleSetDashboardError(ctx, db, err, false)
 	}
 
 	dsConfig := &openvizapi.GrafanaConfiguration{}
 	if ab.Spec.Parameters != nil {
 		if err := json.Unmarshal(ab.Spec.Parameters.Raw, dsConfig); err != nil {
-			return fmt.Errorf("failed to unmarshal app binding parameters, reason: %v", err)
+			return r.handleSetDashboardError(ctx, db, fmt.Errorf("failed to unmarshal app binding parameters, reason: %v", err), false)
 		}
 	}
 
 	if db.Spec.Templatize != nil && db.Spec.Templatize.Datasource {
 		if ab.Spec.Parameters == nil {
-			return fmt.Errorf("failed to templatize dashboard, reason: datasource parameter is not provided in app binding %s/%s", ab.Namespace, ab.Name)
+			return r.handleSetDashboardError(ctx, db, fmt.Errorf("failed to templatize dashboard, reason: datasource parameter is not provided in app binding %s/%s", ab.Namespace, ab.Name), false)
 		}
 		model, err := replaceDatasource(db.Spec.Model.Raw, dsConfig.Datasource)
 		if err != nil {
-			return err
+			return r.handleSetDashboardError(ctx, db, err, false)
 		}
 		db.Spec.Model = &runtime.RawExtension{Raw: model}
 	}
@@ -222,7 +221,7 @@ func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, db *openv
 	// collect grafana url and auth info from app binding
 	gc, err := grafana.NewGrafanaClient(ctx, r.Client, db.Spec.GrafanaRef.WithNamespace(db.Namespace))
 	if err != nil {
-		return err
+		return r.handleSetDashboardError(ctx, db, err, false)
 	}
 	gDB := &sdk.GrafanaDashboard{
 		Dashboard: db.Spec.Model,
@@ -231,11 +230,16 @@ func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, db *openv
 	}
 	resp, err := gc.SetDashboard(ctx, gDB)
 	if err != nil {
-		return err
+		// Update Observed generation if GrafanaDashboard json configuration is invalid
+		// Ref: https://grafana.com/docs/grafana/latest/http_api/dashboard/#create--update-dashboard
+		if resp != nil && resp.StatusCode == http.StatusBadRequest {
+			return r.handleSetDashboardError(ctx, db, err, true)
+		}
+		return r.handleSetDashboardError(ctx, db, err, false)
 	}
 	orgId, err := gc.GetCurrentOrg(ctx)
 	if err != nil {
-		return err
+		return r.handleSetDashboardError(ctx, db, err, false)
 	}
 
 	_, _, err = kmc.PatchStatus(ctx, r.Client, db, func(obj client.Object, createOp bool) client.Object {
@@ -258,10 +262,7 @@ func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, db *openv
 		})
 		return in
 	})
-	if err != nil {
-		klog.Errorf("failed to update Phase to current.reason: %v", err.Error())
-	}
-	return nil
+	return ctrl.Result{}, err
 }
 
 // Helper function to add dashboard id of the created dashboard in dashboard model json while updating

@@ -322,7 +322,12 @@ go.etcd.io/etcd/raft/quorum
 go.etcd.io/etcd/raft/raftpb
 go.etcd.io/etcd/raft/tracker
 go.etcd.io/etcd/version
+<<<<<<< HEAD
 # go.openviz.dev/apimachinery v0.0.3
+=======
+<<<<<<< HEAD
+# go.openviz.dev/apimachinery v0.0.1
+>>>>>>> Update GrafanaDashboard observed generation for invalid dashboard json
 ## explicit; go 1.17
 go.openviz.dev/apimachinery/apis/openviz
 go.openviz.dev/apimachinery/apis/openviz/install
@@ -333,6 +338,9 @@ go.openviz.dev/apimachinery/apis/ui/install
 go.openviz.dev/apimachinery/apis/ui/v1alpha1
 go.openviz.dev/apimachinery/crds
 # go.openviz.dev/grafana-sdk v0.0.2
+=======
+# go.openviz.dev/grafana-sdk v0.0.3-0.20220321100820-cff07286e6a7
+>>>>>>> Update GrafanaDashboard observed generation for invalid dashboard json
 ## explicit; go 1.17
 go.openviz.dev/grafana-sdk
 # go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5
