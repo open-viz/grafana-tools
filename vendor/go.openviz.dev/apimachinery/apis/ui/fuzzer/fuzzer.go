@@ -1,5 +1,5 @@
 /*
-Copyright AppsCode Inc. and Contributors.
+Copyright AppsCode Inc. and Contributors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,16 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package apiserver
+package fuzzer
 
 import (
-	"testing"
+	"go.openviz.dev/apimachinery/apis/ui/v1alpha1"
 
-	uifuzzer "go.openviz.dev/apimachinery/apis/ui/fuzzer"
-
-	"k8s.io/apimachinery/pkg/api/apitesting/roundtrip"
+	fuzz "github.com/google/gofuzz"
+	runtimeserializer "k8s.io/apimachinery/pkg/runtime/serializer"
 )
 
-func TestRoundTripTypes(t *testing.T) {
-	roundtrip.RoundTripTestForScheme(t, Scheme, uifuzzer.Funcs)
+// Funcs returns the fuzzer functions for this api group.
+var Funcs = func(codecs runtimeserializer.CodecFactory) []interface{} {
+	return []interface{}{
+		func(s *v1alpha1.DashboardGroup, c fuzz.Continue) {
+			c.FuzzNoCustom(s) // fuzz self without calling this function again
+		},
+	}
 }

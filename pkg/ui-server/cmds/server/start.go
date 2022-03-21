@@ -22,7 +22,7 @@ import (
 	"io"
 	"net"
 
-	uiapi "go.openviz.dev/grafana-tools/apis/ui/v1alpha1"
+	uiapi "go.openviz.dev/apimachinery/apis/ui/v1alpha1"
 	"go.openviz.dev/grafana-tools/pkg/ui-server/apiserver"
 
 	"github.com/spf13/pflag"

@@ -21,8 +21,8 @@ import (
 	"fmt"
 	"os"
 
-	openvizinstall "go.openviz.dev/grafana-tools/apis/openviz/install"
-	uiinstall "go.openviz.dev/grafana-tools/apis/ui/install"
+	openvizinstall "go.openviz.dev/apimachinery/apis/openviz/install"
+	uiinstall "go.openviz.dev/apimachinery/apis/ui/install"
 	openvizcontrollers "go.openviz.dev/grafana-tools/pkg/operator/controllers/openviz"
 
 	core "k8s.io/api/core/v1"

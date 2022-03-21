@@ -21,8 +21,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 	sdk "go.openviz.dev/grafana-sdk"
-	openvizapi "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
 	"go.openviz.dev/grafana-tools/pkg/grafana"
 
 	"gomodules.xyz/pointer"

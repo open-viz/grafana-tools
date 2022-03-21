@@ -1,5 +1,5 @@
 /*
-Copyright AppsCode Inc. and Contributors.
+Copyright AppsCode Inc. and Contributors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,16 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package apiserver
+package v1alpha1
 
 import (
-	"testing"
+	"go.openviz.dev/apimachinery/crds"
 
-	uifuzzer "go.openviz.dev/apimachinery/apis/ui/fuzzer"
-
-	"k8s.io/apimachinery/pkg/api/apitesting/roundtrip"
+	"kmodules.xyz/client-go/apiextensions"
 )
 
-func TestRoundTripTypes(t *testing.T) {
-	roundtrip.RoundTripTestForScheme(t, Scheme, uifuzzer.Funcs)
+func (_ GrafanaDashboardTemplate) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {
+	return crds.MustCustomResourceDefinition(SchemeGroupVersion.WithResource(ResourceGrafanaDashboardTemplates))
 }

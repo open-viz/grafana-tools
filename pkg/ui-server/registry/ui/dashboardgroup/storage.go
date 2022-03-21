@@ -24,8 +24,8 @@ import (
 	"strconv"
 	"strings"
 
-	openvizapi "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
-	uiapi "go.openviz.dev/grafana-tools/apis/ui/v1alpha1"
+	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
+	uiapi "go.openviz.dev/apimachinery/apis/ui/v1alpha1"
 
 	"github.com/grafana-tools/sdk"
 	"github.com/pkg/errors"

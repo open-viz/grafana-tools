@@ -19,8 +19,8 @@ package grafana
 import (
 	"context"
 
+	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 	sdk "go.openviz.dev/grafana-sdk"
-	openvizapi "go.openviz.dev/grafana-tools/apis/openviz/v1alpha1"
 
 	core "k8s.io/api/core/v1"
 	kmapi "kmodules.xyz/client-go/api/v1"

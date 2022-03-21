@@ -1,5 +1,5 @@
 /*
-Copyright AppsCode Inc. and Contributors.
+Copyright AppsCode Inc. and Contributors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,16 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package apiserver
+package install
 
 import (
-	"testing"
+	"go.openviz.dev/apimachinery/apis/ui/v1alpha1"
 
-	uifuzzer "go.openviz.dev/apimachinery/apis/ui/fuzzer"
-
-	"k8s.io/apimachinery/pkg/api/apitesting/roundtrip"
+	"k8s.io/apimachinery/pkg/runtime"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 )
 
-func TestRoundTripTypes(t *testing.T) {
-	roundtrip.RoundTripTestForScheme(t, Scheme, uifuzzer.Funcs)
+// Install registers the API group and adds types to a scheme
+func Install(scheme *runtime.Scheme) {
+	utilruntime.Must(v1alpha1.AddToScheme(scheme))
+	utilruntime.Must(scheme.SetVersionPriority(v1alpha1.SchemeGroupVersion))
 }

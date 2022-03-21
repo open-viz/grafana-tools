@@ -3,9 +3,9 @@ module go.openviz.dev/grafana-tools
 go 1.17
 
 require (
-	github.com/go-openapi/spec v0.19.8
+	github.com/go-openapi/spec v0.19.8 // indirect
 	github.com/gogo/protobuf v1.3.2
-	github.com/google/gofuzz v1.2.0
+	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/grafana-tools/sdk v0.0.0-20220225081456-2ff95a73e54e
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.17.0
@@ -13,6 +13,7 @@ require (
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/pflag v1.0.5
 	github.com/zeebo/xxh3 v1.0.1
+	go.openviz.dev/apimachinery v0.0.1
 	go.openviz.dev/grafana-sdk v0.0.2
 	golang.org/x/text v0.3.7
 	gomodules.xyz/logs v0.0.6
@@ -25,14 +26,13 @@ require (
 	k8s.io/apiserver v0.21.1
 	k8s.io/client-go v0.21.1
 	k8s.io/klog/v2 v2.9.0
-	k8s.io/kube-openapi v0.0.0-20211115234752-e816edb12b65
+	k8s.io/kube-openapi v0.0.0-20211115234752-e816edb12b65 // indirect
 	kmodules.xyz/authorizer v0.0.0-20211121124031-167d0ef7c671
 	kmodules.xyz/client-go v0.0.0-20220308080632-2543b61b64fd
-	kmodules.xyz/crd-schema-fuzz v0.0.0-20210618002152-fae23aef5fb4
 	kmodules.xyz/custom-resources v0.0.0-20220314103517-150ada19b198
 	kmodules.xyz/monitoring-agent-api v0.0.0-20220314131012-05a1a33d1e2c
 	sigs.k8s.io/controller-runtime v0.9.0
-	sigs.k8s.io/yaml v1.3.0
+	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
 replace sigs.k8s.io/controller-runtime => github.com/kmodules/controller-runtime v0.9.1-0.20220314225952-be0b6d7fec6a
