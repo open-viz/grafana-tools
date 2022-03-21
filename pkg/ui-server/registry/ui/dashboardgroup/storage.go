@@ -34,7 +34,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/json"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apiserver/pkg/authorization/authorizer"
 	apirequest "k8s.io/apiserver/pkg/endpoints/request"
 	"k8s.io/apiserver/pkg/registry/rest"
@@ -202,14 +201,25 @@ func (r *Storage) getDashboardLink(
 		DashboardRef: req.DashboardRef,
 	}
 	if embed {
-		resp.Panels = make([]uiapi.PanelLink, 0, len(board.Panels))
+		resp.Panels = make([]uiapi.PanelLinkResponse, 0, len(board.Panels))
 
-		panelSet := sets.NewString(req.Panels...)
+		panelMap := map[string]int{}
+		for _, p := range req.Panels {
+			panelMap[p.Title] = p.Width
+		}
+		includePanel := func(title string) bool {
+			if len(panelMap) == 0 {
+				return true
+			}
+			_, ok := panelMap[title]
+			return ok
+		}
+
 		for _, p := range board.Panels {
 			if p.Type == "row" {
 				continue
 			}
-			if panelSet.Len() > 0 && !panelSet.Has(p.Title) {
+			if !includePanel(p.Title) {
 				continue
 			}
 
@@ -240,10 +250,10 @@ func (r *Storage) getDashboardLink(
 			q.Add("panelId", strconv.Itoa(int(p.ID)))
 			baseURL.RawQuery = addVars(q, req.Vars)
 
-			panel := uiapi.PanelLink{
+			panel := uiapi.PanelLinkResponse{
 				Title: p.Title,
 				URL:   baseURL.String(),
-				Type:  p.Type,
+				Width: panelMap[p.Title],
 			}
 			resp.Panels = append(resp.Panels, panel)
 		}

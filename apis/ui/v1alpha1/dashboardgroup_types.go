@@ -44,7 +44,7 @@ type DashboardGroupRequest struct {
 	RefreshInterval string `json:"refreshInterval,omitempty"`
 	// +optional
 	//
-	// +kubebuilder:default={from: "now-1h", to: "now"}
+	// +kubebuilder:default={from: "now-3h", to: "now"}
 	TimeRange *TimeRange `json:"timeRange,omitempty"`
 	// +optional
 	EmbeddedLink bool `json:"embeddedLink,omitempty"`
@@ -60,7 +60,13 @@ type DashboardRequest struct {
 	// +optional
 	Vars []DashboardVar `json:"vars,omitempty"`
 	// +optional
-	Panels []string `json:"panels,omitempty"`
+	Panels []PanelLinkRequest `json:"panels,omitempty"`
+}
+
+type PanelLinkRequest struct {
+	Title string `json:"title"`
+	// +optional
+	Width int `json:"width,omitempty"`
 }
 
 type DashboardRef struct {
@@ -95,11 +101,12 @@ type DashboardResponse struct {
 	// +optional
 	Link string `json:"link,omitempty"`
 	// +optional
-	Panels []PanelLink `json:"panels,omitempty"`
+	Panels []PanelLinkResponse `json:"panels,omitempty"`
 }
 
-type PanelLink struct {
+type PanelLinkResponse struct {
 	Title string `json:"title"`
 	URL   string `json:"url"`
-	Type  string `json:"type"`
+	// +optional
+	Width int `json:"width,omitempty"`
 }

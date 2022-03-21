@@ -42,7 +42,8 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.DashboardRequest":       schema_grafana_tools_apis_ui_v1alpha1_DashboardRequest(ref),
 		"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.DashboardResponse":      schema_grafana_tools_apis_ui_v1alpha1_DashboardResponse(ref),
 		"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.DashboardVar":           schema_grafana_tools_apis_ui_v1alpha1_DashboardVar(ref),
-		"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.PanelLink":              schema_grafana_tools_apis_ui_v1alpha1_PanelLink(ref),
+		"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.PanelLinkRequest":       schema_grafana_tools_apis_ui_v1alpha1_PanelLinkRequest(ref),
+		"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.PanelLinkResponse":      schema_grafana_tools_apis_ui_v1alpha1_PanelLinkResponse(ref),
 		"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.TimeRange":              schema_grafana_tools_apis_ui_v1alpha1_TimeRange(ref),
 		"k8s.io/api/apps/v1.ControllerRevision":                                schema_k8sio_api_apps_v1_ControllerRevision(ref),
 		"k8s.io/api/apps/v1.ControllerRevisionList":                            schema_k8sio_api_apps_v1_ControllerRevisionList(ref),
@@ -541,9 +542,8 @@ func schema_grafana_tools_apis_ui_v1alpha1_DashboardRequest(ref common.Reference
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
 									SchemaProps: spec.SchemaProps{
-										Default: "",
-										Type:    []string{"string"},
-										Format:  "",
+										Default: map[string]interface{}{},
+										Ref:     ref("go.openviz.dev/grafana-tools/apis/ui/v1alpha1.PanelLinkRequest"),
 									},
 								},
 							},
@@ -554,7 +554,7 @@ func schema_grafana_tools_apis_ui_v1alpha1_DashboardRequest(ref common.Reference
 			},
 		},
 		Dependencies: []string{
-			"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.DashboardVar"},
+			"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.DashboardVar", "go.openviz.dev/grafana-tools/apis/ui/v1alpha1.PanelLinkRequest"},
 	}
 }
 
@@ -598,7 +598,7 @@ func schema_grafana_tools_apis_ui_v1alpha1_DashboardResponse(ref common.Referenc
 								Schema: &spec.Schema{
 									SchemaProps: spec.SchemaProps{
 										Default: map[string]interface{}{},
-										Ref:     ref("go.openviz.dev/grafana-tools/apis/ui/v1alpha1.PanelLink"),
+										Ref:     ref("go.openviz.dev/grafana-tools/apis/ui/v1alpha1.PanelLinkResponse"),
 									},
 								},
 							},
@@ -609,7 +609,7 @@ func schema_grafana_tools_apis_ui_v1alpha1_DashboardResponse(ref common.Referenc
 			},
 		},
 		Dependencies: []string{
-			"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.PanelLink"},
+			"go.openviz.dev/grafana-tools/apis/ui/v1alpha1.PanelLinkResponse"},
 	}
 }
 
@@ -646,7 +646,33 @@ func schema_grafana_tools_apis_ui_v1alpha1_DashboardVar(ref common.ReferenceCall
 	}
 }
 
-func schema_grafana_tools_apis_ui_v1alpha1_PanelLink(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_grafana_tools_apis_ui_v1alpha1_PanelLinkRequest(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"title": {
+						SchemaProps: spec.SchemaProps{
+							Default: "",
+							Type:    []string{"string"},
+							Format:  "",
+						},
+					},
+					"width": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"integer"},
+							Format: "int32",
+						},
+					},
+				},
+				Required: []string{"title"},
+			},
+		},
+	}
+}
+
+func schema_grafana_tools_apis_ui_v1alpha1_PanelLinkResponse(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -666,15 +692,14 @@ func schema_grafana_tools_apis_ui_v1alpha1_PanelLink(ref common.ReferenceCallbac
 							Format:  "",
 						},
 					},
-					"type": {
+					"width": {
 						SchemaProps: spec.SchemaProps{
-							Default: "",
-							Type:    []string{"string"},
-							Format:  "",
+							Type:   []string{"integer"},
+							Format: "int32",
 						},
 					},
 				},
-				Required: []string{"title", "url", "type"},
+				Required: []string{"title", "url"},
 			},
 		},
 	}
