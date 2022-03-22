@@ -29,6 +29,10 @@ const (
 
 // DashboardGroup is the Schema for the DashboardGroups API
 
+// +genclient
+// +genclient:nonNamespaced
+// +genclient:onlyVerbs=create
+// +k8s:openapi-gen=true
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type DashboardGroup struct {
 	metav1.TypeMeta `json:",inline"`
@@ -99,7 +103,7 @@ type DashboardGroupResponse struct {
 type DashboardResponse struct {
 	DashboardRef `json:",inline"`
 	// +optional
-	Link string `json:"link,omitempty"`
+	URL string `json:"url,omitempty"`
 	// +optional
 	Panels []PanelLinkResponse `json:"panels,omitempty"`
 }

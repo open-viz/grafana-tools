@@ -322,7 +322,7 @@ go.etcd.io/etcd/raft/quorum
 go.etcd.io/etcd/raft/raftpb
 go.etcd.io/etcd/raft/tracker
 go.etcd.io/etcd/version
-# go.openviz.dev/apimachinery v0.0.1
+# go.openviz.dev/apimachinery v0.0.3
 ## explicit; go 1.17
 go.openviz.dev/apimachinery/apis/openviz
 go.openviz.dev/apimachinery/apis/openviz/install
