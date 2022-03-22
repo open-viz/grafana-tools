@@ -332,7 +332,7 @@ go.openviz.dev/apimachinery/apis/ui/fuzzer
 go.openviz.dev/apimachinery/apis/ui/install
 go.openviz.dev/apimachinery/apis/ui/v1alpha1
 go.openviz.dev/apimachinery/crds
-# go.openviz.dev/grafana-sdk v0.0.3-0.20220321100820-cff07286e6a7
+# go.openviz.dev/grafana-sdk v0.0.3-0.20220322061141-3d6c90e9d4d2
 ## explicit; go 1.17
 go.openviz.dev/grafana-sdk
 # go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5
