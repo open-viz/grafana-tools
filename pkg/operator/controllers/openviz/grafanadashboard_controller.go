@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 	sdk "go.openviz.dev/grafana-sdk"
@@ -53,8 +54,9 @@ const (
 // GrafanaDashboardReconciler reconciles a GrafanaDashboard object
 type GrafanaDashboardReconciler struct {
 	client.Client
-	Scheme   *runtime.Scheme
-	Recorder record.EventRecorder
+	Scheme               *runtime.Scheme
+	Recorder             record.EventRecorder
+	RequeueAfterDuration time.Duration
 }
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
@@ -140,7 +142,7 @@ func (r *GrafanaDashboardReconciler) handleSetDashboardError(ctx context.Context
 		})
 		return in
 	})
-	return ctrl.Result{}, patchErr
+	return ctrl.Result{RequeueAfter: r.RequeueAfterDuration}, patchErr
 }
 
 // SetupWithManager sets up the controller with the Manager.
@@ -168,8 +170,7 @@ func (r *GrafanaDashboardReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	})
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&openvizapi.GrafanaDashboard{}, builder.WithPredicates(predicate.NewPredicateFuncs(func(obj client.Object) bool {
-			return !meta_util.MustAlreadyReconciled(obj) ||
-				obj.(*openvizapi.GrafanaDashboard).Status.Phase == openvizapi.GrafanaPhaseFailed
+			return !meta_util.MustAlreadyReconciled(obj)
 		}))).
 		Watches(&source.Kind{Type: &appcatalog.AppBinding{}}, appHandler).
 		Complete(r)

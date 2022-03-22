@@ -107,6 +107,17 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 			}, timeout, interval).Should(BeTrue())
 		}
 
+		waitForGrafanaDashboardObservedGenerationToBeUpdated = func() {
+			Eventually(func() bool {
+				grafanadashboard, err := f.GetGrafanaDashboard()
+				if err != nil {
+					return false
+				}
+
+				return grafanadashboard.Status.ObservedGeneration == grafanadashboard.Generation
+			}, timeout, interval).Should(BeTrue())
+		}
+
 		waitForGrafanaDashboardToBeTerminated = func(gdb *api.GrafanaDashboard) {
 			By("Deleting grafanadashboard " + gdb.Name)
 			err := f.DeleteGrafanaDashboard(gdb)
@@ -302,6 +313,9 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 
 				By("Wait for GrafanaDashboardPhase to get Final phase")
 				waitForGrafanaDashboardToGetToFinalPhase()
+
+				By("Wait for GrafanaDashboard ObservedGeneration to be updated")
+				waitForGrafanaDashboardObservedGenerationToBeUpdated()
 
 				By("Checking GrafanaDashboard failed status with updated observed generation")
 				gdb, err := f.GetGrafanaDashboard()

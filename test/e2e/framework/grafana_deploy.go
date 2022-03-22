@@ -22,10 +22,9 @@ import (
 	"fmt"
 	"net/http"
 
-	. "github.com/onsi/gomega"
-
 	grafana_sdk "go.openviz.dev/grafana-sdk"
 
+	. "github.com/onsi/gomega"
 	"gomodules.xyz/pointer"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
