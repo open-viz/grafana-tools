@@ -69,12 +69,12 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	key := req.NamespacedName
 
-	obj := &openvizapi.GrafanaDashboard{}
-	if err := r.Client.Get(ctx, key, obj); err != nil {
+	db := &openvizapi.GrafanaDashboard{}
+	if err := r.Client.Get(ctx, key, db); err != nil {
 		klog.Infof("Grafana Dashboard %q doesn't exist anymore", req.NamespacedName.String())
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
-	db := obj.DeepCopy()
+	db = db.DeepCopy()
 
 	if db.ObjectMeta.DeletionTimestamp != nil {
 		// Change the Phase to Terminating if not
@@ -117,7 +117,9 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			in.Status.Phase = openvizapi.GrafanaPhaseProcessing
 			return in
 		})
-		return ctrl.Result{}, err
+		if err != nil {
+			return ctrl.Result{}, err
+		}
 	}
 
 	klog.Infof("Reconciling for: %s", key.String())
