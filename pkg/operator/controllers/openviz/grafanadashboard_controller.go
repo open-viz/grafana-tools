@@ -69,31 +69,33 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	key := req.NamespacedName
 
-	db := &openvizapi.GrafanaDashboard{}
-	if err := r.Client.Get(ctx, key, db); err != nil {
+	obj := &openvizapi.GrafanaDashboard{}
+	if err := r.Client.Get(ctx, key, obj); err != nil {
 		klog.Infof("Grafana Dashboard %q doesn't exist anymore", req.NamespacedName.String())
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
-	db = db.DeepCopy()
+	obj = obj.DeepCopy()
 
-	if db.ObjectMeta.DeletionTimestamp != nil {
+	if obj.ObjectMeta.DeletionTimestamp != nil {
 		// Change the Phase to Terminating if not
-		if db.Status.Phase != openvizapi.GrafanaPhaseTerminating {
-			_, _, err := kmc.PatchStatus(ctx, r.Client, db, func(obj client.Object, createOp bool) client.Object {
+		if obj.Status.Phase != openvizapi.GrafanaPhaseTerminating {
+			_, _, err := kmc.PatchStatus(ctx, r.Client, obj, func(obj client.Object, createOp bool) client.Object {
 				in := obj.(*openvizapi.GrafanaDashboard)
 				in.Status.Phase = openvizapi.GrafanaPhaseTerminating
 				in.Status.Reason = "Resource has been going to be deleted"
 				return in
 			})
-			return ctrl.Result{}, err
+			if err != nil {
+				return ctrl.Result{}, err
+			}
 		}
 		// Delete the external dashboard
-		if err := r.deleteExternalDashboard(ctx, db); err != nil {
+		if err := r.deleteExternalDashboard(ctx, obj); err != nil {
 			return ctrl.Result{}, err
 		}
 
 		// Remove finalizer as the external Dashboard is successfully deleted
-		_, _, err := kmc.CreateOrPatch(ctx, r.Client, db, func(obj client.Object, createOp bool) client.Object {
+		_, _, err := kmc.CreateOrPatch(ctx, r.Client, obj, func(obj client.Object, createOp bool) client.Object {
 			controllerutil.RemoveFinalizer(obj, GrafanaDashboardFinalizer)
 			return obj
 		})
@@ -101,18 +103,20 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}
 
 	// Add finalizer if not set
-	if !containsString(db.GetFinalizers(), GrafanaDashboardFinalizer) {
-		_, _, err := kmc.CreateOrPatch(ctx, r.Client, db, func(obj client.Object, createOp bool) client.Object {
+	if !containsString(obj.GetFinalizers(), GrafanaDashboardFinalizer) {
+		_, _, err := kmc.CreateOrPatch(ctx, r.Client, obj, func(obj client.Object, createOp bool) client.Object {
 			controllerutil.AddFinalizer(obj, GrafanaDashboardFinalizer)
 			return obj
 		})
-		return ctrl.Result{}, err
+		if err != nil {
+			return ctrl.Result{}, err
+		}
 	}
 
 	// Set the Phase to Processing if the dashboard is going to be processed for the first time.
 	// If the dashboard phase is already failed then setting Phase is skipped.
-	if db.Status.Phase != openvizapi.GrafanaPhaseProcessing && db.Status.Phase != openvizapi.GrafanaPhaseFailed {
-		_, _, err := kmc.PatchStatus(ctx, r.Client, db, func(obj client.Object, createOp bool) client.Object {
+	if obj.Status.Phase != openvizapi.GrafanaPhaseProcessing && obj.Status.Phase != openvizapi.GrafanaPhaseFailed {
+		_, _, err := kmc.PatchStatus(ctx, r.Client, obj, func(obj client.Object, createOp bool) client.Object {
 			in := obj.(*openvizapi.GrafanaDashboard)
 			in.Status.Phase = openvizapi.GrafanaPhaseProcessing
 			return in
@@ -123,13 +127,13 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}
 
 	klog.Infof("Reconciling for: %s", key.String())
-	return r.setDashboard(ctx, db)
+	return r.setDashboard(ctx, obj)
 }
 
-func (r *GrafanaDashboardReconciler) handleSetDashboardError(ctx context.Context, db *openvizapi.GrafanaDashboard, err error, updateGeneration bool) (ctrl.Result, error) {
+func (r *GrafanaDashboardReconciler) handleSetDashboardError(ctx context.Context, obj *openvizapi.GrafanaDashboard, err error, updateGeneration bool) (ctrl.Result, error) {
 	reason := err.Error()
-	r.recordFailureEvent(db, reason)
-	_, _, patchErr := kmc.PatchStatus(ctx, r.Client, db, func(obj client.Object, createOp bool) client.Object {
+	r.recordFailureEvent(obj, reason)
+	_, _, patchErr := kmc.PatchStatus(ctx, r.Client, obj, func(obj client.Object, createOp bool) client.Object {
 		in := obj.(*openvizapi.GrafanaDashboard)
 		in.Status.Phase = openvizapi.GrafanaPhaseFailed
 		in.Status.Reason = reason
@@ -178,57 +182,57 @@ func (r *GrafanaDashboardReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *GrafanaDashboardReconciler) deleteExternalDashboard(ctx context.Context, db *openvizapi.GrafanaDashboard) error {
-	if db.Status.Dashboard != nil && db.Status.Dashboard.UID != nil {
-		gc, err := grafana.NewGrafanaClient(ctx, r.Client, db.Spec.GrafanaRef.WithNamespace(db.Namespace))
+func (r *GrafanaDashboardReconciler) deleteExternalDashboard(ctx context.Context, obj *openvizapi.GrafanaDashboard) error {
+	if obj.Status.Dashboard != nil && obj.Status.Dashboard.UID != nil {
+		gc, err := grafana.NewGrafanaClient(ctx, r.Client, obj.Spec.GrafanaRef.WithNamespace(obj.Namespace))
 		if err != nil {
 			return err
 		}
-		if _, err = gc.DeleteDashboardByUID(ctx, *db.Status.Dashboard.UID); err != nil {
+		if _, err = gc.DeleteDashboardByUID(ctx, *obj.Status.Dashboard.UID); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, db *openvizapi.GrafanaDashboard) (ctrl.Result, error) {
-	if db.Status.Dashboard != nil {
-		model, err := addDashboardID(db.Spec.Model.Raw, *db.Status.Dashboard.ID, *db.Status.Dashboard.UID)
+func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, obj *openvizapi.GrafanaDashboard) (ctrl.Result, error) {
+	if obj.Status.Dashboard != nil {
+		model, err := addDashboardID(obj.Spec.Model.Raw, *obj.Status.Dashboard.ID, *obj.Status.Dashboard.UID)
 		if err != nil {
-			return r.handleSetDashboardError(ctx, db, err, false)
+			return r.handleSetDashboardError(ctx, obj, err, false)
 		}
-		db.Spec.Model = &runtime.RawExtension{Raw: model}
+		obj.Spec.Model = &runtime.RawExtension{Raw: model}
 	}
-	ab, err := openvizapi.GetGrafana(ctx, r.Client, db.Spec.GrafanaRef.WithNamespace(db.Namespace))
+	ab, err := openvizapi.GetGrafana(ctx, r.Client, obj.Spec.GrafanaRef.WithNamespace(obj.Namespace))
 	if err != nil {
-		return r.handleSetDashboardError(ctx, db, err, false)
+		return r.handleSetDashboardError(ctx, obj, err, false)
 	}
 
 	dsConfig := &openvizapi.GrafanaConfiguration{}
 	if ab.Spec.Parameters != nil {
 		if err := json.Unmarshal(ab.Spec.Parameters.Raw, dsConfig); err != nil {
-			return r.handleSetDashboardError(ctx, db, fmt.Errorf("failed to unmarshal app binding parameters, reason: %v", err), false)
+			return r.handleSetDashboardError(ctx, obj, fmt.Errorf("failed to unmarshal app binding parameters, reason: %v", err), false)
 		}
 	}
 
-	if db.Spec.Templatize != nil && db.Spec.Templatize.Datasource {
+	if obj.Spec.Templatize != nil && obj.Spec.Templatize.Datasource {
 		if ab.Spec.Parameters == nil {
-			return r.handleSetDashboardError(ctx, db, fmt.Errorf("failed to templatize dashboard, reason: datasource parameter is not provided in app binding %s/%s", ab.Namespace, ab.Name), false)
+			return r.handleSetDashboardError(ctx, obj, fmt.Errorf("failed to templatize dashboard, reason: datasource parameter is not provided in app binding %s/%s", ab.Namespace, ab.Name), false)
 		}
-		model, err := replaceDatasource(db.Spec.Model.Raw, dsConfig.Datasource)
+		model, err := replaceDatasource(obj.Spec.Model.Raw, dsConfig.Datasource)
 		if err != nil {
-			return r.handleSetDashboardError(ctx, db, err, false)
+			return r.handleSetDashboardError(ctx, obj, err, false)
 		}
-		db.Spec.Model = &runtime.RawExtension{Raw: model}
+		obj.Spec.Model = &runtime.RawExtension{Raw: model}
 	}
 
 	// collect grafana url and auth info from app binding
-	gc, err := grafana.NewGrafanaClient(ctx, r.Client, db.Spec.GrafanaRef.WithNamespace(db.Namespace))
+	gc, err := grafana.NewGrafanaClient(ctx, r.Client, obj.Spec.GrafanaRef.WithNamespace(obj.Namespace))
 	if err != nil {
-		return r.handleSetDashboardError(ctx, db, err, false)
+		return r.handleSetDashboardError(ctx, obj, err, false)
 	}
 	gDB := &sdk.GrafanaDashboard{
-		Dashboard: db.Spec.Model,
+		Dashboard: obj.Spec.Model,
 		FolderId:  int(pointer.Int64(dsConfig.FolderID)),
 		Overwrite: true,
 	}
@@ -237,16 +241,16 @@ func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, db *openv
 		// Update Observed generation if GrafanaDashboard json configuration is invalid
 		// Ref: https://grafana.com/docs/grafana/latest/http_api/dashboard/#create--update-dashboard
 		if resp != nil && resp.StatusCode == http.StatusBadRequest {
-			return r.handleSetDashboardError(ctx, db, err, true)
+			return r.handleSetDashboardError(ctx, obj, err, true)
 		}
-		return r.handleSetDashboardError(ctx, db, err, false)
+		return r.handleSetDashboardError(ctx, obj, err, false)
 	}
 	orgId, err := gc.GetCurrentOrg(ctx)
 	if err != nil {
-		return r.handleSetDashboardError(ctx, db, err, false)
+		return r.handleSetDashboardError(ctx, obj, err, false)
 	}
 
-	_, _, err = kmc.PatchStatus(ctx, r.Client, db, func(obj client.Object, createOp bool) client.Object {
+	_, _, err = kmc.PatchStatus(ctx, r.Client, obj, func(obj client.Object, createOp bool) client.Object {
 		in := obj.(*openvizapi.GrafanaDashboard)
 		reason := "Dashboard is successfully created"
 		in.Status.Dashboard = &openvizapi.GrafanaDashboardReference{
@@ -334,12 +338,12 @@ func replaceDatasource(model []byte, ds string) ([]byte, error) {
 	return json.Marshal(val)
 }
 
-func (r *GrafanaDashboardReconciler) recordFailureEvent(db *openvizapi.GrafanaDashboard, reason string) {
+func (r *GrafanaDashboardReconciler) recordFailureEvent(obj *openvizapi.GrafanaDashboard, reason string) {
 	r.Recorder.Eventf(
-		db,
+		obj,
 		core.EventTypeWarning,
 		reason,
 		`Failed to complete operation for GrafanaDashboard: "%v", Reason: "%v"`,
-		db.Name,
+		obj.Name,
 		reason)
 }
