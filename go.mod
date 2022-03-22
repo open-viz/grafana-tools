@@ -12,7 +12,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/zeebo/xxh3 v1.0.1
 	go.openviz.dev/apimachinery v0.0.3
-	go.openviz.dev/grafana-sdk v0.0.3-0.20220322061141-3d6c90e9d4d2
+	go.openviz.dev/grafana-sdk v0.0.3
 	golang.org/x/text v0.3.7
 	gomodules.xyz/logs v0.0.6
 	gomodules.xyz/pointer v0.1.0
