@@ -76,7 +76,8 @@ func init() {
 
 // ExtraConfig holds custom apiserver config
 type ExtraConfig struct {
-	ClientConfig *restclient.Config
+	ClientConfig    *restclient.Config
+	ReconcileConfig openvizcontrollers.RecommendationReconcileConfig
 }
 
 // GrafanaOperatorConfig defines the config for the apiserver
@@ -155,9 +156,10 @@ func (c completedConfig) New(ctx context.Context) (*GrafanaOperator, error) {
 	}
 
 	if err = (&openvizcontrollers.GrafanaDashboardReconciler{
-		Client:   mgr.GetClient(),
-		Scheme:   mgr.GetScheme(),
-		Recorder: mgr.GetEventRecorderFor("grafana-dashboard-controller"),
+		Client:               mgr.GetClient(),
+		Scheme:               mgr.GetScheme(),
+		Recorder:             mgr.GetEventRecorderFor("grafana-dashboard-controller"),
+		RequeueAfterDuration: c.ExtraConfig.ReconcileConfig.RequeueAfterDuration,
 	}).SetupWithManager(mgr); err != nil {
 		klog.Error(err, "unable to create controller", "controller", "GrafanaDashboard")
 		os.Exit(1)

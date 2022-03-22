@@ -18,12 +18,22 @@ package framework
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"net/http"
 
+	grafana_sdk "go.openviz.dev/grafana-sdk"
+
+	. "github.com/onsi/gomega"
 	"gomodules.xyz/pointer"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+)
+
+const (
+	grafanaServicePort = 3000
 )
 
 func (f *Framework) GrafanaDeploymentName() string {
@@ -114,7 +124,7 @@ func (f *Framework) CreateGrafanaService() error {
 			Type: core.ServiceTypeClusterIP,
 			Ports: []core.ServicePort{
 				{
-					Port:       3000,
+					Port:       grafanaServicePort,
 					TargetPort: intstr.IntOrString{IntVal: 3000},
 				},
 			},
@@ -126,4 +136,18 @@ func (f *Framework) CreateGrafanaService() error {
 
 func (f *Framework) DeleteGrafanaService() error {
 	return f.cc.Delete(context.TODO(), &core.Service{ObjectMeta: metav1.ObjectMeta{Name: f.name, Namespace: f.namespace}})
+}
+
+func (f *Framework) isGrafanaReady() bool {
+	url := fmt.Sprintf("http://%s.%s.svc:%d/api/health", f.name, f.namespace, grafanaServicePort)
+	resp, err := http.Get(url)
+	if err != nil {
+		return false
+	}
+	gHealth := &grafana_sdk.HealthResponse{}
+
+	err = json.NewDecoder(resp.Body).Decode(gHealth)
+	Expect(err).ShouldNot(HaveOccurred())
+
+	return resp.StatusCode == http.StatusOK && gHealth.Database == "ok" // Ref: https://grafana.com/docs/grafana/latest/http_api/other/#health-api
 }

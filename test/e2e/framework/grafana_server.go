@@ -31,6 +31,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+const (
+	gSvrInterval = time.Millisecond * 250
+	gSvrTimeout  = time.Minute * 20
+)
+
 func (f *Framework) GetGrafanaClient() (*sdk.Client, error) {
 	ab := &appcatalog.AppBinding{}
 	if err := f.cc.Get(context.TODO(), client.ObjectKey{Namespace: f.namespace, Name: f.name}, ab); err != nil {
@@ -51,13 +56,13 @@ func (f *Framework) GetGrafanaClient() (*sdk.Client, error) {
 }
 
 func (f *Framework) DeployGrafanaServer() error {
-	By("Creating grafana deployment")
-	if err := f.CreateGrafanaDeployment(); err != nil {
+	By("Creating grafana service")
+	if err := f.CreateGrafanaService(); err != nil {
 		return err
 	}
 
-	By("Creating grafana service")
-	if err := f.CreateGrafanaService(); err != nil {
+	By("Creating grafana deployment")
+	if err := f.CreateGrafanaDeployment(); err != nil {
 		return err
 	}
 
@@ -99,5 +104,17 @@ func (f *Framework) WaitForGrafanaServerToBeReady() {
 			}
 		}
 		return true
-	}, 5*time.Minute, 100*time.Millisecond).Should(BeTrue())
+	}, gSvrTimeout, gSvrInterval).Should(BeTrue())
+
+	Eventually(func() bool {
+		svc := &core.Service{}
+		err := f.cc.Get(context.TODO(), client.ObjectKey{Namespace: f.namespace, Name: f.name}, svc)
+		Expect(client.IgnoreNotFound(err)).NotTo(HaveOccurred())
+
+		return err == nil
+	}, gSvrTimeout, gSvrInterval)
+
+	Eventually(func() bool {
+		return f.isGrafanaReady()
+	}, gSvrTimeout, gSvrInterval)
 }

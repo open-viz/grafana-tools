@@ -23,11 +23,13 @@ import (
 	"net"
 
 	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
+	openvizcontrollers "go.openviz.dev/grafana-tools/pkg/operator/controllers/openviz"
 	"go.openviz.dev/grafana-tools/pkg/operator/server"
 	"go.openviz.dev/grafana-tools/pkg/ui-server/apiserver"
 
 	"github.com/spf13/pflag"
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apiserver/pkg/endpoints/openapi"
 	"k8s.io/apiserver/pkg/features"
 	genericapiserver "k8s.io/apiserver/pkg/server"
@@ -42,6 +44,7 @@ const defaultEtcdPathPrefix = "/registry/openviz.dev"
 type GrafanaOperatorOptions struct {
 	RecommendedOptions *genericoptions.RecommendedOptions
 	ExtraOptions       *ExtraOptions
+	ReconcileOptions   *openvizcontrollers.RecommendationReconcileConfig
 
 	StdOut io.Writer
 	StdErr io.Writer
@@ -55,9 +58,11 @@ func NewGrafanaDashboardOptions(out, errOut io.Writer) *GrafanaOperatorOptions {
 			defaultEtcdPathPrefix,
 			server.Codecs.LegacyCodec(admissionv1beta1.SchemeGroupVersion),
 		),
-		ExtraOptions: NewExtraOptions(),
-		StdOut:       out,
-		StdErr:       errOut,
+		ExtraOptions:     NewExtraOptions(),
+		ReconcileOptions: openvizcontrollers.NewRecommendationReconcileConfig(),
+
+		StdOut: out,
+		StdErr: errOut,
 	}
 	o.RecommendedOptions.Etcd = nil
 	o.RecommendedOptions.Admission = nil
@@ -68,10 +73,13 @@ func NewGrafanaDashboardOptions(out, errOut io.Writer) *GrafanaOperatorOptions {
 func (o GrafanaOperatorOptions) AddFlags(fs *pflag.FlagSet) {
 	o.RecommendedOptions.AddFlags(fs)
 	o.ExtraOptions.AddFlags(fs)
+	o.ReconcileOptions.AddFlags(fs)
 }
 
 func (o GrafanaOperatorOptions) Validate(args []string) error {
-	return nil
+	var errors []error
+	errors = append(errors, o.ReconcileOptions.Validate()...)
+	return utilerrors.NewAggregate(errors)
 }
 
 func (o *GrafanaOperatorOptions) Complete() error {
@@ -105,7 +113,8 @@ func (o GrafanaOperatorOptions) Config() (*server.GrafanaOperatorConfig, error) 
 	cfg := &server.GrafanaOperatorConfig{
 		GenericConfig: serverConfig,
 		ExtraConfig: server.ExtraConfig{
-			ClientConfig: serverConfig.ClientConfig,
+			ClientConfig:    serverConfig.ClientConfig,
+			ReconcileConfig: *o.ReconcileOptions,
 		},
 	}
 	return cfg, nil

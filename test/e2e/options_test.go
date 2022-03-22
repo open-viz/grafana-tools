@@ -31,8 +31,8 @@ type E2EOptions struct {
 	kubeContext string
 	kubeConfig  string
 
-	username string
-	password string
+	grafanaUsername string
+	grafanaPassword string
 }
 
 var options = &E2EOptions{
@@ -45,8 +45,8 @@ var options = &E2EOptions{
 		}
 		return filepath.Join(homedir.HomeDir(), ".kube", "config")
 	}(),
-	username: "admin",
-	password: "admin",
+	grafanaUsername: "admin",
+	grafanaPassword: "admin",
 }
 
 /*

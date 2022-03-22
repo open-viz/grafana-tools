@@ -41,6 +41,12 @@ const (
 	interval = 250 * time.Millisecond
 )
 
+const (
+	grafanaDashboardJsonFile        = "dashboard-with-panels-with-mixed-yaxes.json"
+	updatedGrafanaDashboardJsonFile = "updated-dashboard-with-panels.json"
+	invalidGrafanaDashboardJsonFile = "invalid-dashboard.json"
+)
+
 var _ = Describe("GrafanaRef Operator E2E testing", func() {
 	var f *framework.Invocation
 
@@ -56,14 +62,33 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 			return modelData
 		}
 
+		getInitialGrafanaDashboardResource = func(jsonFilePath string) *api.GrafanaDashboard {
+			model := getModelFromGrafanaDashboardJson(jsonFilePath)
+			grafanaDashboard := &api.GrafanaDashboard{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      f.Name(),
+					Namespace: f.Namespace(),
+				},
+				Spec: api.GrafanaDashboardSpec{
+					GrafanaRef: &kmapi.ObjectReference{
+						Name:      f.AppBindingName(),
+						Namespace: f.AppBindingNamespace(),
+					},
+					Model:     &runtime.RawExtension{Raw: model},
+					Overwrite: true,
+				},
+			}
+			return grafanaDashboard
+		}
+
 		createAppBinding = func() {
 			By("Creating AppBinding " + f.AppBindingName())
 			Expect(f.CreateAppBinding()).Should(Succeed())
 		}
 
-		createSecret = func() {
+		createSecret = func(username, password string) {
 			By("Creating Secret " + f.SecretName())
-			Expect(f.CreateSecret(options.username, options.password)).Should(Succeed())
+			Expect(f.CreateSecret(username, password)).Should(Succeed())
 		}
 
 		createDefaultAppBinding = func() {
@@ -72,7 +97,6 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 		}
 
 		waitForGrafanaDashboardToGetToFinalPhase = func() {
-			By("Waiting for the grafanadashboard to get to final phase")
 			Eventually(func() bool {
 				grafanadashboard, err := f.GetGrafanaDashboard()
 				if err != nil {
@@ -83,12 +107,22 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 			}, timeout, interval).Should(BeTrue())
 		}
 
+		waitForGrafanaDashboardObservedGenerationToBeUpdated = func() {
+			Eventually(func() bool {
+				grafanadashboard, err := f.GetGrafanaDashboard()
+				if err != nil {
+					return false
+				}
+
+				return grafanadashboard.Status.ObservedGeneration == grafanadashboard.Generation
+			}, timeout, interval).Should(BeTrue())
+		}
+
 		waitForGrafanaDashboardToBeTerminated = func(gdb *api.GrafanaDashboard) {
 			By("Deleting grafanadashboard " + gdb.Name)
 			err := f.DeleteGrafanaDashboard(gdb)
 			Expect(err).NotTo(HaveOccurred())
 
-			By("Waiting for the grafanadashboard to be terminated")
 			Eventually(func() bool {
 				_, err := f.GetGrafanaDashboard()
 				return kerr.IsNotFound(err)
@@ -101,124 +135,202 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 	})
 
 	Describe("GrafanaDashboard Operation", func() {
-		var grafanadashboard *api.GrafanaDashboard
+		Context("Successful creation of a GrafanaDashboard resource with given AppBinding", func() {
+			It("should insert a grafanaDashboard into grafana database", func() {
+				By("Crating Secret with Grafana auth")
+				createSecret(options.grafanaUsername, options.grafanaPassword)
 
-		BeforeEach(func() {
-			grafanadashboard = &api.GrafanaDashboard{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      f.Name(),
-					Namespace: f.Namespace(),
-				},
-				Spec: api.GrafanaDashboardSpec{
-					GrafanaRef: &kmapi.ObjectReference{
-						Name:      f.AppBindingName(),
-						Namespace: f.AppBindingNamespace(),
-					},
-					Overwrite: true,
-				},
-			}
-		})
-
-		Context("Successful creation of a grafanadashboard resource", func() {
-			BeforeEach(func() {
-				model := getModelFromGrafanaDashboardJson("dashboard-with-panels-with-mixed-yaxes.json")
-				grafanadashboard.Spec.Model = &runtime.RawExtension{
-					Raw: model,
-				}
-
-				createSecret()
+				By("Creating AppBinding")
 				createAppBinding()
+
+				By("Creating Dashboard")
+				gDashboard := getInitialGrafanaDashboardResource(grafanaDashboardJsonFile)
+				err := f.CreateOrUpdateGrafanaDashboard(gDashboard)
+				Expect(err).NotTo(HaveOccurred())
+
+				By("Wait for GrafanaDashboardPhase to get Final phase")
+				waitForGrafanaDashboardToGetToFinalPhase()
+
+				By("Verifying GrafanaDashboard has been succeeded")
+				err = f.WaitForGrafanaPhaseToBeCurrent()
+				Expect(err).NotTo(HaveOccurred())
+
+				By("Deleting grafanaDashboard")
+				waitForGrafanaDashboardToBeTerminated(gDashboard)
 			})
 
-			It("should insert a grafanadashboard into grafana database", func() {
-				err := f.CreateGrafanaDashboard(grafanadashboard)
-				Expect(err).NotTo(HaveOccurred())
-			})
+			It("should insert a grafana dashboard into the grafana database and update the dashboard", func() {
+				By("Crating Secret with Grafana auth")
+				createSecret(options.grafanaUsername, options.grafanaPassword)
 
-			AfterEach(func() {
-				By("Verifying grafanadashboard has been succeeded")
-				err := f.WaitForGrafanaPhaseToBeCurrent()
+				By("Creating AppBinding")
+				createAppBinding()
+
+				By("Creating Dashboard")
+				gDashboard := getInitialGrafanaDashboardResource(grafanaDashboardJsonFile)
+				err := f.CreateOrUpdateGrafanaDashboard(gDashboard)
 				Expect(err).NotTo(HaveOccurred())
+
+				By("Wait for GrafanaDashboardPhase to get Final phase")
+				waitForGrafanaDashboardToGetToFinalPhase()
+
+				By("Verifying GrafanaDashboard has been succeeded")
+				err = f.WaitForGrafanaPhaseToBeCurrent()
+				Expect(err).NotTo(HaveOccurred())
+
+				updatedModel := getModelFromGrafanaDashboardJson(updatedGrafanaDashboardJsonFile)
+				gDashboard.Spec.Model.Raw = updatedModel
+
+				By("Update the dashboard with updated json model")
+				err = f.CreateOrUpdateGrafanaDashboard(gDashboard)
+				Expect(err).NotTo(HaveOccurred())
+
+				By("Deleting grafanaDashboard")
+				waitForGrafanaDashboardToBeTerminated(gDashboard)
 			})
 		})
 
 		Context("Successful creation of a GrafanaDashboard resource with default grafana AppBinding", func() {
-			BeforeEach(func() {
-				model := getModelFromGrafanaDashboardJson("dashboard-with-panels-with-mixed-yaxes.json")
-				grafanadashboard.Spec.Model = &runtime.RawExtension{
-					Raw: model,
-				}
-				grafanadashboard.Spec.GrafanaRef = nil
+			It("should insert a grafanaDashboard into grafana database with default grafana AppBinding", func() {
+				By("Crating Secret with Grafana auth")
+				createSecret(options.grafanaUsername, options.grafanaPassword)
 
-				createSecret()
+				By("Creating Default AppBinding")
 				createDefaultAppBinding()
-			})
 
-			It("should insert a grafanadashboard into grafana database", func() {
-				err := f.CreateGrafanaDashboard(grafanadashboard)
+				By("Creating Dashboard")
+				gDashboard := getInitialGrafanaDashboardResource(grafanaDashboardJsonFile)
+				gDashboard.Spec.GrafanaRef = nil
+				err := f.CreateOrUpdateGrafanaDashboard(gDashboard)
 				Expect(err).NotTo(HaveOccurred())
-			})
 
-			AfterEach(func() {
+				By("Wait for GrafanaDashboardPhase to get Final phase")
+				waitForGrafanaDashboardToGetToFinalPhase()
+
 				By("Verifying GrafanaDashboard has been succeeded")
-				err := f.WaitForGrafanaPhaseToBeCurrent()
+				err = f.WaitForGrafanaPhaseToBeCurrent()
 				Expect(err).NotTo(HaveOccurred())
+
+				By("Deleting grafanaDashboard")
+				waitForGrafanaDashboardToBeTerminated(gDashboard)
+			})
+
+			It("should insert a grafana dashboard into the grafana database and update the dashboard with default grafana AppBinding", func() {
+				By("Crating Secret with Grafana auth")
+				createSecret(options.grafanaUsername, options.grafanaPassword)
+
+				By("Creating Default Grafana AppBinding")
+				createDefaultAppBinding()
+
+				By("Creating Dashboard")
+				gDashboard := getInitialGrafanaDashboardResource(grafanaDashboardJsonFile)
+				gDashboard.Spec.GrafanaRef = nil
+				err := f.CreateOrUpdateGrafanaDashboard(gDashboard)
+				Expect(err).NotTo(HaveOccurred())
+
+				By("Wait for GrafanaDashboardPhase to get Final phase")
+				waitForGrafanaDashboardToGetToFinalPhase()
+
+				By("Verifying GrafanaDashboard has been succeeded")
+				err = f.WaitForGrafanaPhaseToBeCurrent()
+				Expect(err).NotTo(HaveOccurred())
+
+				updatedModel := getModelFromGrafanaDashboardJson(updatedGrafanaDashboardJsonFile)
+				gDashboard.Spec.Model.Raw = updatedModel
+
+				By("Update the dashboard with updated json model")
+				err = f.CreateOrUpdateGrafanaDashboard(gDashboard)
+				Expect(err).NotTo(HaveOccurred())
+
+				By("Deleting grafanaDashboard")
+				waitForGrafanaDashboardToBeTerminated(gDashboard)
 			})
 		})
 
-		Context("Unsuccessful creation of a grafanadashboard resource", func() {
-			BeforeEach(func() {
-				model := getModelFromGrafanaDashboardJson("dashboard-with-panels-with-mixed-yaxes.json")
-				grafanadashboard.Spec.Model = &runtime.RawExtension{
-					Raw: model,
-				}
+		Context("Unsuccessful creation of a grafanaDashboard resource", func() {
+			It("should not insert a grafanaDashboard into grafana database with invalid grafana auth", func() {
+				By("Crating Secret with invalid Grafana auth")
+				createSecret("admin", "wrong-password")
 
-				options.username = "admin"
-				options.password = "not-password"
+				By("Creating Grafana AppBinding")
 				createAppBinding()
-				createSecret()
-			})
 
-			It("should not insert a grafanadashboard into grafana database", func() {
-				err := f.CreateGrafanaDashboard(grafanadashboard)
+				By("Creating Dashboard")
+				gDashboard := getInitialGrafanaDashboardResource(grafanaDashboardJsonFile)
+				err := f.CreateOrUpdateGrafanaDashboard(gDashboard)
 				Expect(err).NotTo(HaveOccurred())
+
+				By("Wait for GrafanaDashboardPhase to get Final phase")
+				waitForGrafanaDashboardToGetToFinalPhase()
+
+				By("Checking GrafanaDashboard failed status")
+				gdb, err := f.GetGrafanaDashboard()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(gdb.Status.Phase).To(Equal(api.GrafanaPhaseFailed))
+				Expect(gdb.Status.Dashboard).To(BeNil())
+
+				By("Deleting grafanaDashboard")
+				waitForGrafanaDashboardToBeTerminated(gDashboard)
 			})
 
-			AfterEach(func() {
+			It("should not insert a grafanaDashboard into grafana database with no model data", func() {
+				By("Crating Secret with Grafana auth")
+				createSecret(options.grafanaUsername, options.grafanaPassword)
+
+				By("Creating Grafana AppBinding")
+				createAppBinding()
+
+				By("Creating Dashboard")
+				gDashboard := getInitialGrafanaDashboardResource(grafanaDashboardJsonFile)
+				gDashboard.Spec.Model = nil
+				err := f.CreateOrUpdateGrafanaDashboard(gDashboard)
+				Expect(err).NotTo(HaveOccurred())
+
+				By("Wait for GrafanaDashboardPhase to get Final phase")
+				waitForGrafanaDashboardToGetToFinalPhase()
+
+				By("Checking GrafanaDashboard failed status")
 				gdb, err := f.GetGrafanaDashboard()
 				Expect(err).NotTo(HaveOccurred())
 				Expect(gdb.Status.Phase).To(BeEquivalentTo(api.GrafanaPhaseFailed))
 				Expect(gdb.Status.Dashboard).To(BeNil())
-			})
-		})
 
-		Context("Unsuccessful creation of a grafanadashboard resource", func() {
-			BeforeEach(func() {
-				By("Not providing model data")
+				By("Deleting grafanaDashboard")
+				waitForGrafanaDashboardToBeTerminated(gDashboard)
+			})
+
+			It("should not insert a grafanaDashboard into grafana database with invalid dashboard json data", func() {
+				By("Crating Secret with Grafana auth")
+				createSecret(options.grafanaUsername, options.grafanaPassword)
+
+				By("Creating Grafana AppBinding")
 				createAppBinding()
-				createSecret()
-			})
 
-			It("should not insert a grafanadashboard into grafana database", func() {
-				err := f.CreateGrafanaDashboard(grafanadashboard)
+				By("Creating Dashboard")
+				gDashboard := getInitialGrafanaDashboardResource(invalidGrafanaDashboardJsonFile)
+				err := f.CreateOrUpdateGrafanaDashboard(gDashboard)
 				Expect(err).NotTo(HaveOccurred())
-			})
 
-			AfterEach(func() {
-				grafanadashboard, err := f.GetGrafanaDashboard()
+				By("Wait for GrafanaDashboardPhase to get Final phase")
+				waitForGrafanaDashboardToGetToFinalPhase()
+
+				By("Wait for GrafanaDashboard ObservedGeneration to be updated")
+				waitForGrafanaDashboardObservedGenerationToBeUpdated()
+
+				By("Checking GrafanaDashboard failed status with updated observed generation")
+				gdb, err := f.GetGrafanaDashboard()
 				Expect(err).NotTo(HaveOccurred())
-				Expect(grafanadashboard.Status.Phase).To(BeEquivalentTo(api.GrafanaPhaseFailed))
-				Expect(grafanadashboard.Status.Dashboard).To(BeNil())
-			})
-		})
+				Expect(gdb.Status.Phase).To(BeEquivalentTo(api.GrafanaPhaseFailed))
+				Expect(gdb.Status.Dashboard).To(BeNil())
+				// As the given dashboard json is invalid, observer generation should be updated by the controller
+				Expect(gdb.Status.ObservedGeneration).To(Equal(gdb.Generation))
 
-		JustAfterEach(func() {
-			waitForGrafanaDashboardToGetToFinalPhase()
+				By("Deleting grafanaDashboard")
+				waitForGrafanaDashboardToBeTerminated(gDashboard)
+			})
 		})
 
 		AfterEach(func() {
-			waitForGrafanaDashboardToBeTerminated(grafanadashboard)
-
 			By("Deleting Secret")
 			err := root.DeleteSecret()
 			Expect(err).NotTo(HaveOccurred())

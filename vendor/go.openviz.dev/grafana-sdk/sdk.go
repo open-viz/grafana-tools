@@ -59,15 +59,16 @@ type GrafanaDashboard struct {
 }
 
 type GrafanaResponse struct {
-	ID      *int    `json:"id,omitempty"`
-	UID     *string `json:"uid,omitempty"`
-	URL     *string `json:"url,omitempty"`
-	Title   *string `json:"title,omitempty"`
-	Name    *string `json:"name,omitempty"`
-	Message *string `json:"message,omitempty"`
-	Status  *string `json:"status,omitempty"`
-	Version *int    `json:"version,omitempty"`
-	Slug    *string `json:"slug,omitempty"`
+	ID         *int    `json:"id,omitempty"`
+	UID        *string `json:"uid,omitempty"`
+	URL        *string `json:"url,omitempty"`
+	Title      *string `json:"title,omitempty"`
+	Name       *string `json:"name,omitempty"`
+	Message    *string `json:"message,omitempty"`
+	Status     *string `json:"status,omitempty"`
+	Version    *int    `json:"version,omitempty"`
+	Slug       *string `json:"slug,omitempty"`
+	StatusCode int     `json:"statusCode,omitempty"`
 }
 
 type Org struct {
@@ -129,6 +130,7 @@ func (c *Client) SetDashboard(ctx context.Context, db *GrafanaDashboard) (*Grafa
 	if err != nil {
 		return nil, err
 	}
+	gResp.StatusCode = resp.StatusCode()
 
 	if resp.StatusCode() != http.StatusOK {
 		return gResp, fmt.Errorf("failed to set dashboard, reason: %v", pointer.String(gResp.Message))
@@ -150,6 +152,7 @@ func (c *Client) DeleteDashboardByUID(ctx context.Context, uid string) (*Grafana
 	if err != nil {
 		return nil, err
 	}
+	gResp.StatusCode = resp.StatusCode()
 
 	if resp.StatusCode() != http.StatusOK {
 		return gResp, fmt.Errorf("failed to delete dashboard, reason: %v", pointer.String(gResp.Message))
@@ -237,6 +240,7 @@ func (c *Client) CreateDatasource(ctx context.Context, ds *Datasource) (*Grafana
 	if err != nil {
 		return nil, err
 	}
+	gResp.StatusCode = resp.StatusCode()
 
 	if resp.StatusCode() != http.StatusOK {
 		return gResp, fmt.Errorf("failed to create datasource, reason: %v", pointer.String(gResp.Message))
@@ -257,6 +261,7 @@ func (c *Client) UpdateDatasource(ctx context.Context, ds Datasource) (*GrafanaR
 	if err != nil {
 		return nil, err
 	}
+	gResp.StatusCode = resp.StatusCode()
 
 	if resp.StatusCode() != http.StatusOK {
 		return gResp, fmt.Errorf("failed to update datasource, reason: %v", pointer.String(gResp.Message))
@@ -277,6 +282,7 @@ func (c *Client) DeleteDatasource(ctx context.Context, id int) (*GrafanaResponse
 	if err != nil {
 		return nil, err
 	}
+	gResp.StatusCode = resp.StatusCode()
 
 	if resp.StatusCode() != http.StatusOK {
 		return gResp, fmt.Errorf("failed to delete datasource, reason: %v", pointer.String(gResp.Message))
