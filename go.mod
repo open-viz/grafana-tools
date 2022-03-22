@@ -3,9 +3,7 @@ module go.openviz.dev/grafana-tools
 go 1.17
 
 require (
-	github.com/go-openapi/spec v0.19.8 // indirect
 	github.com/gogo/protobuf v1.3.2
-	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/grafana-tools/sdk v0.0.0-20220225081456-2ff95a73e54e
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.17.0
@@ -13,7 +11,7 @@ require (
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/pflag v1.0.5
 	github.com/zeebo/xxh3 v1.0.1
-	go.openviz.dev/apimachinery v0.0.1
+	go.openviz.dev/apimachinery v0.0.3
 	go.openviz.dev/grafana-sdk v0.0.2
 	golang.org/x/text v0.3.7
 	gomodules.xyz/logs v0.0.6
@@ -26,13 +24,11 @@ require (
 	k8s.io/apiserver v0.21.1
 	k8s.io/client-go v0.21.1
 	k8s.io/klog/v2 v2.9.0
-	k8s.io/kube-openapi v0.0.0-20211115234752-e816edb12b65 // indirect
 	kmodules.xyz/authorizer v0.0.0-20211121124031-167d0ef7c671
 	kmodules.xyz/client-go v0.0.0-20220308080632-2543b61b64fd
 	kmodules.xyz/custom-resources v0.0.0-20220314103517-150ada19b198
 	kmodules.xyz/monitoring-agent-api v0.0.0-20220314131012-05a1a33d1e2c
 	sigs.k8s.io/controller-runtime v0.9.0
-	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
 replace sigs.k8s.io/controller-runtime => github.com/kmodules/controller-runtime v0.9.1-0.20220314225952-be0b6d7fec6a
@@ -66,12 +62,14 @@ require (
 	github.com/go-logr/logr v0.4.0 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.19.5 // indirect
+	github.com/go-openapi/spec v0.19.8 // indirect
 	github.com/go-openapi/swag v0.19.14 // indirect
 	github.com/go-resty/resty/v2 v2.7.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/btree v1.0.0 // indirect
 	github.com/google/go-cmp v0.5.6 // indirect
+	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/googleapis/gnostic v0.5.5 // indirect
@@ -138,11 +136,13 @@ require (
 	k8s.io/cli-runtime v0.21.1 // indirect
 	k8s.io/component-base v0.21.1 // indirect
 	k8s.io/component-helpers v0.21.1 // indirect
+	k8s.io/kube-openapi v0.0.0-20211115234752-e816edb12b65 // indirect
 	k8s.io/utils v0.0.0-20210930125809-cb0fa318a74b // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.15 // indirect
 	sigs.k8s.io/kustomize/api v0.8.8 // indirect
 	sigs.k8s.io/kustomize/kyaml v0.10.17 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.0 // indirect
+	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
 replace bitbucket.org/ww/goautoneg => gomodules.xyz/goautoneg v0.0.0-20120707110453-a547fc61f48d

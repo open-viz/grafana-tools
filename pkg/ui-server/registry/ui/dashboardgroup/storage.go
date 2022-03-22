@@ -283,7 +283,7 @@ func (r *Storage) getDashboardLink(
 		}
 		baseURL.RawQuery = addVars(q, req.Vars)
 
-		resp.Link = baseURL.String()
+		resp.URL = baseURL.String()
 	}
 
 	return resp, nil
