@@ -188,9 +188,15 @@ func (r *GrafanaDashboardReconciler) deleteExternalDashboard(ctx context.Context
 		if err != nil {
 			return err
 		}
-		if _, err = gc.DeleteDashboardByUID(ctx, *obj.Status.Dashboard.UID); err != nil {
+		resp, err := gc.DeleteDashboardByUID(ctx, *obj.Status.Dashboard.UID)
+		if err != nil {
+			// Finalizer is removed in case remote Grafana Dashboard doesn't exist anymore
+			if resp != nil && resp.StatusCode == http.StatusNotFound {
+				return nil
+			}
 			return err
 		}
+
 	}
 	return nil
 }
