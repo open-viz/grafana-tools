@@ -207,55 +207,23 @@ func (r *Storage) getDashboardLink(
 		for _, p := range req.Panels {
 			panelMap[p.Title] = p.Width
 		}
-		includePanel := func(title string) bool {
-			if len(panelMap) == 0 {
-				return true
-			}
-			_, ok := panelMap[title]
-			return ok
-		}
 
 		for _, p := range board.Panels {
 			if p.Type == "row" {
-				continue
-			}
-			if !includePanel(p.Title) {
-				continue
-			}
-
-			// Embedded URL
-			// <iframe src="http://localhost:3000/d-solo/200ac8fdbfbb74b39aff88118e4d1c2c/kubernetes-compute-resources-node-pods?orgId=1&refresh=10s&from=1647592158580&to=1647595758580&panelId=1" width="450" height="200" frameborder="0"></iframe>
-
-			baseURL, err := url.Parse(grafanaHost)
-			if err != nil {
-				return nil, apierrors.NewInternalError(err)
-			}
-
-			// if embedded
-			baseURL.Path = path.Join(baseURL.Path, "d-solo", *d.Status.Dashboard.UID, *d.Status.Dashboard.Slug)
-			q := url.Values{}
-			q.Add("orgId", strconv.Itoa(int(*d.Status.Dashboard.OrgID)))
-			if refreshInterval == "" {
-				q.Add("refresh", "30s")
+				for _, p2 := range p.RowPanel.Panels {
+					if panel, err := toEmbeddedPanel(&p2, grafanaHost, d, refreshInterval, timeRange, req, panelMap); err != nil {
+						return nil, err
+					} else if panel != nil {
+						resp.Panels = append(resp.Panels, *panel)
+					}
+				}
 			} else {
-				q.Add("refresh", refreshInterval)
+				if panel, err := toEmbeddedPanel(p, grafanaHost, d, refreshInterval, timeRange, req, panelMap); err != nil {
+					return nil, err
+				} else if panel != nil {
+					resp.Panels = append(resp.Panels, *panel)
+				}
 			}
-			if timeRange == nil {
-				q.Add("from", "now-3h")
-				q.Add("to", "now")
-			} else {
-				q.Add("from", timeRange.From)
-				q.Add("to", timeRange.To)
-			}
-			q.Add("panelId", strconv.Itoa(int(p.ID)))
-			baseURL.RawQuery = addVars(q, req.Vars)
-
-			panel := uiapi.PanelLinkResponse{
-				Title: p.Title,
-				URL:   baseURL.String(),
-				Width: panelMap[p.Title],
-			}
-			resp.Panels = append(resp.Panels, panel)
 		}
 	} else {
 		// http://localhost:3000/d/85a562078cdf77779eaa1add43ccec1e/kubernetes-compute-resources-namespace-pods?orgId=1&refresh=10s&from=1647757465219&to=1647761065220
@@ -287,6 +255,53 @@ func (r *Storage) getDashboardLink(
 	}
 
 	return resp, nil
+}
+
+func toEmbeddedPanel(p *sdk.Panel, grafanaHost string, d openvizapi.GrafanaDashboard, refreshInterval string, timeRange *uiapi.TimeRange, req *uiapi.DashboardRequest, panelMap map[string]int) (*uiapi.PanelLinkResponse, error) {
+	includePanel := func(title string) bool {
+		if len(panelMap) == 0 {
+			return true
+		}
+		_, ok := panelMap[title]
+		return ok
+	}
+
+	if !includePanel(p.Title) {
+		return nil, nil
+	}
+
+	// Embedded URL
+	// <iframe src="http://localhost:3000/d-solo/200ac8fdbfbb74b39aff88118e4d1c2c/kubernetes-compute-resources-node-pods?orgId=1&refresh=10s&from=1647592158580&to=1647595758580&panelId=1" width="450" height="200" frameborder="0"></iframe>
+
+	baseURL, err := url.Parse(grafanaHost)
+	if err != nil {
+		return nil, apierrors.NewInternalError(err)
+	}
+
+	// if embedded
+	baseURL.Path = path.Join(baseURL.Path, "d-solo", *d.Status.Dashboard.UID, *d.Status.Dashboard.Slug)
+	q := url.Values{}
+	q.Add("orgId", strconv.Itoa(int(*d.Status.Dashboard.OrgID)))
+	if refreshInterval == "" {
+		q.Add("refresh", "30s")
+	} else {
+		q.Add("refresh", refreshInterval)
+	}
+	if timeRange == nil {
+		q.Add("from", "now-3h")
+		q.Add("to", "now")
+	} else {
+		q.Add("from", timeRange.From)
+		q.Add("to", timeRange.To)
+	}
+	q.Add("panelId", strconv.Itoa(int(p.ID)))
+	baseURL.RawQuery = addVars(q, req.Vars)
+
+	return &uiapi.PanelLinkResponse{
+		Title: p.Title,
+		URL:   baseURL.String(),
+		Width: panelMap[p.Title],
+	}, nil
 }
 
 func addVars(q url.Values, vars []uiapi.DashboardVar) string {
