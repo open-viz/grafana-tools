@@ -293,6 +293,29 @@ func addDashboardID(model []byte, id int64, uid string) ([]byte, error) {
 	return json.Marshal(val)
 }
 
+// Helper function to replace the datasource name in dashboard panels
+func getUpdatedPanels(panels []interface{}, ds string) []interface{} {
+	updatedPanels := make([]interface{}, 0)
+	for _, p := range panels {
+		panel, ok := p.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		panel["datasource"] = ds
+
+		collapsed, found := panel["collapsed"].(bool)
+		if found && collapsed {
+			nestedPanels, ok := panel["panels"].([]interface{})
+			if ok {
+				updatedNestedPanels := getUpdatedPanels(nestedPanels, ds)
+				panel["panels"] = updatedNestedPanels
+			}
+		}
+		updatedPanels = append(updatedPanels, panel)
+	}
+	return updatedPanels
+}
+
 // Helper function to replace datasource of the given dashboard model
 func replaceDatasource(model []byte, ds string) ([]byte, error) {
 	val := make(map[string]interface{})
@@ -304,16 +327,7 @@ func replaceDatasource(model []byte, ds string) ([]byte, error) {
 	if !ok {
 		return model, nil
 	}
-	var updatedPanels []interface{}
-	for _, p := range panels {
-		panel, ok := p.(map[string]interface{})
-		if !ok {
-			continue
-		}
-		panel["datasource"] = ds
-		updatedPanels = append(updatedPanels, panel)
-	}
-	val["panels"] = updatedPanels
+	val["panels"] = getUpdatedPanels(panels, ds)
 
 	templateList, ok := val["templating"].(map[string]interface{})
 	if !ok {
