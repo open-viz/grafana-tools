@@ -21,7 +21,7 @@ import (
 	"testing"
 	"time"
 
-	"go.openviz.dev/grafana-tools/pkg/operator/server"
+	"go.openviz.dev/grafana-tools/pkg/apiserver"
 	"go.openviz.dev/grafana-tools/test/e2e/framework"
 
 	. "github.com/onsi/ginkgo"
@@ -60,7 +60,7 @@ var _ = BeforeSuite(func() {
 	clientConfig.QPS = 100
 
 	mgr, err := manager.New(clientConfig, manager.Options{
-		Scheme:                 server.Scheme,
+		Scheme:                 apiserver.Scheme,
 		MetricsBindAddress:     "",
 		Port:                   0,
 		HealthProbeBindAddress: "",

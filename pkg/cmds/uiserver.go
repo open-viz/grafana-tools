@@ -20,7 +20,7 @@ import (
 	"context"
 	"io"
 
-	"go.openviz.dev/grafana-tools/pkg/ui-server/cmds/server"
+	"go.openviz.dev/grafana-tools/pkg/cmds/server"
 
 	"github.com/spf13/cobra"
 	v "gomodules.xyz/x/version"
@@ -33,8 +33,8 @@ func NewCmdUIServer(ctx context.Context, out, errOut io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:               "ui-server",
-		Short:             "Launch the GrafanaRef UI Server",
-		Long:              "Launch the GrafanaRef UI Server",
+		Short:             "Launch the Grafana UI Server",
+		Long:              "Launch the Grafana UI Server",
 		DisableAutoGenTag: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			klog.Infof("Starting ui server version %s+%s ...", v.Version.Version, v.Version.CommitHash)

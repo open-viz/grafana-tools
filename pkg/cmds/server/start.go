@@ -23,7 +23,7 @@ import (
 	"net"
 
 	uiapi "go.openviz.dev/apimachinery/apis/ui/v1alpha1"
-	"go.openviz.dev/grafana-tools/pkg/ui-server/apiserver"
+	"go.openviz.dev/grafana-tools/pkg/apiserver"
 
 	"github.com/spf13/pflag"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"

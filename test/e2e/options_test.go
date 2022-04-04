@@ -20,13 +20,13 @@ import (
 	"os"
 	"path/filepath"
 
-	"go.openviz.dev/grafana-tools/pkg/operator/cmds/server"
+	"go.openviz.dev/grafana-tools/pkg/cmds/server"
 
 	"k8s.io/client-go/util/homedir"
 )
 
 type E2EOptions struct {
-	*server.ExtraOptions
+	*server.OperatorOptions
 
 	kubeContext string
 	kubeConfig  string
@@ -36,7 +36,7 @@ type E2EOptions struct {
 }
 
 var options = &E2EOptions{
-	ExtraOptions: server.NewExtraOptions(),
+	OperatorOptions: server.NewOperatorOptions(),
 
 	kubeConfig: func() string {
 		kubecfg := os.Getenv("KUBECONFIG")
