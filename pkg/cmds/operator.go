@@ -18,21 +18,23 @@ package cmds
 
 import (
 	"context"
-	"io"
 
-	"go.openviz.dev/grafana-tools/pkg/operator/cmds/server"
+	"go.openviz.dev/grafana-tools/pkg/cmds/server"
 
 	"github.com/spf13/cobra"
 	v "gomodules.xyz/x/version"
+	"k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/klog/v2"
 )
 
-func NewCmdOperator(ctx context.Context, out, errOut io.Writer) *cobra.Command {
-	o := server.NewGrafanaDashboardOptions(out, errOut)
+func NewCmdOperator(ctx context.Context) *cobra.Command {
+	// o := server.NewOperatorOptions()
+	o := server.NewOperatorOptions()
 
 	cmd := &cobra.Command{
 		Use:               "operator",
-		Short:             "Launch the GrafanaRef operator",
+		Short:             "Launch Grafana Provisioner",
+		Long:              "Launch Grafana Provisioner",
 		DisableAutoGenTag: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			klog.Infof("Starting operator version %s+%s ...", v.Version.Version, v.Version.CommitHash)
@@ -40,13 +42,10 @@ func NewCmdOperator(ctx context.Context, out, errOut io.Writer) *cobra.Command {
 			if err := o.Complete(); err != nil {
 				return err
 			}
-			if err := o.Validate(args); err != nil {
-				return err
+			if err := o.Validate(); err != nil {
+				return errors.NewAggregate(err)
 			}
-			if err := o.Run(ctx); err != nil {
-				return err
-			}
-			return nil
+			return o.Run(ctx)
 		},
 	}
 

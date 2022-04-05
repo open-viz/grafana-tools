@@ -357,13 +357,13 @@ endif
 .PHONY: install
 install:
 	@cd ../installer; \
-	helm install grafana-operator charts/grafana-operator --wait \
+	helm upgrade -i grafana-operator charts/grafana-operator --wait \
 		--namespace=$(KUBE_NAMESPACE) --create-namespace \
 		--set operator.registry=$(REGISTRY) \
 		--set operator.tag=$(TAG) \
 		--set imagePullPolicy=$(IMAGE_PULL_POLICY) \
 		$(IMAGE_PULL_SECRETS); \
-	helm install grafana-ui-server charts/grafana-ui-server --wait \
+	helm upgrade -i grafana-ui-server charts/grafana-ui-server --wait \
 		--namespace=$(KUBE_NAMESPACE) --create-namespace \
 		--set image.registry=$(REGISTRY) \
 		--set image.tag=$(TAG) \
@@ -373,9 +373,8 @@ install:
 .PHONY: uninstall
 uninstall:
 	@cd ../installer; \
-	helm uninstall grafana-ui-server --namespace=$(KUBE_NAMESPACE) || true  \
-
-	helm uninstall grafana-operator --namespace=$(KUBE_NAMESPACE) || true \
+	helm uninstall grafana-ui-server --namespace=$(KUBE_NAMESPACE) || true; \
+	helm uninstall grafana-operator --namespace=$(KUBE_NAMESPACE) || true
 
 .PHONY: purge
 purge: uninstall
@@ -460,19 +459,13 @@ clean:
 
 .PHONY: run
 run:
-	GO111MODULE=on go run -mod=vendor ./cmd/grafana-tools run \
-		--v=3 \
-		--secure-port=8443 \
-		--kubeconfig=$(KUBECONFIG) \
-		--authorization-kubeconfig=$(KUBECONFIG) \
-		--authentication-kubeconfig=$(KUBECONFIG) \
-		--authentication-skip-lookup
+	go run -mod=vendor cmd/grafana-tools/*.go operator --kubeconfig=$HOME/.kube/config
 
 .PHONY: push-to-kind
 push-to-kind: container
 	@echo "Loading docker image into kind cluster...."
-	@kind load docker-image $(IMAGE):$(TAG)
+	@kind load docker-image $(IMAGE):$(TAG_PROD)
 	@echo "Image has been pushed successfully into kind cluster."
 
 .PHONY: deploy-to-kind
-deploy-to-kind: uninstall push-to-kind install
+deploy-to-kind: push-to-kind install

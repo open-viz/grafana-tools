@@ -18,16 +18,17 @@ require (
 	gomodules.xyz/pointer v0.1.0
 	gomodules.xyz/runtime v0.2.0
 	gomodules.xyz/wait v0.2.0
-	gomodules.xyz/x v0.0.10
+	gomodules.xyz/x v0.0.13
 	k8s.io/api v0.21.1
+	k8s.io/apiextensions-apiserver v0.21.1
 	k8s.io/apimachinery v0.21.1
 	k8s.io/apiserver v0.21.1
 	k8s.io/client-go v0.21.1
 	k8s.io/klog/v2 v2.9.0
 	kmodules.xyz/authorizer v0.0.0-20211121124031-167d0ef7c671
-	kmodules.xyz/client-go v0.0.0-20220308080632-2543b61b64fd
-	kmodules.xyz/custom-resources v0.0.0-20220314103517-150ada19b198
-	kmodules.xyz/monitoring-agent-api v0.0.0-20220314131012-05a1a33d1e2c
+	kmodules.xyz/client-go v0.0.0-20220404224906-af7b092cfac5
+	kmodules.xyz/custom-resources v0.0.0-20220317220154-7beb809b1f5e
+	kmodules.xyz/monitoring-agent-api v0.0.0-20220319222118-0290ed5b75e1
 	sigs.k8s.io/controller-runtime v0.9.0
 )
 
@@ -132,7 +133,6 @@ require (
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
-	k8s.io/apiextensions-apiserver v0.21.1 // indirect
 	k8s.io/cli-runtime v0.21.1 // indirect
 	k8s.io/component-base v0.21.1 // indirect
 	k8s.io/component-helpers v0.21.1 // indirect
