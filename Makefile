@@ -359,8 +359,8 @@ install:
 	@cd ../installer; \
 	helm upgrade -i grafana-operator charts/grafana-operator --wait \
 		--namespace=$(KUBE_NAMESPACE) --create-namespace \
-		--set operator.registry=$(REGISTRY) \
-		--set operator.tag=$(TAG) \
+		--set image.registry=$(REGISTRY) \
+		--set image.tag=$(TAG) \
 		--set imagePullPolicy=$(IMAGE_PULL_POLICY) \
 		$(IMAGE_PULL_SECRETS); \
 	helm upgrade -i grafana-ui-server charts/grafana-ui-server --wait \
