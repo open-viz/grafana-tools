@@ -18,7 +18,7 @@ package e2e_test
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"os"
 	"time"
 
@@ -56,7 +56,7 @@ var _ = Describe("GrafanaRef Operator E2E testing", func() {
 			file, err := os.Open(filename)
 			Expect(err).NotTo(HaveOccurred())
 
-			modelData, err := ioutil.ReadAll(file)
+			modelData, err := io.ReadAll(file)
 			Expect(err).NotTo(HaveOccurred())
 
 			return modelData
