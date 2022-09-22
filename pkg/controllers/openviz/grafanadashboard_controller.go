@@ -79,7 +79,7 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	if obj.ObjectMeta.DeletionTimestamp != nil {
 		// Change the Phase to Terminating if not
 		if obj.Status.Phase != openvizapi.GrafanaPhaseTerminating {
-			_, _, err := kmc.PatchStatus(ctx, r.Client, obj, func(obj client.Object, createOp bool) client.Object {
+			_, _, err := kmc.PatchStatus(ctx, r.Client, obj, func(obj client.Object) client.Object {
 				in := obj.(*openvizapi.GrafanaDashboard)
 				in.Status.Phase = openvizapi.GrafanaPhaseTerminating
 				in.Status.Reason = "Resource has been going to be deleted"
@@ -116,7 +116,7 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	// Set the Phase to Processing if the dashboard is going to be processed for the first time.
 	// If the dashboard phase is already failed then setting Phase is skipped.
 	if obj.Status.Phase != openvizapi.GrafanaPhaseProcessing && obj.Status.Phase != openvizapi.GrafanaPhaseFailed {
-		_, _, err := kmc.PatchStatus(ctx, r.Client, obj, func(obj client.Object, createOp bool) client.Object {
+		_, _, err := kmc.PatchStatus(ctx, r.Client, obj, func(obj client.Object) client.Object {
 			in := obj.(*openvizapi.GrafanaDashboard)
 			in.Status.Phase = openvizapi.GrafanaPhaseProcessing
 			return in
@@ -133,7 +133,7 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 func (r *GrafanaDashboardReconciler) handleSetDashboardError(ctx context.Context, obj *openvizapi.GrafanaDashboard, err error, updateGeneration bool) (ctrl.Result, error) {
 	reason := err.Error()
 	r.recordFailureEvent(obj, reason)
-	_, _, patchErr := kmc.PatchStatus(ctx, r.Client, obj, func(obj client.Object, createOp bool) client.Object {
+	_, _, patchErr := kmc.PatchStatus(ctx, r.Client, obj, func(obj client.Object) client.Object {
 		in := obj.(*openvizapi.GrafanaDashboard)
 		in.Status.Phase = openvizapi.GrafanaPhaseFailed
 		in.Status.Reason = reason
@@ -256,7 +256,7 @@ func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, obj *open
 		return r.handleSetDashboardError(ctx, obj, err, false)
 	}
 
-	_, _, err = kmc.PatchStatus(ctx, r.Client, obj, func(obj client.Object, createOp bool) client.Object {
+	_, _, err = kmc.PatchStatus(ctx, r.Client, obj, func(obj client.Object) client.Object {
 		in := obj.(*openvizapi.GrafanaDashboard)
 		reason := "Dashboard is successfully created"
 		in.Status.Dashboard = &openvizapi.GrafanaDashboardReference{

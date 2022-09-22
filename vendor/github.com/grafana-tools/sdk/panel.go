@@ -24,6 +24,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sort"
 )
 
 // Each panel may be one of these types.
@@ -67,9 +68,9 @@ type (
 	}
 	panelType   int8
 	CommonPanel struct {
-		Datasource *string `json:"datasource,omitempty"` // metrics
-		Editable   bool    `json:"editable"`
-		Error      bool    `json:"error"`
+		Datasource interface{} `json:"datasource,omitempty"` // metrics
+		Editable   bool        `json:"editable"`
+		Error      bool        `json:"error"`
 		GridPos    struct {
 			H *int `json:"h,omitempty"`
 			W *int `json:"w,omitempty"`
@@ -374,8 +375,8 @@ type (
 	FieldConfigDefaults struct {
 		Unit       string            `json:"unit"`
 		Decimals   *int              `json:"decimals,omitempty"`
-		Min        *int              `json:"min,omitempty"`
-		Max        *int              `json:"max,omitempty"`
+		Min        *float64          `json:"min,omitempty"`
+		Max        *float64          `json:"max,omitempty"`
 		Color      FieldConfigColor  `json:"color"`
 		Thresholds Thresholds        `json:"thresholds"`
 		Custom     FieldConfigCustom `json:"custom"`
@@ -420,8 +421,8 @@ type (
 		Steps []ThresholdStep `json:"steps"`
 	}
 	ThresholdStep struct {
-		Color string `json:"color"`
-		Value *int   `json:"value"`
+		Color string   `json:"color"`
+		Value *float64 `json:"value"`
 	}
 	FieldConfigColor struct {
 		Mode       string `json:"mode"`
@@ -550,9 +551,9 @@ type (
 
 // for an any panel
 type Target struct {
-	RefID      string `json:"refId"`
-	Datasource string `json:"datasource,omitempty"`
-	Hide       bool   `json:"hide,omitempty"`
+	RefID      string      `json:"refId"`
+	Datasource interface{} `json:"datasource,omitempty"`
+	Hide       bool        `json:"hide,omitempty"`
 
 	// For PostgreSQL
 	Table        string `json:"table,omitempty"`
@@ -1209,11 +1210,18 @@ func (c customPanelOutput) MarshalJSON() ([]byte, error) {
 	// Append custom keys to marshalled CommonPanel.
 	buf := bytes.NewBuffer(b[:len(b)-1])
 
-	for k, v := range c.CustomPanel {
+	// Sort keys to make output idempotent
+	keys := make([]string, 0, len(c.CustomPanel))
+	for k := range c.CustomPanel {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	for _, k := range keys {
 		buf.WriteString(`,"`)
 		buf.WriteString(k)
 		buf.WriteString(`":`)
-		b, err := json.Marshal(v)
+		b, err := json.Marshal(c.CustomPanel[k])
 		if err != nil {
 			return b, err
 		}
