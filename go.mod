@@ -13,7 +13,7 @@ require (
 	github.com/zeebo/xxh3 v1.0.2
 	go.openviz.dev/apimachinery v0.0.5-0.20220922212617-6f4190703a57
 	go.openviz.dev/grafana-sdk v0.0.3
-	golang.org/x/text v0.3.7
+	golang.org/x/text v0.3.8
 	gomodules.xyz/logs v0.0.6
 	gomodules.xyz/pointer v0.1.0
 	gomodules.xyz/runtime v0.3.0
