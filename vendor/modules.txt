@@ -1244,7 +1244,7 @@ kmodules.xyz/monitoring-agent-api/api/v1
 ## explicit; go 1.17
 sigs.k8s.io/apiserver-network-proxy/konnectivity-client/pkg/client
 sigs.k8s.io/apiserver-network-proxy/konnectivity-client/proto/client
-# sigs.k8s.io/controller-runtime v0.13.0 => github.com/kmodules/controller-runtime v0.13.1-0.20220917045846-a0df7cc5e5ee
+# sigs.k8s.io/controller-runtime v0.13.1 => github.com/kmodules/controller-runtime v0.13.1-0.20220917045846-a0df7cc5e5ee
 ## explicit; go 1.17
 sigs.k8s.io/controller-runtime
 sigs.k8s.io/controller-runtime/pkg/builder
