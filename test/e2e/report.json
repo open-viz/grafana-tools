@@ -1,0 +1,1754 @@
+[
+  {
+    "SuitePath": "/src/test/e2e",
+    "SuiteDescription": "e2e Suite",
+    "SuiteLabels": [
+      "kubeDB"
+    ],
+    "SuiteSucceeded": true,
+    "SuiteHasProgrammaticFocus": false,
+    "SpecialSuiteFailureReasons": null,
+    "PreRunStats": {
+      "TotalSpecs": 7,
+      "SpecsThatWillRun": 7
+    },
+    "StartTime": "2023-03-24T00:32:52.700707588Z",
+    "EndTime": "2023-03-24T00:33:04.615113177Z",
+    "RunTime": 11914405630,
+    "SuiteConfig": {
+      "RandomSeed": 1679617961,
+      "RandomizeAllSpecs": false,
+      "FocusStrings": null,
+      "SkipStrings": null,
+      "FocusFiles": null,
+      "SkipFiles": null,
+      "LabelFilter": "",
+      "FailOnPending": false,
+      "FailFast": false,
+      "FlakeAttempts": 0,
+      "EmitSpecProgress": true,
+      "DryRun": false,
+      "Timeout": 3588499288829,
+      "OutputInterceptorMode": "",
+      "ParallelProcess": 1,
+      "ParallelTotal": 1,
+      "ParallelHost": ""
+    },
+    "SpecReports": [
+      {
+        "ContainerHierarchyTexts": null,
+        "ContainerHierarchyLocations": null,
+        "ContainerHierarchyLabels": null,
+        "LeafNodeType": "BeforeSuite",
+        "LeafNodeLocation": {
+          "FileName": "/src/test/e2e/e2e_suite_test.go",
+          "LineNumber": 56
+        },
+        "LeafNodeLabels": null,
+        "LeafNodeText": "",
+        "State": "passed",
+        "StartTime": "2023-03-24T00:32:52.700819463Z",
+        "EndTime": "2023-03-24T00:33:00.698268675Z",
+        "RunTime": 7997449254,
+        "ParallelProcess": 1,
+        "NumAttempts": 0,
+        "CapturedGinkgoWriterOutput": "[BeforeSuite] TOP-LEVEL\n  /src/test/e2e/e2e_suite_test.go:56\n\u001b[1mSTEP:\u001b[0m Using kubeconfig from /.kube/config \u001b[38;5;243m03/24/23 00:32:52.7\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating namespace grafana-be2hva \u001b[38;5;243m03/24/23 00:32:52.726\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating grafana server \u001b[38;5;243m03/24/23 00:32:52.732\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating grafana service \u001b[38;5;243m03/24/23 00:32:52.732\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating grafana deployment \u001b[38;5;243m03/24/23 00:32:52.742\u001b[0m\n\u001b[1mSTEP:\u001b[0m Waiting for grafana server to be ready \u001b[38;5;243m03/24/23 00:32:52.747\u001b[0m\n",
+        "ReportEntries": [
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:32:52.700865421Z",
+            "Location": {
+              "FileName": "/src/test/e2e/e2e_suite_test.go",
+              "LineNumber": 57
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Using kubeconfig from /.kube/config\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Using kubeconfig from /.kube/config Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:32:52.726998963Z",
+            "Location": {
+              "FileName": "/src/test/e2e/e2e_suite_test.go",
+              "LineNumber": 87
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating namespace grafana-be2hva\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating namespace grafana-be2hva Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:32:52.732044338Z",
+            "Location": {
+              "FileName": "/src/test/e2e/e2e_suite_test.go",
+              "LineNumber": 91
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating grafana server\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating grafana server Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:32:52.732119505Z",
+            "Location": {
+              "FileName": "/src/test/e2e/framework/grafana_server.go",
+              "LineNumber": 59
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating grafana service\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating grafana service Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:32:52.742343505Z",
+            "Location": {
+              "FileName": "/src/test/e2e/framework/grafana_server.go",
+              "LineNumber": 64
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating grafana deployment\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating grafana deployment Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:32:52.747914296Z",
+            "Location": {
+              "FileName": "/src/test/e2e/e2e_suite_test.go",
+              "LineNumber": 95
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Waiting for grafana server to be ready\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Waiting for grafana server to be ready Duration:0s}"
+            }
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "GrafanaRef Operator E2E testing",
+          "GrafanaDashboard Operation",
+          "Successful creation of a GrafanaDashboard resource with given AppBinding"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/src/test/e2e/dashboard_test.go",
+            "LineNumber": 50
+          },
+          {
+            "FileName": "/src/test/e2e/dashboard_test.go",
+            "LineNumber": 137
+          },
+          {
+            "FileName": "/src/test/e2e/dashboard_test.go",
+            "LineNumber": 138
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/src/test/e2e/dashboard_test.go",
+          "LineNumber": 139
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "should insert a grafanaDashboard into grafana database",
+        "State": "passed",
+        "StartTime": "2023-03-24T00:33:00.699037134Z",
+        "EndTime": "2023-03-24T00:33:01.247006676Z",
+        "RunTime": 547969500,
+        "ParallelProcess": 1,
+        "NumAttempts": 1,
+        "CapturedGinkgoWriterOutput": "[BeforeEach] GrafanaRef Operator E2E testing\n  /src/test/e2e/dashboard_test.go:133\n[It] should insert a grafanaDashboard into grafana database\n  /src/test/e2e/dashboard_test.go:139\n\u001b[1mSTEP:\u001b[0m Crating Secret with Grafana auth \u001b[38;5;243m03/24/23 00:33:00.699\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating Secret grafana-tools-zy7xxp \u001b[38;5;243m03/24/23 00:33:00.699\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating AppBinding \u001b[38;5;243m03/24/23 00:33:00.707\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating AppBinding grafana-tools-zy7xxp \u001b[38;5;243m03/24/23 00:33:00.708\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating Dashboard \u001b[38;5;243m03/24/23 00:33:00.72\u001b[0m\n\u001b[1mSTEP:\u001b[0m Selecting the grafanadashboard model \u001b[38;5;243m03/24/23 00:33:00.721\u001b[0m\n\u001b[1mSTEP:\u001b[0m Wait for GrafanaDashboardPhase to get Final phase \u001b[38;5;243m03/24/23 00:33:00.73\u001b[0m\n\u001b[1mSTEP:\u001b[0m Verifying GrafanaDashboard has been succeeded \u001b[38;5;243m03/24/23 00:33:00.981\u001b[0m\n\u001b[1mSTEP:\u001b[0m Deleting grafanaDashboard \u001b[38;5;243m03/24/23 00:33:00.981\u001b[0m\n\u001b[1mSTEP:\u001b[0m Deleting grafanadashboard grafana-tools-zy7xxp \u001b[38;5;243m03/24/23 00:33:00.981\u001b[0m\n[AfterEach] GrafanaDashboard Operation\n  /src/test/e2e/dashboard_test.go:333\n\u001b[1mSTEP:\u001b[0m Deleting Secret \u001b[38;5;243m03/24/23 00:33:01.236\u001b[0m\n\u001b[1mSTEP:\u001b[0m Deleting AppBinding \u001b[38;5;243m03/24/23 00:33:01.241\u001b[0m\n\u001b[1mSTEP:\u001b[0m Wait until AppBinding is deleted \u001b[38;5;243m03/24/23 00:33:01.244\u001b[0m\n",
+        "ReportEntries": [
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:00.699556634Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 140
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Crating Secret with Grafana auth\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Crating Secret with Grafana auth Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:00.699969634Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 90
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating Secret grafana-tools-zy7xxp\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating Secret grafana-tools-zy7xxp Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:00.70791405Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 143
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating AppBinding\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating AppBinding Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:00.708083467Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 85
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating AppBinding grafana-tools-zy7xxp\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating AppBinding grafana-tools-zy7xxp Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:00.720781092Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 146
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating Dashboard\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating Dashboard Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:00.721025675Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 55
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Selecting the grafanadashboard model\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Selecting the grafanadashboard model Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:00.730041967Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 151
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Wait for GrafanaDashboardPhase to get Final phase\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Wait for GrafanaDashboardPhase to get Final phase Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:00.981239592Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 154
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Verifying GrafanaDashboard has been succeeded\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Verifying GrafanaDashboard has been succeeded Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:00.98134205Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 158
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting grafanaDashboard\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting grafanaDashboard Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:00.981385384Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 122
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting grafanadashboard grafana-tools-zy7xxp\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting grafanadashboard grafana-tools-zy7xxp Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:01.236777926Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 334
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting Secret\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting Secret Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:01.241013884Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 338
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting AppBinding\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting AppBinding Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:01.244775342Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 342
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Wait until AppBinding is deleted\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Wait until AppBinding is deleted Duration:0s}"
+            }
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "GrafanaRef Operator E2E testing",
+          "GrafanaDashboard Operation",
+          "Successful creation of a GrafanaDashboard resource with given AppBinding"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/src/test/e2e/dashboard_test.go",
+            "LineNumber": 50
+          },
+          {
+            "FileName": "/src/test/e2e/dashboard_test.go",
+            "LineNumber": 137
+          },
+          {
+            "FileName": "/src/test/e2e/dashboard_test.go",
+            "LineNumber": 138
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/src/test/e2e/dashboard_test.go",
+          "LineNumber": 162
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "should insert a grafana dashboard into the grafana database and update the dashboard",
+        "State": "passed",
+        "StartTime": "2023-03-24T00:33:01.247170592Z",
+        "EndTime": "2023-03-24T00:33:01.794816092Z",
+        "RunTime": 547645500,
+        "ParallelProcess": 1,
+        "NumAttempts": 1,
+        "CapturedGinkgoWriterOutput": "[BeforeEach] GrafanaRef Operator E2E testing\n  /src/test/e2e/dashboard_test.go:133\n[It] should insert a grafana dashboard into the grafana database and update the dashboard\n  /src/test/e2e/dashboard_test.go:162\n\u001b[1mSTEP:\u001b[0m Crating Secret with Grafana auth \u001b[38;5;243m03/24/23 00:33:01.247\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating Secret grafana-tools-zy7xxp \u001b[38;5;243m03/24/23 00:33:01.247\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating AppBinding \u001b[38;5;243m03/24/23 00:33:01.25\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating AppBinding grafana-tools-zy7xxp \u001b[38;5;243m03/24/23 00:33:01.25\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating Dashboard \u001b[38;5;243m03/24/23 00:33:01.253\u001b[0m\n\u001b[1mSTEP:\u001b[0m Selecting the grafanadashboard model \u001b[38;5;243m03/24/23 00:33:01.253\u001b[0m\n\u001b[1mSTEP:\u001b[0m Wait for GrafanaDashboardPhase to get Final phase \u001b[38;5;243m03/24/23 00:33:01.259\u001b[0m\n\u001b[1mSTEP:\u001b[0m Verifying GrafanaDashboard has been succeeded \u001b[38;5;243m03/24/23 00:33:01.51\u001b[0m\n\u001b[1mSTEP:\u001b[0m Selecting the grafanadashboard model \u001b[38;5;243m03/24/23 00:33:01.51\u001b[0m\n\u001b[1mSTEP:\u001b[0m Update the dashboard with updated json model \u001b[38;5;243m03/24/23 00:33:01.512\u001b[0m\n\u001b[1mSTEP:\u001b[0m Deleting grafanaDashboard \u001b[38;5;243m03/24/23 00:33:01.522\u001b[0m\n\u001b[1mSTEP:\u001b[0m Deleting grafanadashboard grafana-tools-zy7xxp \u001b[38;5;243m03/24/23 00:33:01.522\u001b[0m\n[AfterEach] GrafanaDashboard Operation\n  /src/test/e2e/dashboard_test.go:333\n\u001b[1mSTEP:\u001b[0m Deleting Secret \u001b[38;5;243m03/24/23 00:33:01.779\u001b[0m\n\u001b[1mSTEP:\u001b[0m Deleting AppBinding \u001b[38;5;243m03/24/23 00:33:01.785\u001b[0m\n\u001b[1mSTEP:\u001b[0m Wait until AppBinding is deleted \u001b[38;5;243m03/24/23 00:33:01.791\u001b[0m\n",
+        "ReportEntries": [
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:01.247262717Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 163
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Crating Secret with Grafana auth\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Crating Secret with Grafana auth Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:01.247388217Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 90
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating Secret grafana-tools-zy7xxp\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating Secret grafana-tools-zy7xxp Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:01.250030801Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 166
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating AppBinding\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating AppBinding Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:01.250125592Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 85
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating AppBinding grafana-tools-zy7xxp\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating AppBinding grafana-tools-zy7xxp Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:01.253816551Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 169
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating Dashboard\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating Dashboard Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:01.253879259Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 55
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Selecting the grafanadashboard model\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Selecting the grafanadashboard model Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:01.259644342Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 174
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Wait for GrafanaDashboardPhase to get Final phase\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Wait for GrafanaDashboardPhase to get Final phase Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:01.510255509Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 177
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Verifying GrafanaDashboard has been succeeded\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Verifying GrafanaDashboard has been succeeded Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:01.510417092Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 55
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Selecting the grafanadashboard model\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Selecting the grafanadashboard model Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:01.512201967Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 184
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Update the dashboard with updated json model\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Update the dashboard with updated json model Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:01.522620509Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 188
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting grafanaDashboard\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting grafanaDashboard Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:01.522728134Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 122
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting grafanadashboard grafana-tools-zy7xxp\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting grafanadashboard grafana-tools-zy7xxp Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:01.779944801Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 334
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting Secret\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting Secret Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:01.785667384Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 338
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting AppBinding\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting AppBinding Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:01.791050634Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 342
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Wait until AppBinding is deleted\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Wait until AppBinding is deleted Duration:0s}"
+            }
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "GrafanaRef Operator E2E testing",
+          "GrafanaDashboard Operation",
+          "Successful creation of a GrafanaDashboard resource with default grafana AppBinding"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/src/test/e2e/dashboard_test.go",
+            "LineNumber": 50
+          },
+          {
+            "FileName": "/src/test/e2e/dashboard_test.go",
+            "LineNumber": 137
+          },
+          {
+            "FileName": "/src/test/e2e/dashboard_test.go",
+            "LineNumber": 193
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/src/test/e2e/dashboard_test.go",
+          "LineNumber": 194
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "should insert a grafanaDashboard into grafana database with default grafana AppBinding",
+        "State": "passed",
+        "StartTime": "2023-03-24T00:33:01.795086384Z",
+        "EndTime": "2023-03-24T00:33:02.351311343Z",
+        "RunTime": 556224959,
+        "ParallelProcess": 1,
+        "NumAttempts": 1,
+        "CapturedGinkgoWriterOutput": "[BeforeEach] GrafanaRef Operator E2E testing\n  /src/test/e2e/dashboard_test.go:133\n[It] should insert a grafanaDashboard into grafana database with default grafana AppBinding\n  /src/test/e2e/dashboard_test.go:194\n\u001b[1mSTEP:\u001b[0m Crating Secret with Grafana auth \u001b[38;5;243m03/24/23 00:33:01.795\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating Secret grafana-tools-zy7xxp \u001b[38;5;243m03/24/23 00:33:01.795\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating Default AppBinding \u001b[38;5;243m03/24/23 00:33:01.798\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating Default AppBinding grafana-tools-zy7xxp \u001b[38;5;243m03/24/23 00:33:01.798\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating Dashboard \u001b[38;5;243m03/24/23 00:33:01.803\u001b[0m\n\u001b[1mSTEP:\u001b[0m Selecting the grafanadashboard model \u001b[38;5;243m03/24/23 00:33:01.803\u001b[0m\n\u001b[1mSTEP:\u001b[0m Wait for GrafanaDashboardPhase to get Final phase \u001b[38;5;243m03/24/23 00:33:01.81\u001b[0m\n\u001b[1mSTEP:\u001b[0m Verifying GrafanaDashboard has been succeeded \u001b[38;5;243m03/24/23 00:33:02.062\u001b[0m\n\u001b[1mSTEP:\u001b[0m Deleting grafanaDashboard \u001b[38;5;243m03/24/23 00:33:02.062\u001b[0m\n\u001b[1mSTEP:\u001b[0m Deleting grafanadashboard grafana-tools-zy7xxp \u001b[38;5;243m03/24/23 00:33:02.062\u001b[0m\n[AfterEach] GrafanaDashboard Operation\n  /src/test/e2e/dashboard_test.go:333\n\u001b[1mSTEP:\u001b[0m Deleting Secret \u001b[38;5;243m03/24/23 00:33:02.323\u001b[0m\n\u001b[1mSTEP:\u001b[0m Deleting AppBinding \u001b[38;5;243m03/24/23 00:33:02.334\u001b[0m\n\u001b[1mSTEP:\u001b[0m Wait until AppBinding is deleted \u001b[38;5;243m03/24/23 00:33:02.342\u001b[0m\n",
+        "ReportEntries": [
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:01.795150467Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 195
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Crating Secret with Grafana auth\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Crating Secret with Grafana auth Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:01.795332259Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 90
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating Secret grafana-tools-zy7xxp\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating Secret grafana-tools-zy7xxp Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:01.798585717Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 198
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating Default AppBinding\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating Default AppBinding Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:01.798689217Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 95
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating Default AppBinding grafana-tools-zy7xxp\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating Default AppBinding grafana-tools-zy7xxp Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:01.803480134Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 201
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating Dashboard\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating Dashboard Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:01.803647676Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 55
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Selecting the grafanadashboard model\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Selecting the grafanadashboard model Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:01.810499801Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 207
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Wait for GrafanaDashboardPhase to get Final phase\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Wait for GrafanaDashboardPhase to get Final phase Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:02.062516884Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 210
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Verifying GrafanaDashboard has been succeeded\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Verifying GrafanaDashboard has been succeeded Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:02.062834218Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 214
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting grafanaDashboard\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting grafanaDashboard Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:02.062903926Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 122
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting grafanadashboard grafana-tools-zy7xxp\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting grafanadashboard grafana-tools-zy7xxp Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:02.323702509Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 334
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting Secret\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting Secret Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:02.334191593Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 338
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting AppBinding\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting AppBinding Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:02.342854884Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 342
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Wait until AppBinding is deleted\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Wait until AppBinding is deleted Duration:0s}"
+            }
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "GrafanaRef Operator E2E testing",
+          "GrafanaDashboard Operation",
+          "Successful creation of a GrafanaDashboard resource with default grafana AppBinding"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/src/test/e2e/dashboard_test.go",
+            "LineNumber": 50
+          },
+          {
+            "FileName": "/src/test/e2e/dashboard_test.go",
+            "LineNumber": 137
+          },
+          {
+            "FileName": "/src/test/e2e/dashboard_test.go",
+            "LineNumber": 193
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/src/test/e2e/dashboard_test.go",
+          "LineNumber": 218
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "should insert a grafana dashboard into the grafana database and update the dashboard with default grafana AppBinding",
+        "State": "passed",
+        "StartTime": "2023-03-24T00:33:02.351928593Z",
+        "EndTime": "2023-03-24T00:33:02.927712135Z",
+        "RunTime": 575783500,
+        "ParallelProcess": 1,
+        "NumAttempts": 1,
+        "CapturedGinkgoWriterOutput": "[BeforeEach] GrafanaRef Operator E2E testing\n  /src/test/e2e/dashboard_test.go:133\n[It] should insert a grafana dashboard into the grafana database and update the dashboard with default grafana AppBinding\n  /src/test/e2e/dashboard_test.go:218\n\u001b[1mSTEP:\u001b[0m Crating Secret with Grafana auth \u001b[38;5;243m03/24/23 00:33:02.352\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating Secret grafana-tools-zy7xxp \u001b[38;5;243m03/24/23 00:33:02.352\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating Default Grafana AppBinding \u001b[38;5;243m03/24/23 00:33:02.355\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating Default AppBinding grafana-tools-zy7xxp \u001b[38;5;243m03/24/23 00:33:02.355\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating Dashboard \u001b[38;5;243m03/24/23 00:33:02.36\u001b[0m\n\u001b[1mSTEP:\u001b[0m Selecting the grafanadashboard model \u001b[38;5;243m03/24/23 00:33:02.36\u001b[0m\n\u001b[1mSTEP:\u001b[0m Wait for GrafanaDashboardPhase to get Final phase \u001b[38;5;243m03/24/23 00:33:02.367\u001b[0m\n\u001b[1mSTEP:\u001b[0m Verifying GrafanaDashboard has been succeeded \u001b[38;5;243m03/24/23 00:33:02.618\u001b[0m\n\u001b[1mSTEP:\u001b[0m Selecting the grafanadashboard model \u001b[38;5;243m03/24/23 00:33:02.618\u001b[0m\n\u001b[1mSTEP:\u001b[0m Update the dashboard with updated json model \u001b[38;5;243m03/24/23 00:33:02.619\u001b[0m\n\u001b[1mSTEP:\u001b[0m Deleting grafanaDashboard \u001b[38;5;243m03/24/23 00:33:02.646\u001b[0m\n\u001b[1mSTEP:\u001b[0m Deleting grafanadashboard grafana-tools-zy7xxp \u001b[38;5;243m03/24/23 00:33:02.646\u001b[0m\n[AfterEach] GrafanaDashboard Operation\n  /src/test/e2e/dashboard_test.go:333\n\u001b[1mSTEP:\u001b[0m Deleting Secret \u001b[38;5;243m03/24/23 00:33:02.913\u001b[0m\n\u001b[1mSTEP:\u001b[0m Deleting AppBinding \u001b[38;5;243m03/24/23 00:33:02.92\u001b[0m\n\u001b[1mSTEP:\u001b[0m Wait until AppBinding is deleted \u001b[38;5;243m03/24/23 00:33:02.925\u001b[0m\n",
+        "ReportEntries": [
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:02.352283968Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 219
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Crating Secret with Grafana auth\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Crating Secret with Grafana auth Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:02.352531343Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 90
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating Secret grafana-tools-zy7xxp\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating Secret grafana-tools-zy7xxp Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:02.355738634Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 222
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating Default Grafana AppBinding\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating Default Grafana AppBinding Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:02.355959259Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 95
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating Default AppBinding grafana-tools-zy7xxp\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating Default AppBinding grafana-tools-zy7xxp Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:02.360766843Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 225
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating Dashboard\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating Dashboard Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:02.360876134Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 55
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Selecting the grafanadashboard model\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Selecting the grafanadashboard model Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:02.367698676Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 231
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Wait for GrafanaDashboardPhase to get Final phase\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Wait for GrafanaDashboardPhase to get Final phase Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:02.618056093Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 234
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Verifying GrafanaDashboard has been succeeded\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Verifying GrafanaDashboard has been succeeded Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:02.618331218Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 55
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Selecting the grafanadashboard model\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Selecting the grafanadashboard model Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:02.61944126Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 241
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Update the dashboard with updated json model\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Update the dashboard with updated json model Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:02.646396551Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 245
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting grafanaDashboard\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting grafanaDashboard Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:02.646509343Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 122
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting grafanadashboard grafana-tools-zy7xxp\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting grafanadashboard grafana-tools-zy7xxp Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:02.913821926Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 334
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting Secret\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting Secret Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:02.920196926Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 338
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting AppBinding\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting AppBinding Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:02.925134135Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 342
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Wait until AppBinding is deleted\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Wait until AppBinding is deleted Duration:0s}"
+            }
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "GrafanaRef Operator E2E testing",
+          "GrafanaDashboard Operation",
+          "Unsuccessful creation of a grafanaDashboard resource"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/src/test/e2e/dashboard_test.go",
+            "LineNumber": 50
+          },
+          {
+            "FileName": "/src/test/e2e/dashboard_test.go",
+            "LineNumber": 137
+          },
+          {
+            "FileName": "/src/test/e2e/dashboard_test.go",
+            "LineNumber": 250
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/src/test/e2e/dashboard_test.go",
+          "LineNumber": 251
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "should not insert a grafanaDashboard into grafana database with invalid grafana auth",
+        "State": "passed",
+        "StartTime": "2023-03-24T00:33:02.927919635Z",
+        "EndTime": "2023-03-24T00:33:03.476280843Z",
+        "RunTime": 548361125,
+        "ParallelProcess": 1,
+        "NumAttempts": 1,
+        "CapturedGinkgoWriterOutput": "[BeforeEach] GrafanaRef Operator E2E testing\n  /src/test/e2e/dashboard_test.go:133\n[It] should not insert a grafanaDashboard into grafana database with invalid grafana auth\n  /src/test/e2e/dashboard_test.go:251\n\u001b[1mSTEP:\u001b[0m Crating Secret with invalid Grafana auth \u001b[38;5;243m03/24/23 00:33:02.928\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating Secret grafana-tools-zy7xxp \u001b[38;5;243m03/24/23 00:33:02.928\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating Grafana AppBinding \u001b[38;5;243m03/24/23 00:33:02.931\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating AppBinding grafana-tools-zy7xxp \u001b[38;5;243m03/24/23 00:33:02.931\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating Dashboard \u001b[38;5;243m03/24/23 00:33:02.935\u001b[0m\n\u001b[1mSTEP:\u001b[0m Selecting the grafanadashboard model \u001b[38;5;243m03/24/23 00:33:02.935\u001b[0m\n\u001b[1mSTEP:\u001b[0m Wait for GrafanaDashboardPhase to get Final phase \u001b[38;5;243m03/24/23 00:33:02.941\u001b[0m\n\u001b[1mSTEP:\u001b[0m Checking GrafanaDashboard failed status \u001b[38;5;243m03/24/23 00:33:03.192\u001b[0m\n\u001b[1mSTEP:\u001b[0m Deleting grafanaDashboard \u001b[38;5;243m03/24/23 00:33:03.192\u001b[0m\n\u001b[1mSTEP:\u001b[0m Deleting grafanadashboard grafana-tools-zy7xxp \u001b[38;5;243m03/24/23 00:33:03.193\u001b[0m\n[AfterEach] GrafanaDashboard Operation\n  /src/test/e2e/dashboard_test.go:333\n\u001b[1mSTEP:\u001b[0m Deleting Secret \u001b[38;5;243m03/24/23 00:33:03.454\u001b[0m\n\u001b[1mSTEP:\u001b[0m Deleting AppBinding \u001b[38;5;243m03/24/23 00:33:03.463\u001b[0m\n\u001b[1mSTEP:\u001b[0m Wait until AppBinding is deleted \u001b[38;5;243m03/24/23 00:33:03.472\u001b[0m\n",
+        "ReportEntries": [
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:02.928135135Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 252
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Crating Secret with invalid Grafana auth\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Crating Secret with invalid Grafana auth Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:02.928354635Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 90
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating Secret grafana-tools-zy7xxp\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating Secret grafana-tools-zy7xxp Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:02.931204301Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 255
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating Grafana AppBinding\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating Grafana AppBinding Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:02.931375926Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 85
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating AppBinding grafana-tools-zy7xxp\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating AppBinding grafana-tools-zy7xxp Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:02.935359426Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 258
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating Dashboard\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating Dashboard Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:02.93544476Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 55
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Selecting the grafanadashboard model\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Selecting the grafanadashboard model Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:02.94100751Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 263
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Wait for GrafanaDashboardPhase to get Final phase\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Wait for GrafanaDashboardPhase to get Final phase Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:03.192573051Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 266
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Checking GrafanaDashboard failed status\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Checking GrafanaDashboard failed status Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:03.192963551Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 272
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting grafanaDashboard\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting grafanaDashboard Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:03.19311276Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 122
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting grafanadashboard grafana-tools-zy7xxp\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting grafanadashboard grafana-tools-zy7xxp Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:03.454051885Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 334
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting Secret\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting Secret Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:03.46388326Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 338
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting AppBinding\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting AppBinding Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:03.472155802Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 342
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Wait until AppBinding is deleted\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Wait until AppBinding is deleted Duration:0s}"
+            }
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "GrafanaRef Operator E2E testing",
+          "GrafanaDashboard Operation",
+          "Unsuccessful creation of a grafanaDashboard resource"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/src/test/e2e/dashboard_test.go",
+            "LineNumber": 50
+          },
+          {
+            "FileName": "/src/test/e2e/dashboard_test.go",
+            "LineNumber": 137
+          },
+          {
+            "FileName": "/src/test/e2e/dashboard_test.go",
+            "LineNumber": 250
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/src/test/e2e/dashboard_test.go",
+          "LineNumber": 276
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "should not insert a grafanaDashboard into grafana database with no model data",
+        "State": "passed",
+        "StartTime": "2023-03-24T00:33:03.476556927Z",
+        "EndTime": "2023-03-24T00:33:04.02191976Z",
+        "RunTime": 545362792,
+        "ParallelProcess": 1,
+        "NumAttempts": 1,
+        "CapturedGinkgoWriterOutput": "[BeforeEach] GrafanaRef Operator E2E testing\n  /src/test/e2e/dashboard_test.go:133\n[It] should not insert a grafanaDashboard into grafana database with no model data\n  /src/test/e2e/dashboard_test.go:276\n\u001b[1mSTEP:\u001b[0m Crating Secret with Grafana auth \u001b[38;5;243m03/24/23 00:33:03.476\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating Secret grafana-tools-zy7xxp \u001b[38;5;243m03/24/23 00:33:03.476\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating Grafana AppBinding \u001b[38;5;243m03/24/23 00:33:03.481\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating AppBinding grafana-tools-zy7xxp \u001b[38;5;243m03/24/23 00:33:03.481\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating Dashboard \u001b[38;5;243m03/24/23 00:33:03.485\u001b[0m\n\u001b[1mSTEP:\u001b[0m Selecting the grafanadashboard model \u001b[38;5;243m03/24/23 00:33:03.485\u001b[0m\n\u001b[1mSTEP:\u001b[0m Wait for GrafanaDashboardPhase to get Final phase \u001b[38;5;243m03/24/23 00:33:03.49\u001b[0m\n\u001b[1mSTEP:\u001b[0m Checking GrafanaDashboard failed status \u001b[38;5;243m03/24/23 00:33:03.741\u001b[0m\n\u001b[1mSTEP:\u001b[0m Deleting grafanaDashboard \u001b[38;5;243m03/24/23 00:33:03.741\u001b[0m\n\u001b[1mSTEP:\u001b[0m Deleting grafanadashboard grafana-tools-zy7xxp \u001b[38;5;243m03/24/23 00:33:03.742\u001b[0m\n[AfterEach] GrafanaDashboard Operation\n  /src/test/e2e/dashboard_test.go:333\n\u001b[1mSTEP:\u001b[0m Deleting Secret \u001b[38;5;243m03/24/23 00:33:04.001\u001b[0m\n\u001b[1mSTEP:\u001b[0m Deleting AppBinding \u001b[38;5;243m03/24/23 00:33:04.011\u001b[0m\n\u001b[1mSTEP:\u001b[0m Wait until AppBinding is deleted \u001b[38;5;243m03/24/23 00:33:04.018\u001b[0m\n",
+        "ReportEntries": [
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:03.476733302Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 277
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Crating Secret with Grafana auth\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Crating Secret with Grafana auth Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:03.476920677Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 90
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating Secret grafana-tools-zy7xxp\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating Secret grafana-tools-zy7xxp Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:03.481027885Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 280
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating Grafana AppBinding\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating Grafana AppBinding Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:03.48127301Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 85
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating AppBinding grafana-tools-zy7xxp\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating AppBinding grafana-tools-zy7xxp Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:03.485692302Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 283
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating Dashboard\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating Dashboard Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:03.485863385Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 55
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Selecting the grafanadashboard model\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Selecting the grafanadashboard model Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:03.490086552Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 289
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Wait for GrafanaDashboardPhase to get Final phase\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Wait for GrafanaDashboardPhase to get Final phase Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:03.74143601Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 292
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Checking GrafanaDashboard failed status\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Checking GrafanaDashboard failed status Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:03.741883635Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 298
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting grafanaDashboard\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting grafanaDashboard Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:03.742031677Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 122
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting grafanadashboard grafana-tools-zy7xxp\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting grafanadashboard grafana-tools-zy7xxp Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:04.00175426Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 334
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting Secret\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting Secret Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:04.011197135Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 338
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting AppBinding\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting AppBinding Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:04.018359594Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 342
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Wait until AppBinding is deleted\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Wait until AppBinding is deleted Duration:0s}"
+            }
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "GrafanaRef Operator E2E testing",
+          "GrafanaDashboard Operation",
+          "Unsuccessful creation of a grafanaDashboard resource"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/src/test/e2e/dashboard_test.go",
+            "LineNumber": 50
+          },
+          {
+            "FileName": "/src/test/e2e/dashboard_test.go",
+            "LineNumber": 137
+          },
+          {
+            "FileName": "/src/test/e2e/dashboard_test.go",
+            "LineNumber": 250
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/src/test/e2e/dashboard_test.go",
+          "LineNumber": 302
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "should not insert a grafanaDashboard into grafana database with invalid dashboard json data",
+        "State": "passed",
+        "StartTime": "2023-03-24T00:33:04.022292594Z",
+        "EndTime": "2023-03-24T00:33:04.588109385Z",
+        "RunTime": 565816834,
+        "ParallelProcess": 1,
+        "NumAttempts": 1,
+        "CapturedGinkgoWriterOutput": "[BeforeEach] GrafanaRef Operator E2E testing\n  /src/test/e2e/dashboard_test.go:133\n[It] should not insert a grafanaDashboard into grafana database with invalid dashboard json data\n  /src/test/e2e/dashboard_test.go:302\n\u001b[1mSTEP:\u001b[0m Crating Secret with Grafana auth \u001b[38;5;243m03/24/23 00:33:04.022\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating Secret grafana-tools-zy7xxp \u001b[38;5;243m03/24/23 00:33:04.022\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating Grafana AppBinding \u001b[38;5;243m03/24/23 00:33:04.028\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating AppBinding grafana-tools-zy7xxp \u001b[38;5;243m03/24/23 00:33:04.028\u001b[0m\n\u001b[1mSTEP:\u001b[0m Creating Dashboard \u001b[38;5;243m03/24/23 00:33:04.034\u001b[0m\n\u001b[1mSTEP:\u001b[0m Selecting the grafanadashboard model \u001b[38;5;243m03/24/23 00:33:04.035\u001b[0m\n\u001b[1mSTEP:\u001b[0m Wait for GrafanaDashboardPhase to get Final phase \u001b[38;5;243m03/24/23 00:33:04.044\u001b[0m\n\u001b[1mSTEP:\u001b[0m Wait for GrafanaDashboard ObservedGeneration to be updated \u001b[38;5;243m03/24/23 00:33:04.295\u001b[0m\n\u001b[1mSTEP:\u001b[0m Checking GrafanaDashboard failed status with updated observed generation \u001b[38;5;243m03/24/23 00:33:04.296\u001b[0m\n\u001b[1mSTEP:\u001b[0m Deleting grafanaDashboard \u001b[38;5;243m03/24/23 00:33:04.296\u001b[0m\n\u001b[1mSTEP:\u001b[0m Deleting grafanadashboard grafana-tools-zy7xxp \u001b[38;5;243m03/24/23 00:33:04.296\u001b[0m\n[AfterEach] GrafanaDashboard Operation\n  /src/test/e2e/dashboard_test.go:333\n\u001b[1mSTEP:\u001b[0m Deleting Secret \u001b[38;5;243m03/24/23 00:33:04.563\u001b[0m\n\u001b[1mSTEP:\u001b[0m Deleting AppBinding \u001b[38;5;243m03/24/23 00:33:04.574\u001b[0m\n\u001b[1mSTEP:\u001b[0m Wait until AppBinding is deleted \u001b[38;5;243m03/24/23 00:33:04.582\u001b[0m\n",
+        "ReportEntries": [
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:04.022379302Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 303
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Crating Secret with Grafana auth\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Crating Secret with Grafana auth Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:04.022546052Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 90
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating Secret grafana-tools-zy7xxp\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating Secret grafana-tools-zy7xxp Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:04.02832601Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 306
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating Grafana AppBinding\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating Grafana AppBinding Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:04.028474677Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 85
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating AppBinding grafana-tools-zy7xxp\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating AppBinding grafana-tools-zy7xxp Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:04.034600969Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 309
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Creating Dashboard\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Creating Dashboard Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:04.035445219Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 55
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Selecting the grafanadashboard model\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Selecting the grafanadashboard model Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:04.044702635Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 314
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Wait for GrafanaDashboardPhase to get Final phase\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Wait for GrafanaDashboardPhase to get Final phase Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:04.295698719Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 317
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Wait for GrafanaDashboard ObservedGeneration to be updated\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Wait for GrafanaDashboard ObservedGeneration to be updated Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:04.296133344Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 320
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Checking GrafanaDashboard failed status with updated observed generation\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Checking GrafanaDashboard failed status with updated observed generation Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:04.296350969Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 328
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting grafanaDashboard\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting grafanaDashboard Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:04.296451594Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 122
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting grafanadashboard grafana-tools-zy7xxp\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting grafanadashboard grafana-tools-zy7xxp Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:04.563753094Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 334
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting Secret\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting Secret Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:04.574411802Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 338
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting AppBinding\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting AppBinding Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:04.582789052Z",
+            "Location": {
+              "FileName": "/src/test/e2e/dashboard_test.go",
+              "LineNumber": 342
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Wait until AppBinding is deleted\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Wait until AppBinding is deleted Duration:0s}"
+            }
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": null,
+        "ContainerHierarchyLocations": null,
+        "ContainerHierarchyLabels": null,
+        "LeafNodeType": "AfterSuite",
+        "LeafNodeLocation": {
+          "FileName": "/src/test/e2e/e2e_suite_test.go",
+          "LineNumber": 100
+        },
+        "LeafNodeLabels": null,
+        "LeafNodeText": "",
+        "State": "passed",
+        "StartTime": "2023-03-24T00:33:04.588359094Z",
+        "EndTime": "2023-03-24T00:33:04.615028594Z",
+        "RunTime": 26669458,
+        "ParallelProcess": 1,
+        "NumAttempts": 0,
+        "CapturedGinkgoWriterOutput": "[AfterSuite] TOP-LEVEL\n  /src/test/e2e/e2e_suite_test.go:100\n\u001b[1mSTEP:\u001b[0m Deleting grafana server \u001b[38;5;243m03/24/23 00:33:04.588\u001b[0m\n\u001b[1mSTEP:\u001b[0m Deleting grafana deployment \u001b[38;5;243m03/24/23 00:33:04.588\u001b[0m\n\u001b[1mSTEP:\u001b[0m Deleting grafana service \u001b[38;5;243m03/24/23 00:33:04.593\u001b[0m\n\u001b[1mSTEP:\u001b[0m Deleting Namespace \u001b[38;5;243m03/24/23 00:33:04.611\u001b[0m\n",
+        "ReportEntries": [
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:04.588406635Z",
+            "Location": {
+              "FileName": "/src/test/e2e/e2e_suite_test.go",
+              "LineNumber": 101
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting grafana server\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting grafana server Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:04.588606094Z",
+            "Location": {
+              "FileName": "/src/test/e2e/framework/grafana_server.go",
+              "LineNumber": 73
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting grafana deployment\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting grafana deployment Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:04.593357094Z",
+            "Location": {
+              "FileName": "/src/test/e2e/framework/grafana_server.go",
+              "LineNumber": 78
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting grafana service\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting grafana service Duration:0s}"
+            }
+          },
+          {
+            "Visibility": "never",
+            "Time": "2023-03-24T00:33:04.611460385Z",
+            "Location": {
+              "FileName": "/src/test/e2e/e2e_suite_test.go",
+              "LineNumber": 105
+            },
+            "Name": "By Step",
+            "Value": {
+              "AsJSON": "{\"Text\":\"Deleting Namespace\",\"Duration\":0}",
+              "Representation": "\u0026{Text:Deleting Namespace Duration:0s}"
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -24,12 +24,11 @@ import (
 	"go.openviz.dev/grafana-tools/pkg/apiserver"
 	"go.openviz.dev/grafana-tools/test/e2e/framework"
 
-	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/reporters"
+	. "github.com/onsi/ginkgo/v2"
+	"github.com/onsi/ginkgo/v2/types"
 	. "github.com/onsi/gomega"
 	"gomodules.xyz/logs"
 	core "k8s.io/api/core/v1"
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"kmodules.xyz/client-go/tools/clientcmd"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -47,8 +46,11 @@ func TestE2e(t *testing.T) {
 	RegisterFailHandler(Fail)
 	SetDefaultEventuallyTimeout(TIMEOUT)
 
-	junitReporter := reporters.NewJUnitReporter("junit.xml")
-	RunSpecsWithDefaultAndCustomReporters(t, "e2e Suite", []Reporter{junitReporter})
+	reporterConfig := types.NewDefaultReporterConfig()
+	reporterConfig.JUnitReport = "junit.xml"
+	reporterConfig.JSONReport = "report.json"
+	reporterConfig.Verbose = true
+	RunSpecs(t, "e2e Suite", Label("kubeDB"), reporterConfig)
 }
 
 var _ = BeforeSuite(func() {

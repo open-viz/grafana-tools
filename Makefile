@@ -25,7 +25,7 @@ CODE_GENERATOR_IMAGE ?= appscode/gengo:release-1.25
 API_GROUPS           ?= openviz:v1alpha1 ui:v1alpha1
 
 # Where to push the docker image.
-REGISTRY ?= appscode
+REGISTRY ?= ghcr.io/appscode
 SRC_REG  ?=
 
 # This version-strategy uses git tags to set the version string
@@ -127,13 +127,16 @@ all-container: $(addprefix container-, $(subst /,_, $(DOCKER_PLATFORMS)))
 
 all-push: $(addprefix push-, $(subst /,_, $(DOCKER_PLATFORMS)))
 
-version:
-	@echo ::set-output name=version::$(VERSION)
-	@echo ::set-output name=version_strategy::$(version_strategy)
-	@echo ::set-output name=git_tag::$(git_tag)
-	@echo ::set-output name=git_branch::$(git_branch)
-	@echo ::set-output name=commit_hash::$(commit_hash)
-	@echo ::set-output name=commit_timestamp::$(commit_timestamp)
+version: version-PROD version-DBG
+	@echo version=$(VERSION)
+	@echo version_strategy=$(version_strategy)
+	@echo git_tag=$(git_tag)
+	@echo git_branch=$(git_branch)
+	@echo commit_hash=$(commit_hash)
+	@echo commit_timestamp=$(commit_timestamp)
+version-%:
+	@echo IMAGE=$(IMAGE)
+	@echo TAG_$*=$(TAG_$*)
 
 .PHONY: gen
 gen:
@@ -359,12 +362,14 @@ install:
 	@cd ../installer; \
 	helm upgrade -i grafana-operator charts/grafana-operator --wait \
 		--namespace=$(KUBE_NAMESPACE) --create-namespace \
+		--set registryFQDN="" \
 		--set image.registry=$(REGISTRY) \
 		--set image.tag=$(TAG) \
 		--set imagePullPolicy=$(IMAGE_PULL_POLICY) \
 		$(IMAGE_PULL_SECRETS); \
 	helm upgrade -i grafana-ui-server charts/grafana-ui-server --wait \
 		--namespace=$(KUBE_NAMESPACE) --create-namespace \
+		--set registryFQDN="" \
 		--set image.registry=$(REGISTRY) \
 		--set image.tag=$(TAG) \
 		--set imagePullPolicy=$(IMAGE_PULL_POLICY) \
