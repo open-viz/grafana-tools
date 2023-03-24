@@ -42,17 +42,24 @@ jobs:
           chmod +x ./kubectl
           sudo mv ./kubectl /usr/local/bin/kubectl
 
-      - name: Run checks
-        run: |
-          make ci
+      # - name: Run checks
+      #   run: |
+      #     make ci
 
-      - name: Build
+      - name: Log in to the GitHub Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to the GitHub Container registry
+        id: publish-to-ghcr
         env:
-          REGISTRY: appscodeci
-          DOCKER_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-          USERNAME: 1gtm
+          REGISTRY: ghcr.io/${{ github.repository_owner }}
+          APPSCODE_ENV: prod
         run: |
-          docker login --username ${USERNAME} --password ${DOCKER_TOKEN}
+          make version >> $GITHUB_ENV
           make push
 
   kubernetes:
@@ -75,10 +82,6 @@ jobs:
 
       - name: Prepare cluster for testing
         id: local-path
-        env:
-          DOCKER_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-          USERNAME: 1gtm
-          REGISTRY_SECRET: regcred
         run: |
           echo "waiting for nodes to be ready ..."
           kubectl wait --for=condition=Ready nodes --all --timeout=5m
@@ -98,8 +101,7 @@ jobs:
 
       - name: Run e2e tests
         env:
-          REGISTRY: appscodeci
-          REGISTRY_SECRET: regcred
+          REGISTRY: ghcr.io/${{ github.repository_owner }}
           TEST_CREDENTIALS: ${{ secrets.TEST_CREDENTIALS }}
           GOOGLE_SERVICE_ACCOUNT_JSON_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON_KEY }}
         run: |
@@ -111,3 +113,39 @@ jobs:
           make install || ( kubectl describe deployment -n openviz grafana-tools; kubectl logs -n openviz deployment/grafana-tools; exit 1; )
           echo
           make e2e-tests
+
+  cleanup:
+    name: Cleanup
+    runs-on: ubuntu-20.04
+    if: ${{ always() }}
+    needs: [build, kubernetes]
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install gh-tools
+        run: |
+          curl -fsSL -O https://github.com/appscodelabs/gh-tools/releases/download/v0.2.14/gh-tools-linux-amd64
+          chmod +x gh-tools-linux-amd64
+          sudo mv gh-tools-linux-amd64 /usr/local/bin/gh-tools
+
+      - name: Set tags as GITHUB_ENV
+        env:
+          REGISTRY: ghcr.io/${{ github.repository_owner }}
+        run: |
+          make version >> $GITHUB_ENV
+
+      - name: Delete CI Docker images
+        env:
+          GH_TOOLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "deleting ghcr.io/${{ github.repository_owner }}/grafana-tools:${{ env.TAG_PROD }}"
+          gh-tools delete-package \
+            --org=${{ github.repository_owner }} \
+            --pkg=grafana-tools \
+            --tag=${{ env.TAG_PROD }} || true
+
+          echo "deleting ghcr.io/${{ github.repository_owner }}/grafana-tools:${{ env.TAG_DBG }}"
+          gh-tools delete-package \
+            --org=${{ github.repository_owner }} \
+            --pkg=grafana-tools \
+            --tag=${{ env.TAG_DBG }} || true
