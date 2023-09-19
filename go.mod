@@ -11,7 +11,7 @@ require (
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/pflag v1.0.5
 	github.com/zeebo/xxh3 v1.0.2
-	go.openviz.dev/apimachinery v0.0.6-0.20230419044317-5fe714d126b1
+	go.openviz.dev/apimachinery v0.0.6-0.20230919075903-a080f88eae13
 	go.openviz.dev/grafana-sdk v0.0.4
 	golang.org/x/text v0.9.0
 	gomodules.xyz/logs v0.0.7
