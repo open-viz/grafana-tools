@@ -155,11 +155,11 @@ require (
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
-replace sigs.k8s.io/controller-runtime => github.com/kmodules/controller-runtime v0.13.1-0.20220917045846-a0df7cc5e5ee
+replace sigs.k8s.io/controller-runtime => github.com/kmodules/controller-runtime v0.13.1-0.20230725210630-f8273f9c4412
 
 replace github.com/imdario/mergo => github.com/imdario/mergo v0.3.6
 
-replace k8s.io/apiserver => github.com/kmodules/apiserver v0.25.2-0.20220917044909-4ac5fceca518
+replace k8s.io/apiserver => github.com/kmodules/apiserver v0.25.2-0.20230817060727-aa2afd31b825
 
 replace (
 	go.opencensus.io => go.opencensus.io v0.23.0

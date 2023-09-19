@@ -321,10 +321,10 @@ github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/klauspost/cpuid/v2 v2.0.9 h1:lgaqFMSdTdQYdZ04uHyN2d/eKdOMyi2YLSvlQIBFYa4=
 github.com/klauspost/cpuid/v2 v2.0.9/go.mod h1:FInQzS24/EEf25PyTYn52gqo7WaD8xa0213Md/qVLRg=
-github.com/kmodules/apiserver v0.25.2-0.20220917044909-4ac5fceca518 h1:uYw2fRagdWLdOOP7VGjHO2z/iTfM3mz+LEgDLgMJkeQ=
-github.com/kmodules/apiserver v0.25.2-0.20220917044909-4ac5fceca518/go.mod h1:IB1EhM28U3cCrV+VNC06p1/YSZMCNYiH+P5sI5yLaZY=
-github.com/kmodules/controller-runtime v0.13.1-0.20220917045846-a0df7cc5e5ee h1:0C8ns797SoYVIhJT8Laz3aVdABv9/5sJ+6yCbDZTtng=
-github.com/kmodules/controller-runtime v0.13.1-0.20220917045846-a0df7cc5e5ee/go.mod h1:Zbz+el8Yg31jubvAEyglRZGdLAjplZl+PgtYNI6WNTI=
+github.com/kmodules/apiserver v0.25.2-0.20230817060727-aa2afd31b825 h1:bqlDzXI0PosMAZRH6aPk405RnjXBxCG/LraI6YXeWYg=
+github.com/kmodules/apiserver v0.25.2-0.20230817060727-aa2afd31b825/go.mod h1:IB1EhM28U3cCrV+VNC06p1/YSZMCNYiH+P5sI5yLaZY=
+github.com/kmodules/controller-runtime v0.13.1-0.20230725210630-f8273f9c4412 h1:sy5gE/M+SfQdIK9wh1VIT0RhXxiVlPRQxpGy2TVvnzE=
+github.com/kmodules/controller-runtime v0.13.1-0.20230725210630-f8273f9c4412/go.mod h1:Zbz+el8Yg31jubvAEyglRZGdLAjplZl+PgtYNI6WNTI=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/konsorten/go-windows-terminal-sequences v1.0.3/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515/go.mod h1:+0opPa2QZZtGFBFZlji/RkVcI2GknAs/DXo4wKdlNEc=
