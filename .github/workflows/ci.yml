@@ -68,7 +68,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        k8s: [v1.22.0]
+        k8s: [v1.25.8]
     steps:
       - uses: actions/checkout@v2
 
@@ -76,7 +76,7 @@ jobs:
         id: kind
         uses: engineerd/setup-kind@v0.5.0
         with:
-          version: v0.17.0
+          version: v0.20.0
           config: hack/kubernetes/kind.yaml
           image: kindest/node:${{ matrix.k8s }}
 
