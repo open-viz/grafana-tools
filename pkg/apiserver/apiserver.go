@@ -41,7 +41,7 @@ import (
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
 	"k8s.io/klog/v2/klogr"
-	"kmodules.xyz/authorizer/rbac"
+	"kmodules.xyz/authorizer"
 	appcatalogapi "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -190,7 +190,7 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 		return nil, err
 	}
 
-	rbacAuthorizer := rbac.NewForManagerOrDie(ctx, mgr)
+	rbacAuthorizer := authorizer.NewForManagerOrDie(ctx, mgr)
 
 	s := &UIServer{
 		GenericAPIServer: genericServer,
