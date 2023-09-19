@@ -29,11 +29,13 @@ import (
 
 	"gomodules.xyz/pointer"
 	core "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	kmc "kmodules.xyz/client-go/client"
+	condutil "kmodules.xyz/client-go/conditions"
 	meta_util "kmodules.xyz/client-go/meta"
 	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -79,7 +81,7 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	if obj.ObjectMeta.DeletionTimestamp != nil {
 		// Change the Phase to Terminating if not
 		if obj.Status.Phase != openvizapi.GrafanaPhaseTerminating {
-			_, _, err := kmc.PatchStatus(ctx, r.Client, obj, func(obj client.Object) client.Object {
+			_, err := kmc.PatchStatus(ctx, r.Client, obj, func(obj client.Object) client.Object {
 				in := obj.(*openvizapi.GrafanaDashboard)
 				in.Status.Phase = openvizapi.GrafanaPhaseTerminating
 				in.Status.Reason = "Resource has been going to be deleted"
@@ -95,7 +97,7 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		}
 
 		// Remove finalizer as the external Dashboard is successfully deleted
-		_, _, err := kmc.CreateOrPatch(ctx, r.Client, obj, func(obj client.Object, createOp bool) client.Object {
+		_, err := kmc.CreateOrPatch(ctx, r.Client, obj, func(obj client.Object, createOp bool) client.Object {
 			controllerutil.RemoveFinalizer(obj, GrafanaDashboardFinalizer)
 			return obj
 		})
@@ -104,7 +106,7 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	// Add finalizer if not set
 	if !containsString(obj.GetFinalizers(), GrafanaDashboardFinalizer) {
-		_, _, err := kmc.CreateOrPatch(ctx, r.Client, obj, func(obj client.Object, createOp bool) client.Object {
+		_, err := kmc.CreateOrPatch(ctx, r.Client, obj, func(obj client.Object, createOp bool) client.Object {
 			controllerutil.AddFinalizer(obj, GrafanaDashboardFinalizer)
 			return obj
 		})
@@ -116,7 +118,7 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	// Set the Phase to Processing if the dashboard is going to be processed for the first time.
 	// If the dashboard phase is already failed then setting Phase is skipped.
 	if obj.Status.Phase != openvizapi.GrafanaPhaseProcessing && obj.Status.Phase != openvizapi.GrafanaPhaseFailed {
-		_, _, err := kmc.PatchStatus(ctx, r.Client, obj, func(obj client.Object) client.Object {
+		_, err := kmc.PatchStatus(ctx, r.Client, obj, func(obj client.Object) client.Object {
 			in := obj.(*openvizapi.GrafanaDashboard)
 			in.Status.Phase = openvizapi.GrafanaPhaseProcessing
 			return in
@@ -133,16 +135,16 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 func (r *GrafanaDashboardReconciler) handleSetDashboardError(ctx context.Context, obj *openvizapi.GrafanaDashboard, err error, updateGeneration bool) (ctrl.Result, error) {
 	reason := err.Error()
 	r.recordFailureEvent(obj, reason)
-	_, _, patchErr := kmc.PatchStatus(ctx, r.Client, obj, func(obj client.Object) client.Object {
+	_, patchErr := kmc.PatchStatus(ctx, r.Client, obj, func(obj client.Object) client.Object {
 		in := obj.(*openvizapi.GrafanaDashboard)
 		in.Status.Phase = openvizapi.GrafanaPhaseFailed
 		in.Status.Reason = reason
 		if updateGeneration {
 			in.Status.ObservedGeneration = in.Generation
 		}
-		in.Status.Conditions = kmapi.SetCondition(in.Status.Conditions, kmapi.Condition{
-			Type:    kmapi.ConditionFailed,
-			Status:  core.ConditionTrue,
+		in.Status.Conditions = condutil.SetCondition(in.Status.Conditions, kmapi.Condition{
+			Type:    condutil.ConditionFailed,
+			Status:  metav1.ConditionTrue,
 			Reason:  reason,
 			Message: reason,
 		})
@@ -256,7 +258,7 @@ func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, obj *open
 		return r.handleSetDashboardError(ctx, obj, err, false)
 	}
 
-	_, _, err = kmc.PatchStatus(ctx, r.Client, obj, func(obj client.Object) client.Object {
+	_, err = kmc.PatchStatus(ctx, r.Client, obj, func(obj client.Object) client.Object {
 		in := obj.(*openvizapi.GrafanaDashboard)
 		reason := "Dashboard is successfully created"
 		in.Status.Dashboard = &openvizapi.GrafanaDashboardReference{
@@ -269,9 +271,9 @@ func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, obj *open
 		}
 		in.Status.Phase = openvizapi.GrafanaPhaseCurrent
 		in.Status.ObservedGeneration = in.Generation
-		in.Status.Conditions = kmapi.SetCondition(in.Status.Conditions, kmapi.Condition{
-			Type:    kmapi.ConditionReady,
-			Status:  core.ConditionTrue,
+		in.Status.Conditions = condutil.SetCondition(in.Status.Conditions, kmapi.Condition{
+			Type:    condutil.ConditionReady,
+			Status:  metav1.ConditionTrue,
 			Reason:  reason,
 			Message: reason,
 		})

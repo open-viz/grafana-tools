@@ -26,11 +26,13 @@ import (
 
 	"gomodules.xyz/pointer"
 	core "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	kmc "kmodules.xyz/client-go/client"
+	condutil "kmodules.xyz/client-go/conditions"
 	meta_util "kmodules.xyz/client-go/meta"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -68,7 +70,7 @@ func (r *GrafanaDatasourceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	// Add or remove finalizer based on deletion timestamp
 	if ds.ObjectMeta.DeletionTimestamp.IsZero() {
 		if !containsString(ds.GetFinalizers(), GrafanaDatasourceFinalizer) {
-			_, _, err := kmc.CreateOrPatch(ctx, r.Client, ds, func(obj client.Object, createOp bool) client.Object {
+			_, err := kmc.CreateOrPatch(ctx, r.Client, ds, func(obj client.Object, createOp bool) client.Object {
 				controllerutil.AddFinalizer(obj, GrafanaDatasourceFinalizer)
 				return obj
 			})
@@ -80,7 +82,7 @@ func (r *GrafanaDatasourceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		}
 	} else {
 		if containsString(ds.GetFinalizers(), GrafanaDatasourceFinalizer) {
-			_, _, err := kmc.PatchStatus(ctx, r.Client, ds, func(obj client.Object) client.Object {
+			_, err := kmc.PatchStatus(ctx, r.Client, ds, func(obj client.Object) client.Object {
 				in := obj.(*openvizapi.GrafanaDatasource)
 				in.Status.Phase = openvizapi.GrafanaPhaseTerminating
 				return in
@@ -93,7 +95,7 @@ func (r *GrafanaDatasourceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 				return ctrl.Result{}, err
 			}
 
-			_, _, err = kmc.CreateOrPatch(ctx, r.Client, ds, func(obj client.Object, createOp bool) client.Object {
+			_, err = kmc.CreateOrPatch(ctx, r.Client, ds, func(obj client.Object, createOp bool) client.Object {
 				controllerutil.RemoveFinalizer(obj, GrafanaDatasourceFinalizer)
 				return obj
 			})
@@ -106,7 +108,7 @@ func (r *GrafanaDatasourceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	}
 
 	if !meta_util.MustAlreadyReconciled(ds) {
-		_, _, err := kmc.PatchStatus(ctx, r.Client, ds, func(obj client.Object) client.Object {
+		_, err := kmc.PatchStatus(ctx, r.Client, ds, func(obj client.Object) client.Object {
 			in := obj.(*openvizapi.GrafanaDatasource)
 			in.Status.Phase = openvizapi.GrafanaPhaseProcessing
 			in.Status.Conditions = []kmapi.Condition{}
@@ -185,7 +187,7 @@ func (r *GrafanaDatasourceReconciler) createDatasource(ctx context.Context, gc *
 	}
 	klog.Infof("GrafanaDatasource is created with message: %s\n", pointer.String(statusMsg.Message))
 
-	_, _, err = kmc.PatchStatus(ctx, r.Client, ds, func(obj client.Object) client.Object {
+	_, err = kmc.PatchStatus(ctx, r.Client, ds, func(obj client.Object) client.Object {
 		in := obj.(*openvizapi.GrafanaDatasource)
 		in.Status.Phase = openvizapi.GrafanaPhaseCurrent
 		in.Status.Reason = "Successfully created Grafana Datasource"
@@ -206,7 +208,7 @@ func (r *GrafanaDatasourceReconciler) updateDatasource(ctx context.Context, gc *
 		return fmt.Errorf("failed to update remote datasource, reason: %v", err)
 	}
 	klog.Infof("GrafanaDatasource is updated with message: %s\n", pointer.String(statusMsg.Message))
-	_, _, err = kmc.PatchStatus(ctx, r.Client, ds, func(obj client.Object) client.Object {
+	_, err = kmc.PatchStatus(ctx, r.Client, ds, func(obj client.Object) client.Object {
 		in := obj.(*openvizapi.GrafanaDatasource)
 		in.Status.Phase = openvizapi.GrafanaPhaseCurrent
 		in.Status.Reason = "Successfully updated GrafanaDatasource"
@@ -227,13 +229,13 @@ func (r *GrafanaDatasourceReconciler) handleFailureEvent(ctx context.Context, ds
 		`Failed to complete operation for GrafanaDatasource: "%v", Reason: "%v"`,
 		ds.Name,
 		reason)
-	_, _, err := kmc.PatchStatus(ctx, r.Client, ds, func(obj client.Object) client.Object {
+	_, err := kmc.PatchStatus(ctx, r.Client, ds, func(obj client.Object) client.Object {
 		in := obj.(*openvizapi.GrafanaDatasource)
 		in.Status.Phase = openvizapi.GrafanaPhaseFailed
 		in.Status.Reason = reason
-		in.Status.Conditions = kmapi.SetCondition(in.Status.Conditions, kmapi.Condition{
-			Type:    kmapi.ConditionFailed,
-			Status:  core.ConditionTrue,
+		in.Status.Conditions = condutil.SetCondition(in.Status.Conditions, kmapi.Condition{
+			Type:    condutil.ConditionFailed,
+			Status:  metav1.ConditionTrue,
 			Reason:  reason,
 			Message: reason,
 		})
