@@ -20,12 +20,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 
 	openvizinstall "go.openviz.dev/apimachinery/apis/openviz/install"
 	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 	"go.openviz.dev/apimachinery/apis/ui"
 	uiinstall "go.openviz.dev/apimachinery/apis/ui/install"
 	uiapi "go.openviz.dev/apimachinery/apis/ui/v1alpha1"
+	promtehsucontroller "go.openviz.dev/grafana-tools/pkg/controllers/prometheus"
 	dashgroupstorage "go.openviz.dev/grafana-tools/pkg/registry/ui/dashboardgroup"
 
 	core "k8s.io/api/core/v1"
@@ -42,11 +44,14 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/klog/v2/klogr"
 	"kmodules.xyz/authorizer"
+	cu "kmodules.xyz/client-go/client"
 	appcatalogapi "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
+	"kmodules.xyz/resource-metadata/client/clientset/versioned"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	chartsapi "x-helm.dev/apimachinery/apis/charts/v1alpha1"
 )
 
 var (
@@ -62,6 +67,8 @@ func init() {
 	openvizinstall.Install(Scheme)
 	utilruntime.Must(clientgoscheme.AddToScheme(Scheme))
 	utilruntime.Must(appcatalogapi.AddToScheme(Scheme))
+	utilruntime.Must(appcatalogapi.AddToScheme(Scheme))
+	utilruntime.Must(chartsapi.AddToScheme(Scheme))
 
 	// we need to add the options to empty v1
 	// TODO fix the server code to avoid this
@@ -81,6 +88,8 @@ func init() {
 // ExtraConfig holds custom apiserver config
 type ExtraConfig struct {
 	ClientConfig *restclient.Config
+	BaseURL      string
+	Token        string
 }
 
 // Config defines the config for the apiserver
@@ -147,6 +156,26 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 		return nil, fmt.Errorf("unable to start manager, reason: %v", err)
 	}
 	ctrlClient := mgr.GetClient()
+
+	cid, err := cu.ClusterUID(mgr.GetAPIReader())
+	if err != nil {
+		return nil, err
+	}
+
+	bc, err := promtehsucontroller.NewClient(c.ExtraConfig.BaseURL, c.ExtraConfig.Token, cid)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = promtehsucontroller.NewReconciler(
+		c.ExtraConfig.ClientConfig,
+		versioned.NewForConfigOrDie(c.ExtraConfig.ClientConfig),
+		mgr.GetClient(),
+		bc,
+	).SetupWithManager(mgr); err != nil {
+		klog.Error(err, "unable to create controller", "controller", "Prometheus")
+		os.Exit(1)
+	}
 
 	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &appcatalogapi.AppBinding{}, mona.DefaultGrafanaKey, func(rawObj client.Object) []string {
 		app := rawObj.(*appcatalogapi.AppBinding)

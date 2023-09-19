@@ -24,11 +24,15 @@ import (
 )
 
 func main() {
+	if err := realMain(); err != nil {
+		klog.Fatal(err)
+	}
+}
+
+func realMain() error {
 	rootCmd := cmds.NewRootCmd()
 	logs.Init(rootCmd, true)
 	defer logs.FlushLogs()
 
-	if err := rootCmd.Execute(); err != nil {
-		klog.Fatal(err)
-	}
+	return rootCmd.Execute()
 }
