@@ -13,7 +13,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/zeebo/xxh3 v1.0.2
 	go.bytebuilders.dev/license-verifier v0.13.3
-	go.openviz.dev/apimachinery v0.0.6-0.20230919182513-658d0b47d80a
+	go.openviz.dev/apimachinery v0.0.6-0.20230920000934-eda1a5c76e46
 	go.openviz.dev/grafana-sdk v0.0.4
 	golang.org/x/text v0.9.0
 	gomodules.xyz/logs v0.0.7

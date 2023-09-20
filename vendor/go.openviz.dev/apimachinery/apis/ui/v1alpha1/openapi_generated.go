@@ -432,12 +432,17 @@ func schema_apimachinery_apis_ui_v1alpha1_DashboardGroupRequest(ref common.Refer
 							Format: "",
 						},
 					},
+					"app": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kmodules.xyz/client-go/api/v1.ObjectReference"),
+						},
+					},
 				},
 				Required: []string{"dashboards"},
 			},
 		},
 		Dependencies: []string{
-			"go.openviz.dev/apimachinery/apis/ui/v1alpha1.DashboardRequest", "go.openviz.dev/apimachinery/apis/ui/v1alpha1.TimeRange"},
+			"go.openviz.dev/apimachinery/apis/ui/v1alpha1.DashboardRequest", "go.openviz.dev/apimachinery/apis/ui/v1alpha1.TimeRange", "kmodules.xyz/client-go/api/v1.ObjectReference"},
 	}
 }
 

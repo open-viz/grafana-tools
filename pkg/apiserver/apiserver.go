@@ -44,7 +44,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/klog/v2/klogr"
 	"kmodules.xyz/authorizer"
-	cu "kmodules.xyz/client-go/client"
+	clustermeta "kmodules.xyz/client-go/cluster/meta"
 	appcatalogapi "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	"kmodules.xyz/resource-metadata/client/clientset/versioned"
@@ -157,7 +157,7 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 	}
 	ctrlClient := mgr.GetClient()
 
-	cid, err := cu.ClusterUID(mgr.GetAPIReader())
+	cid, err := clustermeta.ClusterUID(mgr.GetAPIReader())
 	if err != nil {
 		return nil, err
 	}
