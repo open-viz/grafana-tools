@@ -33,9 +33,8 @@ import (
 )
 
 type GrafanaDatasourceResponse struct {
-	Grafana    mona.GrafanaConfig `json:"grafana"`
-	FolderID   *int64             `json:"folderID,omitempty"`
-	Datasource string             `json:"datasource,omitempty"`
+	Grafana             mona.GrafanaConfig `json:"grafana"`
+	mona.GrafanaContext `json:",inline,omitempty"`
 }
 
 type Client struct {
@@ -69,14 +68,15 @@ func registerAPIEndpoint(override ...string) (string, error) {
 	return u.String(), nil
 }
 
-func (c *Client) RegisterPrometheus(projectId string, cfg mona.PrometheusConfig) (*GrafanaDatasourceResponse, error) {
+func (c *Client) Register(projectId string, cfg mona.PrometheusConfig) (*GrafanaDatasourceResponse, error) {
 	opts := struct {
-		ClusterUID string                `json:"clusterUID"`
-		ProjectId  string                `json:"projectId,omitempty"`
-		Prometheus mona.PrometheusConfig `json:"prometheus"`
+		mona.PrometheusContext `json:",inline,omitempty"`
+		Prometheus             mona.PrometheusConfig `json:"prometheus"`
 	}{
-		ClusterUID: c.clusterUID,
-		ProjectId:  projectId,
+		PrometheusContext: mona.PrometheusContext{
+			ClusterUID: c.clusterUID,
+			ProjectId:  projectId,
+		},
 		Prometheus: cfg,
 	}
 	data, err := json.Marshal(opts)
@@ -122,4 +122,43 @@ func (c *Client) RegisterPrometheus(projectId string, cfg mona.PrometheusConfig)
 		return nil, err
 	}
 	return &ds, nil
+}
+
+func (c *Client) Unregister(projectId string) error {
+	opts := mona.PrometheusContext{
+		ClusterUID: c.clusterUID,
+		ProjectId:  projectId,
+	}
+	data, err := json.Marshal(opts)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, c.url, bytes.NewReader(data))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	// add authorization header to the req
+	if c.token != "" {
+		req.Header.Add("Authorization", "Bearer "+c.token)
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return apierrors.NewGenericServerResponse(
+			resp.StatusCode,
+			http.MethodDelete,
+			schema.GroupResource{Group: openviz.GroupName, Resource: openvizapi.ResourceGrafanaDatasources},
+			"",
+			"",
+			0,
+			false,
+		)
+	}
+	return nil
 }

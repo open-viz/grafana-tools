@@ -38,7 +38,7 @@ import (
 	kutil "kmodules.xyz/client-go"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	cu "kmodules.xyz/client-go/client"
-	clustermanger "kmodules.xyz/client-go/cluster/manager"
+	clustermeta "kmodules.xyz/client-go/cluster"
 	meta_util "kmodules.xyz/client-go/meta"
 	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
@@ -101,7 +101,7 @@ const (
 )
 
 func (r *PrometheusReconciler) SetupClusterForPrometheus(key types.NamespacedName) error {
-	cm := clustermanger.DetectClusterManager(r.kc)
+	cm := clustermeta.DetectClusterManager(r.kc)
 
 	gvk := schema.GroupVersionKind{
 		Group:   monitoring.GroupName,
@@ -116,7 +116,7 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(key types.NamespacedNam
 	}
 
 	key = client.ObjectKeyFromObject(&prom)
-	isDefault, err := clustermanger.IsDefault(r.kc, cm, gvk, key)
+	isDefault, err := clustermeta.IsDefault(r.kc, cm, gvk, key)
 	if err != nil {
 		return err
 	}
@@ -283,7 +283,7 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(key types.NamespacedNam
 			return err
 		}
 		if vt == kutil.VerbCreated {
-			resp, err := r.bc.RegisterPrometheus("", pcfg)
+			resp, err := r.bc.Register("", pcfg)
 			if err != nil {
 				return err
 			}

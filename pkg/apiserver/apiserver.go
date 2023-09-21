@@ -44,7 +44,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/klog/v2/klogr"
 	"kmodules.xyz/authorizer"
-	clustermeta "kmodules.xyz/client-go/cluster/meta"
+	clustermeta "kmodules.xyz/client-go/cluster"
 	appcatalogapi "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	"kmodules.xyz/resource-metadata/client/clientset/versioned"

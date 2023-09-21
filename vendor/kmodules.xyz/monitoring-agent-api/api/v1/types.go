@@ -29,6 +29,7 @@ const (
 	DefaultPrometheusKey   = "monitoring.appscode.com/is-default-prometheus"
 	DefaultAlertmanagerKey = "monitoring.appscode.com/is-default-alertmanager"
 	DefaultGrafanaKey      = "monitoring.appscode.com/is-default-grafana"
+	FederatedKey           = "monitoring.appscode.com/federate"
 )
 
 // +kubebuilder:validation:Enum=prometheus.io/operator;prometheus.io;prometheus.io/builtin

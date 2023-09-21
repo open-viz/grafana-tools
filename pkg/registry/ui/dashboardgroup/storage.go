@@ -29,7 +29,6 @@ import (
 
 	"github.com/grafana-tools/sdk"
 	"github.com/pkg/errors"
-	core "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -39,8 +38,7 @@ import (
 	apirequest "k8s.io/apiserver/pkg/endpoints/request"
 	"k8s.io/apiserver/pkg/registry/rest"
 	kmapi "kmodules.xyz/client-go/api/v1"
-	clustermanager "kmodules.xyz/client-go/cluster/manager"
-	clustermeta "kmodules.xyz/client-go/cluster/meta"
+	clustermeta "kmodules.xyz/client-go/cluster"
 	"kmodules.xyz/custom-resources/apis/appcatalog"
 	appcatalogapi "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
@@ -132,23 +130,24 @@ func (r *Storage) datasource(in *uiapi.DashboardGroup) (string, error) {
 		return "", err
 	}
 
-	if clustermanager.IsRancherManaged(r.kc.RESTMapper()) {
+	if clustermeta.IsRancherManaged(r.kc.RESTMapper()) {
 		nsName := r.appNamespace(in.Request.App, in.Request.Dashboards[0].Vars)
-		if nsName == "" {
-			return "", errors.New("failed to detect app namespace, hence datasource")
+		if nsName != "" {
+			sysProjctId, sysProjectExists, err := clustermeta.GetSystemProjectId(r.kc)
+			if err != nil {
+				return "", err
+			}
+			projectId, exists, err := clustermeta.GetProjectId(r.kc, nsName)
+			if err != nil {
+				return "", err
+			}
+			if exists && sysProjectExists && projectId != sysProjctId {
+				return fmt.Sprintf("%s-%s", cmeta.Name, projectId), nil
+			}
 		}
-
-		var ns core.Namespace
-		err = r.kc.Get(context.TODO(), client.ObjectKey{Name: nsName}, &ns)
-		if err != nil {
-			return "", err
-		}
-		projectId, exists := ns.Labels[clustermanager.LabelKeyRancherProjectId]
-		if !exists {
-			return cmeta.Name, nil
-		}
-		return fmt.Sprintf("%s-%s", cmeta.Name, projectId), nil
 	}
+	// https://github.com/open-viz/apimachinery/blob/master/apis/openviz/v1alpha1/datasource_config_types.go#L31-L33
+	// TODO: Should be read from the default Grafana AppBinding params
 	return cmeta.Name, nil
 }
 
