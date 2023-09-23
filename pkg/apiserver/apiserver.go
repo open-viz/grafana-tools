@@ -163,9 +163,12 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 		return nil, err
 	}
 
-	bc, err := promtehsucontroller.NewClient(c.ExtraConfig.BaseURL, c.ExtraConfig.Token, cid)
-	if err != nil {
-		return nil, err
+	var bc *promtehsucontroller.Client
+	if c.ExtraConfig.BaseURL != "" && c.ExtraConfig.Token != "" {
+		bc, err = promtehsucontroller.NewClient(c.ExtraConfig.BaseURL, c.ExtraConfig.Token)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if err = promtehsucontroller.NewReconciler(
@@ -173,16 +176,25 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 		versioned.NewForConfigOrDie(c.ExtraConfig.ClientConfig),
 		mgr.GetClient(),
 		bc,
+		cid,
 	).SetupWithManager(mgr); err != nil {
 		klog.Error(err, "unable to create controller", "controller", "Prometheus")
 		os.Exit(1)
 	}
 
-	if err = servicemonitorcontroller.NewReconciler(
+	if err = servicemonitorcontroller.NewFederationReconciler(
 		c.ExtraConfig.ClientConfig,
 		mgr.GetClient(),
 	).SetupWithManager(mgr); err != nil {
-		klog.Error(err, "unable to create controller", "controller", "ServiceMonitor")
+		klog.Error(err, "unable to create controller", " federation controller", "ServiceMonitor")
+		os.Exit(1)
+	}
+
+	if err = servicemonitorcontroller.NewAutoReconciler(
+		c.ExtraConfig.ClientConfig,
+		mgr.GetClient(),
+	).SetupWithManager(mgr); err != nil {
+		klog.Error(err, "unable to create controller", "auto controller", "ServiceMonitor")
 		os.Exit(1)
 	}
 

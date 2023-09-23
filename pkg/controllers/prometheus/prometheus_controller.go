@@ -30,20 +30,22 @@ import (
 
 // PrometheusReconciler reconciles a Prometheus object
 type PrometheusReconciler struct {
-	cfg    *rest.Config
-	rmc    versioned.Interface
-	kc     client.Client
-	scheme *runtime.Scheme
-	bc     *Client
+	cfg        *rest.Config
+	rmc        versioned.Interface
+	kc         client.Client
+	scheme     *runtime.Scheme
+	bc         *Client
+	clusterUID string
 }
 
-func NewReconciler(cfg *rest.Config, rmc versioned.Interface, kc client.Client, bc *Client) *PrometheusReconciler {
+func NewReconciler(cfg *rest.Config, rmc versioned.Interface, kc client.Client, bc *Client, clusterUID string) *PrometheusReconciler {
 	return &PrometheusReconciler{
-		cfg:    cfg,
-		rmc:    rmc,
-		kc:     kc,
-		scheme: kc.Scheme(),
-		bc:     bc,
+		cfg:        cfg,
+		rmc:        rmc,
+		kc:         kc,
+		scheme:     kc.Scheme(),
+		bc:         bc,
+		clusterUID: clusterUID,
 	}
 }
 

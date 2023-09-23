@@ -38,20 +38,18 @@ type GrafanaDatasourceResponse struct {
 }
 
 type Client struct {
-	url        string
-	token      string
-	clusterUID string
+	url   string
+	token string
 }
 
-func NewClient(baseURL, token, clusterUID string) (*Client, error) {
+func NewClient(baseURL, token string) (*Client, error) {
 	u, err := registerAPIEndpoint(baseURL)
 	if err != nil {
 		return nil, err
 	}
 	return &Client{
-		url:        u,
-		token:      token,
-		clusterUID: clusterUID,
+		url:   u,
+		token: token,
 	}, nil
 }
 
@@ -68,16 +66,13 @@ func registerAPIEndpoint(override ...string) (string, error) {
 	return u.String(), nil
 }
 
-func (c *Client) Register(projectId string, cfg mona.PrometheusConfig) (*GrafanaDatasourceResponse, error) {
+func (c *Client) Register(ctx mona.PrometheusContext, cfg mona.PrometheusConfig) (*GrafanaDatasourceResponse, error) {
 	opts := struct {
 		mona.PrometheusContext `json:",inline,omitempty"`
 		Prometheus             mona.PrometheusConfig `json:"prometheus"`
 	}{
-		PrometheusContext: mona.PrometheusContext{
-			ClusterUID: c.clusterUID,
-			ProjectId:  projectId,
-		},
-		Prometheus: cfg,
+		PrometheusContext: ctx,
+		Prometheus:        cfg,
 	}
 	data, err := json.Marshal(opts)
 	if err != nil {
@@ -124,12 +119,8 @@ func (c *Client) Register(projectId string, cfg mona.PrometheusConfig) (*Grafana
 	return &ds, nil
 }
 
-func (c *Client) Unregister(projectId string) error {
-	opts := mona.PrometheusContext{
-		ClusterUID: c.clusterUID,
-		ProjectId:  projectId,
-	}
-	data, err := json.Marshal(opts)
+func (c *Client) Unregister(ctx mona.PrometheusContext) error {
+	data, err := json.Marshal(ctx)
 	if err != nil {
 		return err
 	}

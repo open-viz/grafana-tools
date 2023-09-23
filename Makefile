@@ -347,7 +347,7 @@ lint: $(BUILD_DIRS)
 $(BUILD_DIRS):
 	@mkdir -p $@
 
-KUBE_NAMESPACE    ?= kubeops
+KUBE_NAMESPACE    ?= monitoring
 REGISTRY_SECRET   ?=
 IMAGE_PULL_POLICY	?= IfNotPresent
 
@@ -367,7 +367,7 @@ install:
 		--set image.tag=$(TAG) \
 		--set imagePullPolicy=$(IMAGE_PULL_POLICY) \
 		$(IMAGE_PULL_SECRETS); \
-	helm upgrade -i grafana-ui-server charts/grafana-ui-server --wait \
+	helm upgrade -i monitoring-operator charts/monitoring-operator --wait \
 		--namespace=$(KUBE_NAMESPACE) --create-namespace \
 		--set registryFQDN="" \
 		--set image.registry=$(REGISTRY) \
@@ -378,7 +378,7 @@ install:
 .PHONY: uninstall
 uninstall:
 	@cd ../installer; \
-	helm uninstall grafana-ui-server --namespace=$(KUBE_NAMESPACE) || true; \
+	helm uninstall monitoring-operator --namespace=$(KUBE_NAMESPACE) || true; \
 	helm uninstall grafana-operator --namespace=$(KUBE_NAMESPACE) || true
 
 .PHONY: purge

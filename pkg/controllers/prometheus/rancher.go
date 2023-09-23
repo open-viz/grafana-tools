@@ -30,6 +30,7 @@ import (
 	rbac "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
@@ -277,20 +278,36 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(key types.NamespacedNam
 	pcfg.BearerToken = string(tokenData)
 	pcfg.TLS.Ca = string(caData)
 
-	if isDefault {
-		// create Prometheus AppBinding
-		vt, err := r.CreatePrometheusAppBinding(&prom, svc)
-		if err != nil {
-			return err
-		}
-		if vt == kutil.VerbCreated {
-			resp, err := r.bc.Register("", pcfg)
+	if savt == kutil.VerbCreated ||
+		rolevt == kutil.VerbCreated ||
+		rbvt == kutil.VerbCreated {
+
+		var projectId string
+		if !isDefault {
+			_, projectId, err = r.NamespaceForPreset(&prom)
 			if err != nil {
 				return err
 			}
+		}
+		resp, err := r.bc.Register(mona.PrometheusContext{
+			ClusterUID: r.clusterUID,
+			ProjectId:  projectId,
+			Default:    isDefault,
+		}, pcfg)
+		if err != nil {
+			return err
+		}
 
-			// create Grafana AppBinding
-			return r.CreateGrafanaAppBinding(key, resp)
+		if isDefault {
+			// create Prometheus AppBinding
+			vt, err := r.CreatePrometheusAppBinding(&prom, svc)
+			if err != nil {
+				return err
+			}
+			if vt == kutil.VerbCreated {
+				// create Grafana AppBinding
+				return r.CreateGrafanaAppBinding(key, resp)
+			}
 		}
 	}
 
@@ -320,7 +337,6 @@ func (r *PrometheusReconciler) CreatePreset(cm kmapi.ClusterManager, p *monitori
 		} else {
 			// create ChartPreset
 			// Decide NS
-
 			err2 := r.CreateProjectPreset(p, presetBytes)
 			if err2 != nil {
 				return err2
@@ -333,30 +349,46 @@ func (r *PrometheusReconciler) CreatePreset(cm kmapi.ClusterManager, p *monitori
 	return r.CreateClusterPreset(presetBytes)
 }
 
-func (r *PrometheusReconciler) NamespaceForPreset(prom *monitoringv1.Prometheus) (string, error) {
+func (r *PrometheusReconciler) NamespaceForPreset(prom *monitoringv1.Prometheus) (ns string, projectId string, err error) {
+	/*
+		field.cattle.io/projectId=p-tkgpc
+		helm.cattle.io/helm-project-operated=true
+		helm.cattle.io/projectId=p-tkgpc
+	*/
 	ls := prom.Spec.ServiceMonitorNamespaceSelector
 	if ls.MatchLabels == nil {
 		ls.MatchLabels = make(map[string]string)
 	}
+	projectId = ls.MatchLabels[clustermeta.LabelKeyRancherHelmProjectId]
+	if projectId == "" {
+		err = fmt.Errorf("expected %s label in Prometheus %s/%s  spec.serviceMonitorNamespaceSelector",
+			clustermeta.LabelKeyRancherHelmProjectId, prom.Namespace, prom.Name)
+		return
+	}
+	ls.MatchLabels[clustermeta.LabelKeyRancherFieldProjectId] = projectId
 	ls.MatchLabels[clustermeta.LabelKeyRancherHelmProjectOperated] = "true"
-	sel, err := metav1.LabelSelectorAsSelector(ls)
+
+	var sel labels.Selector
+	sel, err = metav1.LabelSelectorAsSelector(ls)
 	if err != nil {
-		return "", err
+		return
 	}
 
 	var nsList core.NamespaceList
 	err = r.kc.List(context.TODO(), &nsList, client.MatchingLabelsSelector{Selector: sel})
 	if err != nil {
-		return "", err
+		return
 	}
 	namespaces := nsList.Items
 	if len(namespaces) == 0 {
-		return "", fmt.Errorf("failed to select AppBinding namespace for Prometheus %s/%s", prom.Namespace, prom.Name)
+		err = fmt.Errorf("failed to select AppBinding namespace for Prometheus %s/%s", prom.Namespace, prom.Name)
+		return
 	}
 	sort.Slice(namespaces, func(i, j int) bool {
 		return namespaces[i].CreationTimestamp.Before(&namespaces[j].CreationTimestamp)
 	})
-	return namespaces[0].Name, nil
+	ns = namespaces[0].Name
+	return
 }
 
 func (r *PrometheusReconciler) CreateClusterPreset(presetBytes []byte) error {
@@ -386,7 +418,7 @@ func (r *PrometheusReconciler) CreateClusterPreset(presetBytes []byte) error {
 }
 
 func (r *PrometheusReconciler) CreateProjectPreset(p *monitoringv1.Prometheus, presetBytes []byte) error {
-	ns, err := r.NamespaceForPreset(p)
+	ns, _, err := r.NamespaceForPreset(p)
 	if err != nil {
 		return err
 	}

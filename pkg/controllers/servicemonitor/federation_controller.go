@@ -48,15 +48,15 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-// ServiceMonitorReconciler reconciles a ServiceMonitor object
-type ServiceMonitorReconciler struct {
+// FederationReconciler reconciles a ServiceMonitor object
+type FederationReconciler struct {
 	cfg    *rest.Config
 	kc     client.Client
 	scheme *runtime.Scheme
 }
 
-func NewReconciler(cfg *rest.Config, kc client.Client) *ServiceMonitorReconciler {
-	return &ServiceMonitorReconciler{
+func NewFederationReconciler(cfg *rest.Config, kc client.Client) *FederationReconciler {
+	return &FederationReconciler{
 		cfg:    cfg,
 		kc:     kc,
 		scheme: kc.Scheme(),
@@ -72,7 +72,7 @@ func NewReconciler(cfg *rest.Config, kc client.Client) *ServiceMonitorReconciler
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.16.0/pkg/reconcile
-func (r *ServiceMonitorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *FederationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
 
 	var svcMon monitoringv1.ServiceMonitor
@@ -85,8 +85,8 @@ func (r *ServiceMonitorReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	}
 
 	// has federate label
-	val, found := svcMon.Labels[mona.FederatedKey]
-	if !found || val != "true" {
+	val, found := svcMon.Labels[mona.PrometheusKey]
+	if !found || val != mona.PrometheusValueFederated {
 		return ctrl.Result{}, nil
 	}
 
@@ -157,7 +157,7 @@ func (r *ServiceMonitorReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 				errList = append(errList, err)
 			}
 		} else {
-			targetSvcMon, err := copyServiceMonitor(r.kc, prom, &svcMon)
+			targetSvcMon, err := r.copyServiceMonitor(prom, &svcMon)
 			if err != nil {
 				errList = append(errList, err)
 			}
@@ -197,7 +197,7 @@ func IsDefaultPrometheus(prom *monitoringv1.Prometheus) bool {
 	return pk == expected
 }
 
-func (r *ServiceMonitorReconciler) updateServiceMonitorLabels(prom *monitoringv1.Prometheus, src *monitoringv1.ServiceMonitor) error {
+func (r *FederationReconciler) updateServiceMonitorLabels(prom *monitoringv1.Prometheus, src *monitoringv1.ServiceMonitor) error {
 	vt, err := cu.CreateOrPatch(context.TODO(), r.kc, src, func(in client.Object, createOp bool) client.Object {
 		obj := in.(*monitoringv1.ServiceMonitor)
 
@@ -213,14 +213,14 @@ func (r *ServiceMonitorReconciler) updateServiceMonitorLabels(prom *monitoringv1
 	return nil
 }
 
-func copyServiceMonitor(kc client.Client, prom *monitoringv1.Prometheus, src *monitoringv1.ServiceMonitor) (*monitoringv1.ServiceMonitor, error) {
+func (r *FederationReconciler) copyServiceMonitor(prom *monitoringv1.Prometheus, src *monitoringv1.ServiceMonitor) (*monitoringv1.ServiceMonitor, error) {
 	sel, err := metav1.LabelSelectorAsSelector(prom.Spec.ServiceMonitorNamespaceSelector)
 	if err != nil {
 		return nil, err
 	}
 
 	var nsList core.NamespaceList
-	err = kc.List(context.TODO(), &nsList, client.MatchingLabelsSelector{
+	err = r.kc.List(context.TODO(), &nsList, client.MatchingLabelsSelector{
 		Selector: sel,
 	})
 	if err != nil {
@@ -243,7 +243,7 @@ func copyServiceMonitor(kc client.Client, prom *monitoringv1.Prometheus, src *mo
 			Namespace: prom.Namespace,
 		},
 	}
-	vt, err := cu.CreateOrPatch(context.TODO(), kc, &target, func(in client.Object, createOp bool) client.Object {
+	vt, err := cu.CreateOrPatch(context.TODO(), r.kc, &target, func(in client.Object, createOp bool) client.Object {
 		obj := in.(*monitoringv1.ServiceMonitor)
 
 		ref := metav1.NewControllerRef(prom, schema.GroupVersionKind{
@@ -255,7 +255,7 @@ func copyServiceMonitor(kc client.Client, prom *monitoringv1.Prometheus, src *mo
 
 		labels, _ := meta_util.LabelsForLabelSelector(prom.Spec.ServiceMonitorSelector)
 		obj.Labels = meta_util.OverwriteKeys(obj.Labels, labels)
-		delete(obj.Labels, mona.FederatedKey)
+		delete(obj.Labels, mona.PrometheusKey)
 
 		obj.Spec = *src.Spec.DeepCopy()
 
@@ -286,7 +286,7 @@ func copyServiceMonitor(kc client.Client, prom *monitoringv1.Prometheus, src *mo
 	return &target, nil
 }
 
-func (r *ServiceMonitorReconciler) copySecret(src *core.Secret, targetSvcMon *monitoringv1.ServiceMonitor) error {
+func (r *FederationReconciler) copySecret(src *core.Secret, targetSvcMon *monitoringv1.ServiceMonitor) error {
 	target := core.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      src.Name,
@@ -321,7 +321,7 @@ func (r *ServiceMonitorReconciler) copySecret(src *core.Secret, targetSvcMon *mo
 	return nil
 }
 
-func (r *ServiceMonitorReconciler) copyService(src *core.Service, targetSvcMon *monitoringv1.ServiceMonitor) error {
+func (r *FederationReconciler) copyService(src *core.Service, targetSvcMon *monitoringv1.ServiceMonitor) error {
 	target := core.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      src.Name,
@@ -371,7 +371,7 @@ func UpsertServicePort(ports []core.ServicePort, x core.ServicePort) []core.Serv
 	})
 }
 
-func (r *ServiceMonitorReconciler) copyEndpoints(srcSvc *core.Service, srcEP *core.Endpoints, targetSvcMon *monitoringv1.ServiceMonitor) error {
+func (r *FederationReconciler) copyEndpoints(srcSvc *core.Service, srcEP *core.Endpoints, targetSvcMon *monitoringv1.ServiceMonitor) error {
 	target := core.Endpoints{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      srcEP.Name,
@@ -442,10 +442,10 @@ func UpsertEndpointPort(ports []core.EndpointPort, x core.EndpointPort) []core.E
 }
 
 // service -> []serviceMonitors
-func (r *ServiceMonitorReconciler) ServiceMonitorsForService(obj client.Object) []reconcile.Request {
+func (r *FederationReconciler) ServiceMonitorsForService(obj client.Object) []reconcile.Request {
 	var list monitoringv1.ServiceMonitorList
 	err := r.kc.List(context.TODO(), &list, client.MatchingLabels{
-		mona.FederatedKey: "true",
+		mona.PrometheusKey: mona.PrometheusValueFederated,
 	})
 	if err != nil {
 		klog.Error(err)
@@ -471,21 +471,21 @@ func (r *ServiceMonitorReconciler) ServiceMonitorsForService(obj client.Object) 
 }
 
 // Prometheus -> serviceMonitor
-func (r *ServiceMonitorReconciler) ServiceMonitorsForPrometheus(_ client.Object) []reconcile.Request {
-	var list monitoringv1.ServiceMonitorList
-	err := r.kc.List(context.TODO(), &list, client.MatchingLabels{
-		mona.FederatedKey: "true",
-	})
-	if err != nil {
-		klog.Error(err)
-		return nil
-	}
+func ServiceMonitorsForPrometheus(kc client.Client, labels map[string]string) func(_ client.Object) []reconcile.Request {
+	return func(_ client.Object) []reconcile.Request {
+		var list monitoringv1.ServiceMonitorList
+		err := kc.List(context.TODO(), &list, client.MatchingLabels(labels))
+		if err != nil {
+			klog.Error(err)
+			return nil
+		}
 
-	var req []reconcile.Request
-	for _, svcMon := range list.Items {
-		req = append(req, reconcile.Request{NamespacedName: client.ObjectKeyFromObject(svcMon)})
+		var req []reconcile.Request
+		for _, svcMon := range list.Items {
+			req = append(req, reconcile.Request{NamespacedName: client.ObjectKeyFromObject(svcMon)})
+		}
+		return req
 	}
-	return req
 }
 
 func contains(arr []string, x string) bool {
@@ -498,13 +498,19 @@ func contains(arr []string, x string) bool {
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *ServiceMonitorReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *FederationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&monitoringv1.ServiceMonitor{}, builder.WithPredicates(predicate.NewPredicateFuncs(func(obj client.Object) bool {
-			val, found := obj.GetLabels()[mona.FederatedKey]
-			return found && val == "true"
+			val, found := obj.GetLabels()[mona.PrometheusKey]
+			return found && val == mona.PrometheusValueFederated
 		}))).
-		Watches(&source.Kind{Type: &core.Service{}}, handler.EnqueueRequestsFromMapFunc(r.ServiceMonitorsForService)).
-		Watches(&source.Kind{Type: &monitoringv1.Prometheus{}}, handler.EnqueueRequestsFromMapFunc(r.ServiceMonitorsForPrometheus)).
+		Watches(
+			&source.Kind{Type: &core.Service{}},
+			handler.EnqueueRequestsFromMapFunc(r.ServiceMonitorsForService)).
+		Watches(
+			&source.Kind{Type: &monitoringv1.Prometheus{}},
+			handler.EnqueueRequestsFromMapFunc(ServiceMonitorsForPrometheus(r.kc, map[string]string{
+				mona.PrometheusKey: mona.PrometheusValueFederated,
+			}))).
 		Complete(r)
 }
