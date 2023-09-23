@@ -42,6 +42,7 @@ const defaultEtcdPathPrefix = "/registry/k8s.appscode.com"
 // UIServerOptions contains state for master/api server
 type UIServerOptions struct {
 	RecommendedOptions *genericoptions.RecommendedOptions
+	ExtraOptions       *ExtraOptions
 
 	StdOut io.Writer
 	StdErr io.Writer
@@ -57,8 +58,9 @@ func NewUIServerOptions(out, errOut io.Writer) *UIServerOptions {
 				uiapi.SchemeGroupVersion,
 			),
 		),
-		StdOut: out,
-		StdErr: errOut,
+		ExtraOptions: NewExtraOptions(),
+		StdOut:       out,
+		StdErr:       errOut,
 	}
 	o.RecommendedOptions.Etcd = nil
 	o.RecommendedOptions.Admission = nil
@@ -67,12 +69,14 @@ func NewUIServerOptions(out, errOut io.Writer) *UIServerOptions {
 
 func (o UIServerOptions) AddFlags(fs *pflag.FlagSet) {
 	o.RecommendedOptions.AddFlags(fs)
+	o.ExtraOptions.AddFlags(fs)
 }
 
 // Validate validates UIServerOptions
 func (o UIServerOptions) Validate(args []string) error {
 	var errors []error
 	errors = append(errors, o.RecommendedOptions.Validate()...)
+	errors = append(errors, o.ExtraOptions.Validate()...)
 	return utilerrors.NewAggregate(errors)
 }
 
@@ -101,11 +105,16 @@ func (o *UIServerOptions) Config() (*apiserver.Config, error) {
 	serverConfig.OpenAPIConfig.Info.Title = "ui-server"
 	serverConfig.OpenAPIConfig.Info.Version = "v0.0.1"
 
+	extraConfig := apiserver.ExtraConfig{
+		ClientConfig: serverConfig.ClientConfig,
+	}
+	if err := o.ExtraOptions.ApplyTo(&extraConfig); err != nil {
+		return nil, err
+	}
+
 	config := &apiserver.Config{
 		GenericConfig: serverConfig,
-		ExtraConfig: apiserver.ExtraConfig{
-			ClientConfig: serverConfig.ClientConfig,
-		},
+		ExtraConfig:   extraConfig,
 	}
 	return config, nil
 }

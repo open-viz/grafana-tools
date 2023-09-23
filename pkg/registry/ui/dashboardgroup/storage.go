@@ -37,6 +37,8 @@ import (
 	"k8s.io/apiserver/pkg/authorization/authorizer"
 	apirequest "k8s.io/apiserver/pkg/endpoints/request"
 	"k8s.io/apiserver/pkg/registry/rest"
+	kmapi "kmodules.xyz/client-go/api/v1"
+	clustermeta "kmodules.xyz/client-go/cluster"
 	"kmodules.xyz/custom-resources/apis/appcatalog"
 	appcatalogapi "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
@@ -84,10 +86,16 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 		return nil, apierrors.NewBadRequest("missing apirequest")
 	}
 
+	ds, err := r.datasource(in)
+	if err != nil {
+		return nil, err
+	}
+
 	in.Response = &uiapi.DashboardGroupResponse{
 		Dashboards: make([]uiapi.DashboardResponse, 0, len(in.Request.Dashboards)),
 	}
 	for _, req := range in.Request.Dashboards {
+		req.Vars = upsertDatasourceVar(req.Vars, ds)
 		resp, err := r.getDashboardLink(ctx, &req, in.Request.RefreshInterval, in.Request.TimeRange, in.Request.EmbeddedLink)
 		if err != nil {
 			return nil, err
@@ -97,6 +105,66 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 	}
 
 	return in, nil
+}
+
+func (r *Storage) appNamespace(app *kmapi.ObjectReference, vars []uiapi.DashboardVar) string {
+	if app != nil && app.Namespace != "" {
+		return app.Namespace
+	}
+	for _, v := range vars {
+		if v.Type == uiapi.DashboardVarTypeSource && v.Name == "namespace" {
+			return v.Value
+		}
+	}
+	return ""
+}
+
+func (r *Storage) datasource(in *uiapi.DashboardGroup) (string, error) {
+	cmeta, err := clustermeta.ClusterMetadata(r.kc)
+	if err != nil {
+		return "", err
+	}
+
+	if clustermeta.IsRancherManaged(r.kc.RESTMapper()) {
+		nsName := r.appNamespace(in.Request.App, in.Request.Dashboards[0].Vars)
+		if nsName != "" {
+			sysProjctId, sysProjectExists, err := clustermeta.GetSystemProjectId(r.kc)
+			if err != nil {
+				return "", err
+			}
+			projectId, exists, err := clustermeta.GetProjectId(r.kc, nsName)
+			if err != nil {
+				return "", err
+			}
+			if exists && sysProjectExists && projectId != sysProjctId {
+				return fmt.Sprintf("%s-%s", cmeta.Name, projectId), nil
+			}
+		}
+	}
+	// https://github.com/open-viz/apimachinery/blob/master/apis/openviz/v1alpha1/datasource_config_types.go#L31-L33
+	// TODO: Should be read from the default Grafana AppBinding params
+	return cmeta.Name, nil
+}
+
+func upsertDatasourceVar(vars []uiapi.DashboardVar, ds string) []uiapi.DashboardVar {
+	result := vars
+	var found bool
+	for i, v := range result {
+		if v.Type == uiapi.DashboardVarTypeSource && v.Name == "datasource" {
+			v.Value = ds
+			result[i] = v
+			found = true
+		}
+	}
+	if !found {
+		result = append(result, uiapi.DashboardVar{
+			Name:  "datasource",
+			Value: ds,
+			Type:  uiapi.DashboardVarTypeSource,
+		})
+	}
+
+	return result
 }
 
 func (r *Storage) getDashboardLink(
@@ -331,7 +399,7 @@ func addVars(q url.Values, vars []uiapi.DashboardVar) string {
 			}
 			buf.WriteString(url.QueryEscape(v.VarName()))
 			buf.WriteByte('=')
-			buf.WriteString(v.Value)
+			buf.WriteString(v.Value) // Don't escape it
 		}
 		if srcVars > 0 {
 			rawQuery += "&"

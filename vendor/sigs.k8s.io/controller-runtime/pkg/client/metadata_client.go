@@ -98,13 +98,13 @@ func (mc *metadataClient) Patch(ctx context.Context, obj Object, patch Patch, op
 		return err
 	}
 
-	patchOpts := &PatchOptions{}
-	patchOpts.ApplyOptions(opts)
-
 	data, err := patch.Data(obj)
-	if err != nil || (!patchOpts.SendEmptyPatch && string(data) == "{}") {
+	if err != nil {
 		return err
 	}
+
+	patchOpts := &PatchOptions{}
+	patchOpts.ApplyOptions(opts)
 
 	res, err := resInt.Patch(ctx, metadata.Name, patch.Type(), data, *patchOpts.AsPatchOptions())
 	if err != nil {
@@ -180,14 +180,12 @@ func (mc *metadataClient) PatchStatus(ctx context.Context, obj Object, patch Pat
 		return err
 	}
 
-	patchOpts := &PatchOptions{}
-	patchOpts.ApplyOptions(opts)
-
 	data, err := patch.Data(obj)
-	if err != nil || (!patchOpts.SendEmptyPatch && string(data) == "{}") {
+	if err != nil {
 		return err
 	}
 
+	patchOpts := &PatchOptions{}
 	res, err := resInt.Patch(ctx, metadata.Name, patch.Type(), data, *patchOpts.AsPatchOptions(), "status")
 	if err != nil {
 		return err

@@ -35,10 +35,12 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"kmodules.xyz/monitoring-agent-api/api/v1.BasicAuth":              schema_kmodulesxyz_monitoring_agent_api_api_v1_BasicAuth(ref),
 		"kmodules.xyz/monitoring-agent-api/api/v1.DashboardSpec":          schema_kmodulesxyz_monitoring_agent_api_api_v1_DashboardSpec(ref),
 		"kmodules.xyz/monitoring-agent-api/api/v1.GrafanaConfig":          schema_kmodulesxyz_monitoring_agent_api_api_v1_GrafanaConfig(ref),
+		"kmodules.xyz/monitoring-agent-api/api/v1.GrafanaContext":         schema_kmodulesxyz_monitoring_agent_api_api_v1_GrafanaContext(ref),
 		"kmodules.xyz/monitoring-agent-api/api/v1.MonitoringPresets":      schema_kmodulesxyz_monitoring_agent_api_api_v1_MonitoringPresets(ref),
 		"kmodules.xyz/monitoring-agent-api/api/v1.MonitoringPresetsForm":  schema_kmodulesxyz_monitoring_agent_api_api_v1_MonitoringPresetsForm(ref),
 		"kmodules.xyz/monitoring-agent-api/api/v1.MonitoringPresetsSpec":  schema_kmodulesxyz_monitoring_agent_api_api_v1_MonitoringPresetsSpec(ref),
 		"kmodules.xyz/monitoring-agent-api/api/v1.PrometheusConfig":       schema_kmodulesxyz_monitoring_agent_api_api_v1_PrometheusConfig(ref),
+		"kmodules.xyz/monitoring-agent-api/api/v1.PrometheusContext":      schema_kmodulesxyz_monitoring_agent_api_api_v1_PrometheusContext(ref),
 		"kmodules.xyz/monitoring-agent-api/api/v1.PrometheusExporterSpec": schema_kmodulesxyz_monitoring_agent_api_api_v1_PrometheusExporterSpec(ref),
 		"kmodules.xyz/monitoring-agent-api/api/v1.PrometheusSpec":         schema_kmodulesxyz_monitoring_agent_api_api_v1_PrometheusSpec(ref),
 		"kmodules.xyz/monitoring-agent-api/api/v1.ServiceMonitorLabels":   schema_kmodulesxyz_monitoring_agent_api_api_v1_ServiceMonitorLabels(ref),
@@ -169,13 +171,6 @@ func schema_kmodulesxyz_monitoring_agent_api_api_v1_GrafanaConfig(ref common.Ref
 			SchemaProps: spec.SchemaProps{
 				Type: []string{"object"},
 				Properties: map[string]spec.Schema{
-					"default": {
-						SchemaProps: spec.SchemaProps{
-							Default: false,
-							Type:    []string{"boolean"},
-							Format:  "",
-						},
-					},
 					"url": {
 						SchemaProps: spec.SchemaProps{
 							Default: "",
@@ -215,11 +210,41 @@ func schema_kmodulesxyz_monitoring_agent_api_api_v1_GrafanaConfig(ref common.Ref
 						},
 					},
 				},
-				Required: []string{"default", "url", "service", "basicAuth", "bearerToken", "tls", "dashboard"},
+				Required: []string{"url", "service", "basicAuth", "bearerToken", "tls", "dashboard"},
 			},
 		},
 		Dependencies: []string{
 			"kmodules.xyz/monitoring-agent-api/api/v1.BasicAuth", "kmodules.xyz/monitoring-agent-api/api/v1.DashboardSpec", "kmodules.xyz/monitoring-agent-api/api/v1.ServiceSpec", "kmodules.xyz/monitoring-agent-api/api/v1.TLSConfig"},
+	}
+}
+
+func schema_kmodulesxyz_monitoring_agent_api_api_v1_GrafanaContext(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"folderID": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"integer"},
+							Format: "int64",
+						},
+					},
+					"datasource": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"token": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+				},
+			},
+		},
 	}
 }
 
@@ -297,13 +322,6 @@ func schema_kmodulesxyz_monitoring_agent_api_api_v1_PrometheusConfig(ref common.
 			SchemaProps: spec.SchemaProps{
 				Type: []string{"object"},
 				Properties: map[string]spec.Schema{
-					"default": {
-						SchemaProps: spec.SchemaProps{
-							Default: false,
-							Type:    []string{"boolean"},
-							Format:  "",
-						},
-					},
 					"url": {
 						SchemaProps: spec.SchemaProps{
 							Default: "",
@@ -337,11 +355,44 @@ func schema_kmodulesxyz_monitoring_agent_api_api_v1_PrometheusConfig(ref common.
 						},
 					},
 				},
-				Required: []string{"default", "url", "service", "basicAuth", "bearerToken", "tls"},
+				Required: []string{"url", "service", "basicAuth", "bearerToken", "tls"},
 			},
 		},
 		Dependencies: []string{
 			"kmodules.xyz/monitoring-agent-api/api/v1.BasicAuth", "kmodules.xyz/monitoring-agent-api/api/v1.ServiceSpec", "kmodules.xyz/monitoring-agent-api/api/v1.TLSConfig"},
+	}
+}
+
+func schema_kmodulesxyz_monitoring_agent_api_api_v1_PrometheusContext(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"clusterUID": {
+						SchemaProps: spec.SchemaProps{
+							Default: "",
+							Type:    []string{"string"},
+							Format:  "",
+						},
+					},
+					"projectId": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"default": {
+						SchemaProps: spec.SchemaProps{
+							Default: false,
+							Type:    []string{"boolean"},
+							Format:  "",
+						},
+					},
+				},
+				Required: []string{"clusterUID", "default"},
+			},
+		},
 	}
 }
 

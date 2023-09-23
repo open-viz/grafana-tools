@@ -17,7 +17,6 @@ limitations under the License.
 package v1
 
 type GrafanaConfig struct {
-	Default     bool          `json:"default"`
 	URL         string        `json:"url"`
 	Service     ServiceSpec   `json:"service"`
 	BasicAuth   BasicAuth     `json:"basicAuth"`
@@ -27,7 +26,6 @@ type GrafanaConfig struct {
 }
 
 type PrometheusConfig struct {
-	Default     bool        `json:"default"`
 	URL         string      `json:"url"`
 	Service     ServiceSpec `json:"service"`
 	BasicAuth   BasicAuth   `json:"basicAuth"`
@@ -60,4 +58,16 @@ type TLSConfig struct {
 	Key                   string `json:"key"`
 	ServerName            string `json:"serverName"`
 	InsecureSkipTLSVerify bool   `json:"insecureSkipTLSVerify"`
+}
+
+type PrometheusContext struct {
+	ClusterUID string `json:"clusterUID"`
+	ProjectId  string `json:"projectId,omitempty"`
+	Default    bool   `json:"default"`
+}
+
+type GrafanaContext struct {
+	FolderID   *int64 `json:"folderID,omitempty"`
+	Datasource string `json:"datasource,omitempty"`
+	Token      string `json:"token,omitempty"`
 }
