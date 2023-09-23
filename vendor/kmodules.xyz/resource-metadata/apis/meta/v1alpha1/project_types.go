@@ -17,6 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
+	kmapi "kmodules.xyz/client-go/api/v1"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -32,6 +34,16 @@ type ProjectSpec struct {
 	Type              ProjectType           `json:"type,omitempty"`
 	Namespaces        []string              `json:"namespaces,omitempty"`
 	NamespaceSelector *metav1.LabelSelector `json:"namespaceSelector,omitempty"`
+	Monitoring        *ProjectMonitoring    `json:"monitoring,omitempty"`
+	Presets           []SourceLocator       `json:"presets,omitempty"`
+}
+
+type ProjectMonitoring struct {
+	PrometheusURL   string                 `json:"prometheusURL,omitempty"`
+	GrafanaURL      string                 `json:"grafanaURL,omitempty"`
+	AlertmanagerURL string                 `json:"alertmanagerURL,omitempty"`
+	PrometheusRef   *kmapi.ObjectReference `json:"prometheusRef,omitempty"`
+	AlertmanagerRef *kmapi.ObjectReference `json:"alertmanagerRef,omitempty"`
 }
 
 // +kubebuilder:validation:Enum=Default;System;User
@@ -70,8 +82,4 @@ type ProjectList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []Project `json:"items"`
-}
-
-func init() {
-	SchemeBuilder.Register(&Project{}, &ProjectList{})
 }

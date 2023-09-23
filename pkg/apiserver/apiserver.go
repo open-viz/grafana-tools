@@ -28,6 +28,7 @@ import (
 	uiinstall "go.openviz.dev/apimachinery/apis/ui/install"
 	uiapi "go.openviz.dev/apimachinery/apis/ui/v1alpha1"
 	promtehsucontroller "go.openviz.dev/grafana-tools/pkg/controllers/prometheus"
+	servicemonitorcontroller "go.openviz.dev/grafana-tools/pkg/controllers/servicemonitor"
 	dashgroupstorage "go.openviz.dev/grafana-tools/pkg/registry/ui/dashboardgroup"
 
 	core "k8s.io/api/core/v1"
@@ -174,6 +175,14 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 		bc,
 	).SetupWithManager(mgr); err != nil {
 		klog.Error(err, "unable to create controller", "controller", "Prometheus")
+		os.Exit(1)
+	}
+
+	if err = servicemonitorcontroller.NewReconciler(
+		c.ExtraConfig.ClientConfig,
+		mgr.GetClient(),
+	).SetupWithManager(mgr); err != nil {
+		klog.Error(err, "unable to create controller", "controller", "ServiceMonitor")
 		os.Exit(1)
 	}
 

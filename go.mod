@@ -13,9 +13,9 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/zeebo/xxh3 v1.0.2
 	go.bytebuilders.dev/license-verifier v0.13.3
-	go.openviz.dev/apimachinery v0.0.6-0.20230920000934-eda1a5c76e46
+	go.openviz.dev/apimachinery v0.0.6-0.20230923031050-54ba43445b90
 	go.openviz.dev/grafana-sdk v0.0.4
-	golang.org/x/text v0.9.0
+	golang.org/x/text v0.13.0
 	gomodules.xyz/logs v0.0.7
 	gomodules.xyz/pointer v0.1.0
 	gomodules.xyz/runtime v0.3.0
@@ -28,12 +28,12 @@ require (
 	k8s.io/client-go v0.25.4
 	k8s.io/klog/v2 v2.80.1
 	kmodules.xyz/authorizer v0.25.1
-	kmodules.xyz/client-go v0.25.34-0.20230921001129-a3766b49003f
+	kmodules.xyz/client-go v0.25.34
 	kmodules.xyz/custom-resources v0.25.2
-	kmodules.xyz/monitoring-agent-api v0.25.3-0.20230921024614-ff5edfe18660
-	kmodules.xyz/resource-metadata v0.17.18-0.20230920172001-dbcf3e25f9da
+	kmodules.xyz/monitoring-agent-api v0.25.3
+	kmodules.xyz/resource-metadata v0.17.18
 	sigs.k8s.io/controller-runtime v0.13.1
-	x-helm.dev/apimachinery v0.0.11-0.20230920073953-6834648fee5b
+	x-helm.dev/apimachinery v0.0.11
 )
 
 require (
@@ -135,12 +135,12 @@ require (
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	go.uber.org/zap v1.23.0 // indirect
-	golang.org/x/crypto v0.9.0 // indirect
-	golang.org/x/net v0.10.0 // indirect
+	golang.org/x/crypto v0.13.0 // indirect
+	golang.org/x/net v0.15.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/sys v0.8.0 // indirect
-	golang.org/x/term v0.8.0 // indirect
+	golang.org/x/sys v0.12.0 // indirect
+	golang.org/x/term v0.12.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.7.0 // indirect
 	gomodules.xyz/clock v0.0.0-20200817085942-06523dba733f // indirect

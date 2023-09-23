@@ -27,7 +27,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-const LabelKeyRancherProjectId = "field.cattle.io/projectId"
+const (
+	LabelKeyRancherFieldProjectId      = "field.cattle.io/projectId"
+	LabelKeyRancherHelmProjectId       = "helm.cattle.io/projectId"
+	LabelKeyRancherHelmProjectOperated = "helm.cattle.io/helm-project-operated"
+)
 
 func IsRancherManaged(mapper meta.RESTMapper) bool {
 	if _, err := mapper.RESTMappings(schema.GroupKind{
@@ -69,7 +73,7 @@ func isInProject(kc client.Client, nsName, seedNS string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	projectId, exists := ns.Labels[LabelKeyRancherProjectId]
+	projectId, exists := ns.Labels[LabelKeyRancherFieldProjectId]
 	if !exists {
 		return false, nil
 	}
@@ -95,7 +99,7 @@ func GetProjectId(kc client.Client, nsName string) (string, bool, error) {
 	if err != nil {
 		return "", false, err
 	}
-	projectId, found := ns.Labels[LabelKeyRancherProjectId]
+	projectId, found := ns.Labels[LabelKeyRancherFieldProjectId]
 	return projectId, found, nil
 }
 
@@ -107,10 +111,26 @@ func ListSiblingNamespaces(kc client.Client, nsName string) ([]core.Namespace, e
 	return ListProjectNamespaces(kc, projectId)
 }
 
+func AreSiblingNamespaces(kc client.Client, ns1, ns2 string) (bool, error) {
+	if ns1 == ns2 {
+		return true, nil
+	}
+
+	p1, found, err := GetProjectId(kc, ns1)
+	if err != nil || !found {
+		return false, err
+	}
+	p2, found, err := GetProjectId(kc, ns2)
+	if err != nil || !found {
+		return false, err
+	}
+	return p1 == p2, nil
+}
+
 func ListProjectNamespaces(kc client.Client, projectId string) ([]core.Namespace, error) {
 	var list core.NamespaceList
 	err := kc.List(context.TODO(), &list, client.MatchingLabels{
-		LabelKeyRancherProjectId: projectId,
+		LabelKeyRancherFieldProjectId: projectId,
 	})
 	if err != nil {
 		return nil, err

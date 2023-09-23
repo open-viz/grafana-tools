@@ -19,6 +19,7 @@ package prometheus
 import (
 	"context"
 	"fmt"
+	"sort"
 
 	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 
@@ -318,6 +319,8 @@ func (r *PrometheusReconciler) CreatePreset(cm kmapi.ClusterManager, p *monitori
 			}
 		} else {
 			// create ChartPreset
+			// Decide NS
+
 			err2 := r.CreateProjectPreset(p, presetBytes)
 			if err2 != nil {
 				return err2
@@ -328,6 +331,32 @@ func (r *PrometheusReconciler) CreatePreset(cm kmapi.ClusterManager, p *monitori
 
 	// create ClusterChartPreset
 	return r.CreateClusterPreset(presetBytes)
+}
+
+func (r *PrometheusReconciler) NamespaceForPreset(prom *monitoringv1.Prometheus) (string, error) {
+	ls := prom.Spec.ServiceMonitorNamespaceSelector
+	if ls.MatchLabels == nil {
+		ls.MatchLabels = make(map[string]string)
+	}
+	ls.MatchLabels[clustermeta.LabelKeyRancherHelmProjectOperated] = "true"
+	sel, err := metav1.LabelSelectorAsSelector(ls)
+	if err != nil {
+		return "", err
+	}
+
+	var nsList core.NamespaceList
+	err = r.kc.List(context.TODO(), &nsList, client.MatchingLabelsSelector{Selector: sel})
+	if err != nil {
+		return "", err
+	}
+	namespaces := nsList.Items
+	if len(namespaces) == 0 {
+		return "", fmt.Errorf("failed to select AppBinding namespace for Prometheus %s/%s", prom.Namespace, prom.Name)
+	}
+	sort.Slice(namespaces, func(i, j int) bool {
+		return namespaces[i].CreationTimestamp.Before(&namespaces[j].CreationTimestamp)
+	})
+	return namespaces[0].Name, nil
 }
 
 func (r *PrometheusReconciler) CreateClusterPreset(presetBytes []byte) error {
@@ -357,11 +386,16 @@ func (r *PrometheusReconciler) CreateClusterPreset(presetBytes []byte) error {
 }
 
 func (r *PrometheusReconciler) CreateProjectPreset(p *monitoringv1.Prometheus, presetBytes []byte) error {
+	ns, err := r.NamespaceForPreset(p)
+	if err != nil {
+		return err
+	}
+
 	cp := chartsapi.ChartPreset{
 		TypeMeta: metav1.TypeMeta{},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      presetsMonitoring,
-			Namespace: p.Namespace,
+			Namespace: ns,
 		},
 	}
 	vt, err := cu.CreateOrPatch(context.TODO(), r.kc, &cp, func(in client.Object, createOp bool) client.Object {
