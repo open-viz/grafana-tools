@@ -112,11 +112,6 @@ func (r *Storage) appNamespace(app *kmapi.ObjectReference, vars []uiapi.Dashboar
 		return app.Namespace
 	}
 	for _, v := range vars {
-		if v.Type == uiapi.DashboardVarTypeSource && v.Name == "app_namespace" {
-			return v.Value
-		}
-	}
-	for _, v := range vars {
 		if v.Type == uiapi.DashboardVarTypeSource && v.Name == "namespace" {
 			return v.Value
 		}

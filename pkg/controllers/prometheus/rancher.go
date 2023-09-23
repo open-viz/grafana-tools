@@ -278,9 +278,9 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(key types.NamespacedNam
 	pcfg.BearerToken = string(tokenData)
 	pcfg.TLS.Ca = string(caData)
 
-	if savt == kutil.VerbCreated ||
+	if (savt == kutil.VerbCreated ||
 		rolevt == kutil.VerbCreated ||
-		rbvt == kutil.VerbCreated {
+		rbvt == kutil.VerbCreated) && r.bc != nil {
 
 		var projectId string
 		if !isDefault {
@@ -455,14 +455,14 @@ func (r *PrometheusReconciler) GeneratePresetForPrometheus(p monitoringv1.Promet
 	preset.Spec.Monitoring.Agent = string(mona.AgentPrometheusOperator)
 	svcmonLabels, ok := meta_util.LabelsForLabelSelector(p.Spec.ServiceMonitorSelector)
 	if !ok {
-		klog.Warningln("Prometheus %s/%s uses match expressions in ServiceMonitorSelector", p.Namespace, p.Name)
+		klog.Warningf("Prometheus %s/%s uses match expressions in ServiceMonitorSelector", p.Namespace, p.Name)
 	}
 	preset.Spec.Monitoring.ServiceMonitor.Labels = svcmonLabels
 
 	preset.Form.Alert.Enabled = mona.SeverityFlagCritical
 	ruleLabels, ok := meta_util.LabelsForLabelSelector(p.Spec.RuleSelector)
 	if !ok {
-		klog.Warningln("Prometheus %s/%s uses match expressions in RuleSelector", p.Namespace, p.Name)
+		klog.Warningf("Prometheus %s/%s uses match expressions in RuleSelector", p.Namespace, p.Name)
 	}
 	preset.Form.Alert.Labels = ruleLabels
 

@@ -31,6 +31,7 @@ import (
 	servicemonitorcontroller "go.openviz.dev/grafana-tools/pkg/controllers/servicemonitor"
 	dashgroupstorage "go.openviz.dev/grafana-tools/pkg/registry/ui/dashboardgroup"
 
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -67,7 +68,7 @@ func init() {
 	uiinstall.Install(Scheme)
 	openvizinstall.Install(Scheme)
 	utilruntime.Must(clientgoscheme.AddToScheme(Scheme))
-	utilruntime.Must(appcatalogapi.AddToScheme(Scheme))
+	utilruntime.Must(monitoringv1.AddToScheme(Scheme))
 	utilruntime.Must(appcatalogapi.AddToScheme(Scheme))
 	utilruntime.Must(chartsapi.AddToScheme(Scheme))
 
