@@ -38,31 +38,37 @@ type GrafanaDatasourceResponse struct {
 }
 
 type Client struct {
-	url   string
-	token string
+	baseURL string
+	token   string
 }
 
 func NewClient(baseURL, token string) (*Client, error) {
-	u, err := registerAPIEndpoint(baseURL)
-	if err != nil {
-		return nil, err
-	}
 	return &Client{
-		url:   u,
-		token: token,
+		baseURL: baseURL,
+		token:   token,
 	}, nil
 }
 
 const (
-	registerAPIPath = "api/v1/FIX_IT____________"
+	registerAPIPath   = "api/v1/trickster/register"
+	unregisterAPIPath = "api/v1/trickster/unregister"
 )
 
-func registerAPIEndpoint(override ...string) (string, error) {
-	u, err := info.APIServerAddress(override...)
+func (c *Client) registerAPIEndpoint() (string, error) {
+	u, err := info.APIServerAddress(c.baseURL)
 	if err != nil {
 		return "", err
 	}
 	u.Path = path.Join(u.Path, registerAPIPath)
+	return u.String(), nil
+}
+
+func (c *Client) unregisterAPIEndpoint() (string, error) {
+	u, err := info.APIServerAddress(c.baseURL)
+	if err != nil {
+		return "", err
+	}
+	u.Path = path.Join(u.Path, unregisterAPIPath)
 	return u.String(), nil
 }
 
@@ -79,7 +85,11 @@ func (c *Client) Register(ctx mona.PrometheusContext, cfg mona.PrometheusConfig)
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, c.url, bytes.NewReader(data))
+	url, err := c.registerAPIEndpoint()
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
 	if err != nil {
 		return nil, err
 	}
@@ -125,7 +135,11 @@ func (c *Client) Unregister(ctx mona.PrometheusContext) error {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodDelete, c.url, bytes.NewReader(data))
+	url, err := c.unregisterAPIEndpoint()
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
 	if err != nil {
 		return err
 	}
