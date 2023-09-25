@@ -127,7 +127,7 @@ func (r *AutoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	if !found || projectId == sysProjectId {
 		// find system prometheus and use that
 		for _, prom := range prometheuses {
-			if prom.Namespace == "cattle-monitoring-system" {
+			if prom.Namespace == clustermeta.NamespaceRancherMonitoring {
 				err = r.updateServiceMonitorLabels(prom, &svcMon)
 				if err != nil {
 					log.Error(err, "failed to apply label")
@@ -150,12 +150,15 @@ func (r *AutoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	}
 
 	for _, prom := range prometheuses {
-		var ns core.Namespace
-		if err := r.kc.Get(context.TODO(), client.ObjectKey{Name: prom.Namespace}, &ns); err != nil {
-			log.Error(err, "failed to get namespace", "ns", prom.Namespace)
+		if prom.Namespace == clustermeta.NamespaceRancherMonitoring {
+			continue
+		}
+
+		sel, err := metav1.LabelSelectorAsSelector(prom.Spec.ServiceMonitorNamespaceSelector)
+		if err != nil {
 			return ctrl.Result{}, err
 		}
-		if ns.Labels[clustermeta.LabelKeyRancherHelmProjectId] == helmProjectId {
+		if sel.Matches(labels.Set{clustermeta.LabelKeyRancherHelmProjectId: helmProjectId}) {
 			err := r.updateServiceMonitorLabels(prom, &svcMon)
 			if err != nil {
 				log.Error(err, "failed to apply label")

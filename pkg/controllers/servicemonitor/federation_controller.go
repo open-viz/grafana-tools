@@ -190,8 +190,8 @@ func (r *FederationReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 func IsDefaultPrometheus(prom *monitoringv1.Prometheus) bool {
 	expected := client.ObjectKey{
-		Namespace: "cattle-monitoring-system",
-		Name:      "rancher-monitoring-prometheus",
+		Namespace: clustermeta.NamespaceRancherMonitoring,
+		Name:      clustermeta.PrometheusRancherMonitoring,
 	}
 	pk := client.ObjectKeyFromObject(prom)
 	return pk == expected

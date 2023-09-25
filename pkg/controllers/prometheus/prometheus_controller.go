@@ -19,7 +19,6 @@ package prometheus
 import (
 	"context"
 	"fmt"
-	"sort"
 
 	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 
@@ -30,7 +29,6 @@ import (
 	rbac "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
@@ -105,7 +103,7 @@ func (r *PrometheusReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	key := client.ObjectKeyFromObject(&prom)
-	isDefault, err := clustermeta.IsDefault(r.kc, cm, gvk, key)
+	isDefault, err := r.IsDefault(cm, gvk, key)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -113,7 +111,7 @@ func (r *PrometheusReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	if prom.DeletionTimestamp != nil {
 		var projectId string
 		if !isDefault {
-			_, projectId, err = r.NamespaceForPreset(&prom)
+			_, projectId, err = r.NamespaceForProjectSettings(&prom)
 			if err != nil {
 				return ctrl.Result{}, err
 			}
@@ -154,6 +152,14 @@ func (r *PrometheusReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	return ctrl.Result{}, nil
+}
+
+func (r *PrometheusReconciler) IsDefault(cm kmapi.ClusterManager, gvk schema.GroupVersionKind, key types.NamespacedName) (bool, error) {
+	if cm.ManagedByRancher() {
+		return key.Namespace == clustermeta.NamespaceRancherMonitoring &&
+			key.Name == clustermeta.PrometheusRancherMonitoring, nil
+	}
+	return clustermeta.IsSingletonResource(r.kc, gvk, key)
 }
 
 func (r *PrometheusReconciler) findServiceForPrometheus(key types.NamespacedName) (*core.Service, error) {
@@ -372,7 +378,7 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(cm kmapi.ClusterManager
 
 		var projectId string
 		if !isDefault {
-			_, projectId, err = r.NamespaceForPreset(prom)
+			_, projectId, err = r.NamespaceForProjectSettings(prom)
 			if err != nil {
 				return err
 			}
@@ -437,45 +443,30 @@ func (r *PrometheusReconciler) CreatePreset(cm kmapi.ClusterManager, p *monitori
 	return r.CreateClusterPreset(presetBytes)
 }
 
-func (r *PrometheusReconciler) NamespaceForPreset(prom *monitoringv1.Prometheus) (ns string, projectId string, err error) {
-	/*
-		field.cattle.io/projectId=p-tkgpc
-		helm.cattle.io/helm-project-operated=true
-		helm.cattle.io/projectId=p-tkgpc
-	*/
-	ls := prom.Spec.ServiceMonitorNamespaceSelector
-	if ls.MatchLabels == nil {
-		ls.MatchLabels = make(map[string]string)
+func (r *PrometheusReconciler) NamespaceForProjectSettings(prom *monitoringv1.Prometheus) (ns string, projectId string, err error) {
+	if prom.Namespace == clustermeta.NamespaceRancherMonitoring &&
+		prom.Name == clustermeta.PrometheusRancherMonitoring {
+		var found bool
+		projectId, found, err = clustermeta.GetSystemProjectId(r.kc)
+		if err != nil {
+			return
+		} else if !found {
+			err = fmt.Errorf("failed to detect system projectId for Prometheus %s/%s", prom.Namespace, prom.Name)
+			return
+		}
+	} else {
+		ls := prom.Spec.ServiceMonitorNamespaceSelector
+		if ls.MatchLabels == nil {
+			ls.MatchLabels = make(map[string]string)
+		}
+		projectId = ls.MatchLabels[clustermeta.LabelKeyRancherHelmProjectId]
+		if projectId == "" {
+			err = fmt.Errorf("expected %s label in Prometheus %s/%s  spec.serviceMonitorNamespaceSelector",
+				clustermeta.LabelKeyRancherHelmProjectId, prom.Namespace, prom.Name)
+			return
+		}
 	}
-	projectId = ls.MatchLabels[clustermeta.LabelKeyRancherHelmProjectId]
-	if projectId == "" {
-		err = fmt.Errorf("expected %s label in Prometheus %s/%s  spec.serviceMonitorNamespaceSelector",
-			clustermeta.LabelKeyRancherHelmProjectId, prom.Namespace, prom.Name)
-		return
-	}
-	ls.MatchLabels[clustermeta.LabelKeyRancherFieldProjectId] = projectId
-	ls.MatchLabels[clustermeta.LabelKeyRancherHelmProjectOperated] = "true"
-
-	var sel labels.Selector
-	sel, err = metav1.LabelSelectorAsSelector(ls)
-	if err != nil {
-		return
-	}
-
-	var nsList core.NamespaceList
-	err = r.kc.List(context.TODO(), &nsList, client.MatchingLabelsSelector{Selector: sel})
-	if err != nil {
-		return
-	}
-	namespaces := nsList.Items
-	if len(namespaces) == 0 {
-		err = fmt.Errorf("failed to select AppBinding namespace for Prometheus %s/%s", prom.Namespace, prom.Name)
-		return
-	}
-	sort.Slice(namespaces, func(i, j int) bool {
-		return namespaces[i].CreationTimestamp.Before(&namespaces[j].CreationTimestamp)
-	})
-	ns = namespaces[0].Name
+	ns = fmt.Sprintf("cattle-project-%s", projectId)
 	return
 }
 
@@ -506,7 +497,7 @@ func (r *PrometheusReconciler) CreateClusterPreset(presetBytes []byte) error {
 }
 
 func (r *PrometheusReconciler) CreateProjectPreset(p *monitoringv1.Prometheus, presetBytes []byte) error {
-	ns, _, err := r.NamespaceForPreset(p)
+	ns, _, err := r.NamespaceForProjectSettings(p)
 	if err != nil {
 		return err
 	}
