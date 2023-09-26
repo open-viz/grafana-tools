@@ -28,9 +28,9 @@ require (
 	k8s.io/client-go v0.25.4
 	k8s.io/klog/v2 v2.80.1
 	kmodules.xyz/authorizer v0.25.1
-	kmodules.xyz/client-go v0.25.35-0.20230925195212-e59241c267b5
+	kmodules.xyz/client-go v0.25.37
 	kmodules.xyz/custom-resources v0.25.2
-	kmodules.xyz/monitoring-agent-api v0.25.4
+	kmodules.xyz/monitoring-agent-api v0.25.5-0.20230924022404-64f257dc270b
 	kmodules.xyz/resource-metadata v0.17.18
 	sigs.k8s.io/controller-runtime v0.13.1
 	x-helm.dev/apimachinery v0.0.11
@@ -180,6 +180,8 @@ replace (
 	github.com/Masterminds/sprig/v3 => github.com/gomodules/sprig/v3 v3.2.3-0.20220405051441-0a8a99bac1b8
 	github.com/imdario/mergo => github.com/imdario/mergo v0.3.6
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.3.0
+	k8s.io/apiserver => github.com/kmodules/apiserver v0.25.2-0.20230817060727-aa2afd31b825
+	k8s.io/kubernetes => github.com/kmodules/kubernetes v1.26.0-alpha.0.0.20220917022409-54ac9f3f1315
 	sigs.k8s.io/controller-runtime => github.com/kmodules/controller-runtime v0.13.1-0.20230725210630-f8273f9c4412
 )
 
