@@ -180,6 +180,7 @@ replace (
 	github.com/Masterminds/sprig/v3 => github.com/gomodules/sprig/v3 v3.2.3-0.20220405051441-0a8a99bac1b8
 	github.com/imdario/mergo => github.com/imdario/mergo v0.3.6
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.3.0
+	sigs.k8s.io/controller-runtime => github.com/kmodules/controller-runtime v0.13.1-0.20230725210630-f8273f9c4412
 )
 
 replace (
