@@ -33,7 +33,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/json"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
@@ -316,36 +315,7 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(cm kmapi.ClusterManager
 		return err
 	}
 
-	var caData, tokenData []byte
-	err = wait.PollImmediate(kutil.RetryInterval, kutil.ReadinessTimeout, func() (done bool, err error) {
-		var sacc core.ServiceAccount
-		err = r.kc.Get(context.TODO(), client.ObjectKeyFromObject(&sa), &sacc)
-		if apierrors.IsNotFound(err) {
-			return false, nil
-		} else if err != nil {
-			return false, err
-		}
-		if len(sacc.Secrets) == 0 {
-			return false, nil
-		}
-
-		skey := client.ObjectKey{
-			Namespace: sa.Namespace,
-			Name:      sacc.Secrets[0].Name,
-		}
-		var s core.Secret
-		err = r.kc.Get(context.TODO(), skey, &s)
-		if apierrors.IsNotFound(err) {
-			return false, nil
-		} else if err != nil {
-			return false, err
-		}
-
-		var caFound, tokenFound bool
-		caData, caFound = s.Data["ca.crt"]
-		tokenData, tokenFound = s.Data["token"]
-		return caFound && tokenFound, nil
-	})
+	s, err := cu.GetServiceAccountTokenSecret(r.kc, client.ObjectKeyFromObject(&sa))
 	if err != nil {
 		return err
 	}
@@ -369,13 +339,10 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(cm kmapi.ClusterManager
 	pcfg.BasicAuth = mona.BasicAuth{}
 	pcfg.TLS.Cert = ""
 	pcfg.TLS.Key = ""
-	pcfg.BearerToken = string(tokenData)
-	pcfg.TLS.Ca = string(caData)
+	pcfg.BearerToken = string(s.Data["token"])
+	pcfg.TLS.Ca = string(s.Data["ca.crt"])
 
-	if (savt == kutil.VerbCreated ||
-		rolevt == kutil.VerbCreated ||
-		rbvt == kutil.VerbCreated) && r.bc != nil {
-
+	if r.bc != nil && sa.Annotations[registeredKey] != "true" {
 		var projectId string
 		if !isDefault {
 			_, projectId, err = r.NamespaceForProjectSettings(prom)
@@ -393,22 +360,39 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(cm kmapi.ClusterManager
 		}
 
 		if isDefault {
-			// create Prometheus AppBinding
-			vt, err := r.CreatePrometheusAppBinding(prom, svc)
+			_, err := r.CreatePrometheusAppBinding(prom, svc)
 			if err != nil {
 				return err
 			}
-			if vt == kutil.VerbCreated {
-				// create Grafana AppBinding
-				return r.CreateGrafanaAppBinding(key, resp)
+
+			err = r.CreateGrafanaAppBinding(key, resp)
+			if err != nil {
+				return err
 			}
 		}
+
+		savt, err = cu.CreateOrPatch(context.TODO(), r.kc, &sa, func(in client.Object, createOp bool) client.Object {
+			obj := in.(*core.ServiceAccount)
+			obj.Annotations = meta_util.OverwriteKeys(obj.Annotations, map[string]string{
+				registeredKey: "true",
+			})
+			return obj
+		})
+		if err != nil {
+			return err
+		}
+		klog.Infof("%s service account %s/%s with %s annotation", savt, sa.Namespace, sa.Name, registeredKey)
 	}
 
 	return nil
 }
 
-const presetsMonitoring = "monitoring-presets"
+const (
+	registeredKey        = mona.GroupName + "/registered"
+	presetsMonitoring    = "monitoring-presets"
+	appBindingPrometheus = "default-prometheus"
+	appBindingGrafana    = "default-grafana"
+)
 
 var defaultPresetsLabels = map[string]string{
 	"charts.x-helm.dev/is-default-preset": "true",
@@ -552,7 +536,7 @@ func (r *PrometheusReconciler) CreatePrometheusAppBinding(p *monitoringv1.Promet
 	ab := appcatalog.AppBinding{
 		TypeMeta: metav1.TypeMeta{},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "default-prometheus",
+			Name:      appBindingPrometheus,
 			Namespace: p.Namespace,
 		},
 	}
@@ -600,11 +584,10 @@ func (r *PrometheusReconciler) CreatePrometheusAppBinding(p *monitoringv1.Promet
 	return vt, err
 }
 
-func (r *PrometheusReconciler) CreateGrafanaAppBinding(key types.NamespacedName, config *GrafanaDatasourceResponse) error {
+func (r *PrometheusReconciler) CreateGrafanaAppBinding(key types.NamespacedName, resp *GrafanaDatasourceResponse) error {
 	ab := appcatalog.AppBinding{
-		TypeMeta: metav1.TypeMeta{},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "default-grafana",
+			Name:      appBindingGrafana,
 			Namespace: key.Namespace,
 		},
 	}
@@ -620,7 +603,7 @@ func (r *PrometheusReconciler) CreateGrafanaAppBinding(key types.NamespacedName,
 		obj.Spec.Type = "Grafana"
 		obj.Spec.AppRef = nil
 		obj.Spec.ClientConfig = appcatalog.ClientConfig{
-			URL: pointer.StringP(config.Grafana.URL),
+			URL: pointer.StringP(resp.Grafana.URL),
 			//Service: &appcatalog.ServiceReference{
 			//	Scheme:    "http",
 			//	Namespace: svc.Namespace,
@@ -638,9 +621,12 @@ func (r *PrometheusReconciler) CreateGrafanaAppBinding(key types.NamespacedName,
 		}
 
 		params := openvizapi.GrafanaConfiguration{
-			TypeMeta:   metav1.TypeMeta{},
-			Datasource: config.Datasource,
-			FolderID:   config.FolderID,
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "GrafanaConfiguration",
+				APIVersion: openvizapi.SchemeGroupVersion.String(),
+			},
+			Datasource: resp.Datasource,
+			FolderID:   resp.FolderID,
 		}
 		paramBytes, err := json.Marshal(params)
 		if err != nil {
@@ -673,7 +659,7 @@ func (r *PrometheusReconciler) CreateGrafanaAppBinding(key types.NamespacedName,
 			obj.OwnerReferences = []metav1.OwnerReference{*ref}
 
 			obj.StringData = map[string]string{
-				"token": config.Grafana.BearerToken,
+				"token": resp.Grafana.BearerToken,
 			}
 
 			return obj

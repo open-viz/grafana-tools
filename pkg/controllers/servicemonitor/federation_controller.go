@@ -90,8 +90,33 @@ func (r *FederationReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, nil
 	}
 
-	if !clustermeta.IsRancherManaged(r.kc.RESTMapper()) {
+	var promList monitoringv1.PrometheusList
+	if err := r.kc.List(context.TODO(), &promList); err != nil {
+		log.Error(err, "unable to list Prometheus")
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+	prometheuses := promList.Items
+	if len(prometheuses) == 0 {
 		return ctrl.Result{}, nil
+	}
+	if prom, err := HasProm(r.kc, &svcMon, prometheuses); err != nil || prom != nil {
+		return ctrl.Result{}, err
+	}
+
+	sort.Slice(prometheuses, func(i, j int) bool {
+		if prometheuses[i].Namespace != prometheuses[j].Namespace {
+			return prometheuses[i].Namespace < prometheuses[j].Namespace
+		}
+		return prometheuses[i].Name < prometheuses[j].Name
+	})
+
+	if !clustermeta.IsRancherManaged(r.kc.RESTMapper()) {
+		// non rancher
+		err := r.updateServiceMonitorLabels(prometheuses[0], &svcMon)
+		if err != nil {
+			log.Error(err, "failed to apply label")
+		}
+		return ctrl.Result{}, err
 	}
 
 	// services
@@ -134,12 +159,6 @@ func (r *FederationReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 			}
 			srcSecrets = append(srcSecrets, srcSecret)
 		}
-	}
-
-	var promList monitoringv1.PrometheusList
-	if err := r.kc.List(context.TODO(), &promList); err != nil {
-		log.Error(err, "unable to list Prometheus")
-		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
 	var errList []error

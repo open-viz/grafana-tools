@@ -149,8 +149,6 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 		LeaderElection:         false,
 		LeaderElectionID:       "5b87adeb.ui.openviz.dev",
 		ClientDisableCacheFor: []client.Object{
-			&core.Namespace{},
-			&core.Secret{},
 			&core.Pod{},
 		},
 	})
