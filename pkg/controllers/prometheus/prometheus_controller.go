@@ -326,7 +326,7 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(cm kmapi.ClusterManager
 				return err
 			}
 
-			err = r.CreateGrafanaAppBinding(key, resp)
+			err = r.CreateGrafanaAppBinding(prom, resp)
 			if err != nil {
 				return err
 			}
@@ -493,17 +493,24 @@ func (r *PrometheusReconciler) GeneratePresetForPrometheus(p monitoringv1.Promet
 	return preset
 }
 
-func (r *PrometheusReconciler) CreatePrometheusAppBinding(p *monitoringv1.Prometheus, svc *core.Service) (kutil.VerbType, error) {
+func (r *PrometheusReconciler) CreatePrometheusAppBinding(prom *monitoringv1.Prometheus, svc *core.Service) (kutil.VerbType, error) {
 	ab := appcatalog.AppBinding{
 		TypeMeta: metav1.TypeMeta{},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      appBindingPrometheus,
-			Namespace: p.Namespace,
+			Namespace: prom.Namespace,
 		},
 	}
 
 	vt, err := cu.CreateOrPatch(context.TODO(), r.kc, &ab, func(in client.Object, createOp bool) client.Object {
 		obj := in.(*appcatalog.AppBinding)
+
+		ref := metav1.NewControllerRef(prom, schema.GroupVersionKind{
+			Group:   monitoring.GroupName,
+			Version: monitoringv1.Version,
+			Kind:    "Prometheus",
+		})
+		obj.OwnerReferences = []metav1.OwnerReference{*ref}
 
 		if obj.Annotations == nil {
 			obj.Annotations = make(map[string]string)
@@ -514,8 +521,8 @@ func (r *PrometheusReconciler) CreatePrometheusAppBinding(p *monitoringv1.Promet
 		obj.Spec.AppRef = &kmapi.TypedObjectReference{
 			APIGroup:  monitoring.GroupName,
 			Kind:      "Prometheus",
-			Namespace: p.Namespace,
-			Name:      p.Name,
+			Namespace: prom.Namespace,
+			Name:      prom.Name,
 		}
 		obj.Spec.ClientConfig = appcatalog.ClientConfig{
 			// URL:                   nil,
@@ -545,16 +552,23 @@ func (r *PrometheusReconciler) CreatePrometheusAppBinding(p *monitoringv1.Promet
 	return vt, err
 }
 
-func (r *PrometheusReconciler) CreateGrafanaAppBinding(key types.NamespacedName, resp *GrafanaDatasourceResponse) error {
+func (r *PrometheusReconciler) CreateGrafanaAppBinding(prom *monitoringv1.Prometheus, resp *GrafanaDatasourceResponse) error {
 	ab := appcatalog.AppBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      appBindingGrafana,
-			Namespace: key.Namespace,
+			Namespace: prom.Namespace,
 		},
 	}
 
 	abvt, err := cu.CreateOrPatch(context.TODO(), r.kc, &ab, func(in client.Object, createOp bool) client.Object {
 		obj := in.(*appcatalog.AppBinding)
+
+		ref := metav1.NewControllerRef(prom, schema.GroupVersionKind{
+			Group:   monitoring.GroupName,
+			Version: monitoringv1.Version,
+			Kind:    "Prometheus",
+		})
+		obj.OwnerReferences = []metav1.OwnerReference{*ref}
 
 		if obj.Annotations == nil {
 			obj.Annotations = make(map[string]string)
@@ -605,7 +619,7 @@ func (r *PrometheusReconciler) CreateGrafanaAppBinding(key types.NamespacedName,
 		authSecret := core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      ab.Name + "-auth",
-				Namespace: key.Namespace,
+				Namespace: prom.Namespace,
 			},
 		}
 
