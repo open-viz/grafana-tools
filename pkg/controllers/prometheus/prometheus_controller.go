@@ -120,24 +120,29 @@ func (r *PrometheusReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 			}
 		}
 
-		_, err = cu.CreateOrPatch(context.TODO(), r.kc, &prom, func(in client.Object, createOp bool) client.Object {
+		vt, err := cu.CreateOrPatch(context.TODO(), r.kc, &prom, func(in client.Object, createOp bool) client.Object {
 			obj := in.(*monitoringv1.Prometheus)
-			prom.ObjectMeta = core_util.RemoveFinalizer(prom.ObjectMeta, mona.PrometheusKey)
+			obj.ObjectMeta = core_util.RemoveFinalizer(obj.ObjectMeta, mona.PrometheusKey)
 
 			return obj
 		})
-		return ctrl.Result{}, err
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		klog.Infof("%s Prometheus %s/%s to remove finalizer %s", vt, prom.Namespace, prom.Name, mona.PrometheusKey)
+		return ctrl.Result{}, nil
 	}
 
-	_, err = cu.CreateOrPatch(context.TODO(), r.kc, &prom, func(in client.Object, createOp bool) client.Object {
+	vt, err := cu.CreateOrPatch(context.TODO(), r.kc, &prom, func(in client.Object, createOp bool) client.Object {
 		obj := in.(*monitoringv1.Prometheus)
-		prom.ObjectMeta = core_util.AddFinalizer(prom.ObjectMeta, mona.PrometheusKey)
+		obj.ObjectMeta = core_util.AddFinalizer(obj.ObjectMeta, mona.PrometheusKey)
 
 		return obj
 	})
 	if err != nil {
 		return ctrl.Result{}, err
 	}
+	klog.Infof("%s Prometheus %s/%s to add finalizer %s", vt, prom.Namespace, prom.Name, mona.PrometheusKey)
 
 	if err := r.SetupClusterForPrometheus(cm, &prom, isDefault); err != nil {
 		log.Error(err, "unable to setup Prometheus")
