@@ -99,10 +99,6 @@ func (r *FederationReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	if len(prometheuses) == 0 {
 		return ctrl.Result{}, nil
 	}
-	if prom, err := HasProm(r.kc, &svcMon, prometheuses); err != nil || prom != nil {
-		return ctrl.Result{}, err
-	}
-
 	sort.Slice(prometheuses, func(i, j int) bool {
 		if prometheuses[i].Namespace != prometheuses[j].Namespace {
 			return prometheuses[i].Namespace < prometheuses[j].Namespace
