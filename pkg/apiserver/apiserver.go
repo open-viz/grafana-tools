@@ -170,7 +170,6 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 	}
 
 	if err = promtehsucontroller.NewReconciler(
-		c.ExtraConfig.ClientConfig,
 		mgr.GetClient(),
 		bc,
 		cid,

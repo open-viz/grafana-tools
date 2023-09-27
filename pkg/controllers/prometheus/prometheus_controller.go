@@ -32,7 +32,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/json"
-	"k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
 	kmapi "kmodules.xyz/client-go/api/v1"
@@ -50,16 +49,14 @@ import (
 
 // PrometheusReconciler reconciles a Prometheus object
 type PrometheusReconciler struct {
-	cfg        *rest.Config
 	kc         client.Client
 	scheme     *runtime.Scheme
 	bc         *Client
 	clusterUID string
 }
 
-func NewReconciler(cfg *rest.Config, kc client.Client, bc *Client, clusterUID string) *PrometheusReconciler {
+func NewReconciler(kc client.Client, bc *Client, clusterUID string) *PrometheusReconciler {
 	return &PrometheusReconciler{
-		cfg:        cfg,
 		kc:         kc,
 		scheme:     kc.Scheme(),
 		bc:         bc,
@@ -295,7 +292,8 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(cm kmapi.ClusterManager
 			pcfg.Service.Port = fmt.Sprintf("%d", p.Port)
 		}
 	}
-	pcfg.URL = fmt.Sprintf("%s/api/v1/namespaces/%s/services/%s:%s:%s/proxy/", r.cfg.Host, pcfg.Service.Namespace, pcfg.Service.Scheme, pcfg.Service.Name, pcfg.Service.Port)
+	// pcfg.URL = fmt.Sprintf("%s/api/v1/namespaces/%s/services/%s:%s:%s/proxy/", r.cfg.Host, pcfg.Service.Namespace, pcfg.Service.Scheme, pcfg.Service.Name, pcfg.Service.Port)
+
 	// remove basic auth and client cert auth
 	pcfg.BasicAuth = mona.BasicAuth{}
 	pcfg.TLS.Cert = ""
