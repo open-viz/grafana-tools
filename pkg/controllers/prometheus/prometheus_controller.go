@@ -99,6 +99,11 @@ func (r *PrometheusReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	if prom.DeletionTimestamp != nil {
+		err := r.CleanupPreset(cm, &prom, isDefault)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+
 		var projectId string
 		if !isDefault {
 			_, projectId, err = r.NamespaceForProjectSettings(&prom)
@@ -364,26 +369,46 @@ func (r *PrometheusReconciler) CreatePreset(cm kmapi.ClusterManager, p *monitori
 		return err
 	}
 
-	if cm.ManagedByRancher() {
-		if isDefault {
-			// create ClusterChartPreset
-			err := r.CreateClusterPreset(presetBytes)
-			if err != nil {
-				return err
-			}
-		} else {
-			// create ChartPreset
-			// Decide NS
-			err2 := r.CreateProjectPreset(p, presetBytes)
-			if err2 != nil {
-				return err2
-			}
+	if cm.ManagedByRancher() && !isDefault {
+		return r.CreateProjectPreset(p, presetBytes)
+	}
+	return r.CreateClusterPreset(presetBytes)
+}
+
+func (r *PrometheusReconciler) CleanupPreset(cm kmapi.ClusterManager, p *monitoringv1.Prometheus, isDefault bool) error {
+	if cm.ManagedByRancher() && !isDefault {
+		ns, _, err := r.NamespaceForProjectSettings(p)
+		if err != nil {
+			return err
 		}
+
+		cp := chartsapi.ChartPreset{
+			TypeMeta: metav1.TypeMeta{},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      presetsMonitoring,
+				Namespace: ns,
+			},
+		}
+		err = r.kc.Delete(context.TODO(), &cp)
+		if err != nil {
+			return err
+		}
+		klog.Infof("deleted ChartPreset %s/%s", cp.Namespace, cp.Name)
 		return nil
 	}
 
-	// create ClusterChartPreset
-	return r.CreateClusterPreset(presetBytes)
+	ccp := chartsapi.ClusterChartPreset{
+		TypeMeta: metav1.TypeMeta{},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: presetsMonitoring,
+		},
+	}
+	err := r.kc.Delete(context.TODO(), &ccp)
+	if err != nil {
+		return err
+	}
+	klog.Infof("deleted ClusterChartPreset %s", ccp.Name)
+	return nil
 }
 
 func (r *PrometheusReconciler) NamespaceForProjectSettings(prom *monitoringv1.Prometheus) (ns string, projectId string, err error) {
