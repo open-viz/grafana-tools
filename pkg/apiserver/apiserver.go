@@ -49,7 +49,6 @@ import (
 	clustermeta "kmodules.xyz/client-go/cluster"
 	appcatalogapi "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
-	"kmodules.xyz/resource-metadata/client/clientset/versioned"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -172,7 +171,6 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 
 	if err = promtehsucontroller.NewReconciler(
 		c.ExtraConfig.ClientConfig,
-		versioned.NewForConfigOrDie(c.ExtraConfig.ClientConfig),
 		mgr.GetClient(),
 		bc,
 		cid,

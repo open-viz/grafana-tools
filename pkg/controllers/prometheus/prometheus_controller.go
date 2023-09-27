@@ -27,7 +27,6 @@ import (
 	"gomodules.xyz/pointer"
 	core "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -43,9 +42,6 @@ import (
 	meta_util "kmodules.xyz/client-go/meta"
 	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
-	rsapi "kmodules.xyz/resource-metadata/apis/meta/v1alpha1"
-	"kmodules.xyz/resource-metadata/apis/shared"
-	"kmodules.xyz/resource-metadata/client/clientset/versioned"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -55,17 +51,15 @@ import (
 // PrometheusReconciler reconciles a Prometheus object
 type PrometheusReconciler struct {
 	cfg        *rest.Config
-	rmc        versioned.Interface
 	kc         client.Client
 	scheme     *runtime.Scheme
 	bc         *Client
 	clusterUID string
 }
 
-func NewReconciler(cfg *rest.Config, rmc versioned.Interface, kc client.Client, bc *Client, clusterUID string) *PrometheusReconciler {
+func NewReconciler(cfg *rest.Config, kc client.Client, bc *Client, clusterUID string) *PrometheusReconciler {
 	return &PrometheusReconciler{
 		cfg:        cfg,
-		rmc:        rmc,
 		kc:         kc,
 		scheme:     kc.Scheme(),
 		bc:         bc,
@@ -162,50 +156,12 @@ func (r *PrometheusReconciler) IsDefault(cm kmapi.ClusterManager, gvk schema.Gro
 }
 
 func (r *PrometheusReconciler) findServiceForPrometheus(key types.NamespacedName) (*core.Service, error) {
-	q := &rsapi.ResourceQuery{
-		Request: &rsapi.ResourceQueryRequest{
-			Source: rsapi.SourceInfo{
-				Resource: kmapi.ResourceID{
-					Group:   monitoring.GroupName,
-					Version: monitoringv1.Version,
-					Kind:    "Prometheus",
-				},
-				Namespace: key.Namespace,
-				Name:      key.Name,
-			},
-			Target: &shared.ResourceLocator{
-				Ref: metav1.GroupKind{
-					Group: "",
-					Kind:  "Service",
-				},
-				Query: shared.ResourceQuery{
-					Type:    shared.GraphQLQuery,
-					ByLabel: kmapi.EdgeLabelExposedBy,
-				},
-			},
-			OutputFormat: rsapi.OutputFormatObject,
-		},
-		Response: nil,
-	}
-	var err error
-	q, err = r.rmc.MetaV1alpha1().ResourceQueries().Create(context.TODO(), q, metav1.CreateOptions{})
+	var svc core.Service
+	err := r.kc.Get(context.TODO(), key, &svc)
 	if err != nil {
 		return nil, err
 	}
-	var list core.ServiceList
-	err = json.Unmarshal(q.Response.Raw, &list)
-	if err != nil {
-		return nil, err
-	}
-	for _, svc := range list.Items {
-		if svc.Spec.ClusterIP != "None" {
-			return &svc, nil
-		}
-	}
-	return nil, apierrors.NewNotFound(schema.GroupResource{
-		Group:    "",
-		Resource: "services",
-	}, key.String())
+	return &svc, nil
 }
 
 const (
