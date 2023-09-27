@@ -241,9 +241,9 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(cm kmapi.ClusterManager
 	rbvt, err := cu.CreateOrPatch(context.TODO(), r.kc, &rb, func(in client.Object, createOp bool) client.Object {
 		obj := in.(*rbac.RoleBinding)
 		ref := metav1.NewControllerRef(prom, schema.GroupVersionKind{
-			Group:   rbac.GroupName,
-			Version: "v1",
-			Kind:    "Role",
+			Group:   monitoring.GroupName,
+			Version: monitoringv1.Version,
+			Kind:    "Prometheus",
 		})
 		obj.OwnerReferences = []metav1.OwnerReference{*ref}
 
