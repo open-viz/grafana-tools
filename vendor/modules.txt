@@ -23,15 +23,9 @@ github.com/Azure/go-autorest/logger
 # github.com/Azure/go-autorest/tracing v0.6.0
 ## explicit; go 1.12
 github.com/Azure/go-autorest/tracing
-# github.com/Masterminds/goutils v1.1.1
-## explicit
-github.com/Masterminds/goutils
 # github.com/Masterminds/semver/v3 v3.2.1
 ## explicit; go 1.18
 github.com/Masterminds/semver/v3
-# github.com/Masterminds/sprig/v3 v3.2.2 => github.com/gomodules/sprig/v3 v3.2.3-0.20220405051441-0a8a99bac1b8
-## explicit; go 1.17
-github.com/Masterminds/sprig/v3
 # github.com/NYTimes/gziphandler v1.1.1
 ## explicit; go 1.11
 github.com/NYTimes/gziphandler
@@ -60,9 +54,6 @@ github.com/cpuguy83/go-md2man/v2/md2man
 # github.com/davecgh/go-spew v1.1.1
 ## explicit
 github.com/davecgh/go-spew/spew
-# github.com/dustin/go-humanize v1.0.1-0.20220316001817-d5090ed65664
-## explicit; go 1.16
-github.com/dustin/go-humanize
 # github.com/emicklei/go-restful/v3 v3.10.2
 ## explicit; go 1.13
 github.com/emicklei/go-restful/v3
@@ -178,9 +169,6 @@ github.com/grpc-ecosystem/go-grpc-prometheus
 github.com/grpc-ecosystem/grpc-gateway/internal
 github.com/grpc-ecosystem/grpc-gateway/runtime
 github.com/grpc-ecosystem/grpc-gateway/utilities
-# github.com/huandu/xstrings v1.3.2
-## explicit; go 1.12
-github.com/huandu/xstrings
 # github.com/imdario/mergo v0.3.13 => github.com/imdario/mergo v0.3.6
 ## explicit
 github.com/imdario/mergo
@@ -207,15 +195,9 @@ github.com/mailru/easyjson/jwriter
 # github.com/matttproud/golang_protobuf_extensions v1.0.2
 ## explicit; go 1.9
 github.com/matttproud/golang_protobuf_extensions/pbutil
-# github.com/mitchellh/copystructure v1.2.0
-## explicit; go 1.15
-github.com/mitchellh/copystructure
 # github.com/mitchellh/mapstructure v1.5.0
 ## explicit; go 1.14
 github.com/mitchellh/mapstructure
-# github.com/mitchellh/reflectwalk v1.0.2
-## explicit
-github.com/mitchellh/reflectwalk
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
 ## explicit
 github.com/modern-go/concurrent
@@ -305,12 +287,6 @@ github.com/russross/blackfriday/v2
 # github.com/sergi/go-diff v1.2.0
 ## explicit; go 1.12
 github.com/sergi/go-diff/diffmatchpatch
-# github.com/shopspring/decimal v1.2.0
-## explicit; go 1.13
-github.com/shopspring/decimal
-# github.com/spf13/cast v1.5.0
-## explicit; go 1.18
-github.com/spf13/cast
 # github.com/spf13/cobra v1.6.1
 ## explicit; go 1.15
 github.com/spf13/cobra
@@ -467,18 +443,14 @@ go.uber.org/zap/zapcore
 go.uber.org/zap/zapgrpc
 # golang.org/x/crypto v0.13.0
 ## explicit; go 1.17
-golang.org/x/crypto/bcrypt
-golang.org/x/crypto/blowfish
 golang.org/x/crypto/cryptobyte
 golang.org/x/crypto/cryptobyte/asn1
 golang.org/x/crypto/internal/alias
 golang.org/x/crypto/internal/poly1305
 golang.org/x/crypto/nacl/secretbox
-golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/pkcs12
 golang.org/x/crypto/pkcs12/internal/rc2
 golang.org/x/crypto/salsa20/salsa
-golang.org/x/crypto/scrypt
 # golang.org/x/net v0.15.0
 ## explicit; go 1.17
 golang.org/x/net/context
@@ -550,19 +522,12 @@ golang.org/x/tools/internal/typeparams
 # gomodules.xyz/clock v0.0.0-20200817085942-06523dba733f
 ## explicit; go 1.14
 gomodules.xyz/clock
-# gomodules.xyz/encoding v0.0.7
-## explicit; go 1.17
-gomodules.xyz/encoding/json
 # gomodules.xyz/flags v0.1.3
 ## explicit; go 1.16
 gomodules.xyz/flags
 # gomodules.xyz/jsonpatch/v2 v2.4.0
 ## explicit; go 1.20
 gomodules.xyz/jsonpatch/v2
-# gomodules.xyz/jsonpath v0.0.2
-## explicit; go 1.16
-gomodules.xyz/jsonpath
-gomodules.xyz/jsonpath/third_party/forked/golang/template
 # gomodules.xyz/logs v0.0.7
 ## explicit; go 1.16
 gomodules.xyz/logs
@@ -1297,43 +1262,13 @@ kmodules.xyz/client-go/tools/clusterid
 kmodules.xyz/custom-resources/apis/appcatalog
 kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1
 kmodules.xyz/custom-resources/crds
-# kmodules.xyz/monitoring-agent-api v0.25.5-0.20230924022404-64f257dc270b
+# kmodules.xyz/monitoring-agent-api v0.25.5-0.20230928120235-789d2ae25b60
 ## explicit; go 1.18
 kmodules.xyz/monitoring-agent-api/api/v1
-# kmodules.xyz/offshoot-api v0.25.4
-## explicit; go 1.18
-kmodules.xyz/offshoot-api/api/v1
-# kmodules.xyz/resource-metadata v0.17.18
-## explicit; go 1.18
-kmodules.xyz/resource-metadata/apis/core/v1alpha1
-kmodules.xyz/resource-metadata/apis/meta
-kmodules.xyz/resource-metadata/apis/meta/v1alpha1
-kmodules.xyz/resource-metadata/apis/shared
-kmodules.xyz/resource-metadata/apis/ui
-kmodules.xyz/resource-metadata/apis/ui/v1alpha1
-kmodules.xyz/resource-metadata/client/clientset/versioned
-kmodules.xyz/resource-metadata/client/clientset/versioned/scheme
-kmodules.xyz/resource-metadata/client/clientset/versioned/typed/core/v1alpha1
-kmodules.xyz/resource-metadata/client/clientset/versioned/typed/meta/v1alpha1
-kmodules.xyz/resource-metadata/client/clientset/versioned/typed/ui/v1alpha1
-kmodules.xyz/resource-metadata/crds
-# kmodules.xyz/resource-metrics v0.25.2
-## explicit; go 1.18
-kmodules.xyz/resource-metrics
-kmodules.xyz/resource-metrics/api
-kmodules.xyz/resource-metrics/apps/v1
-kmodules.xyz/resource-metrics/batch/v1
-kmodules.xyz/resource-metrics/batch/v1beta1
-kmodules.xyz/resource-metrics/core/v1
-kmodules.xyz/resource-metrics/kubedb.com/v1alpha2
-kmodules.xyz/resource-metrics/kubevault.com/v1alpha2
 # sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.33
 ## explicit; go 1.17
 sigs.k8s.io/apiserver-network-proxy/konnectivity-client/pkg/client
 sigs.k8s.io/apiserver-network-proxy/konnectivity-client/proto/client
-# sigs.k8s.io/cli-utils v0.34.0
-## explicit; go 1.18
-sigs.k8s.io/cli-utils/pkg/kstatus/status
 # sigs.k8s.io/controller-runtime v0.13.1 => github.com/kmodules/controller-runtime v0.13.1-0.20230725210630-f8273f9c4412
 ## explicit; go 1.17
 sigs.k8s.io/controller-runtime
