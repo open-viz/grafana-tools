@@ -45,7 +45,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 // FederationReconciler reconciles a ServiceMonitor object
@@ -457,9 +456,9 @@ func UpsertEndpointPort(ports []core.EndpointPort, x core.EndpointPort) []core.E
 }
 
 // service -> []serviceMonitors
-func (r *FederationReconciler) ServiceMonitorsForService(obj client.Object) []reconcile.Request {
+func (r *FederationReconciler) ServiceMonitorsForService(ctx context.Context, obj client.Object) []reconcile.Request {
 	var list monitoringv1.ServiceMonitorList
-	err := r.kc.List(context.TODO(), &list, client.MatchingLabels{
+	err := r.kc.List(ctx, &list, client.MatchingLabels{
 		mona.PrometheusKey: mona.PrometheusValueFederated,
 	})
 	if err != nil {
@@ -486,10 +485,10 @@ func (r *FederationReconciler) ServiceMonitorsForService(obj client.Object) []re
 }
 
 // Prometheus -> serviceMonitor
-func ServiceMonitorsForPrometheus(kc client.Client, labels map[string]string) func(_ client.Object) []reconcile.Request {
-	return func(_ client.Object) []reconcile.Request {
+func ServiceMonitorsForPrometheus(kc client.Client, labels map[string]string) func(_ context.Context, _ client.Object) []reconcile.Request {
+	return func(ctx context.Context, _ client.Object) []reconcile.Request {
 		var list monitoringv1.ServiceMonitorList
-		err := kc.List(context.TODO(), &list, client.MatchingLabels(labels))
+		err := kc.List(ctx, &list, client.MatchingLabels(labels))
 		if err != nil {
 			klog.Error(err)
 			return nil
@@ -520,10 +519,10 @@ func (r *FederationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			return found && val == mona.PrometheusValueFederated
 		}))).
 		Watches(
-			&source.Kind{Type: &core.Service{}},
+			&core.Service{},
 			handler.EnqueueRequestsFromMapFunc(r.ServiceMonitorsForService)).
 		Watches(
-			&source.Kind{Type: &monitoringv1.Prometheus{}},
+			&monitoringv1.Prometheus{},
 			handler.EnqueueRequestsFromMapFunc(ServiceMonitorsForPrometheus(r.kc, map[string]string{
 				mona.PrometheusKey: mona.PrometheusValueFederated,
 			}))).

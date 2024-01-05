@@ -37,10 +37,12 @@ import (
 	"kmodules.xyz/client-go/tools/clusterid"
 	appcatalogapi "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 )
 
 const (
@@ -119,7 +121,7 @@ func (s *OperatorOptions) Complete() error {
 func (s OperatorOptions) Run(ctx context.Context) error {
 	klog.Infof("Starting binary version %s+%s ...", v.Version.Version, v.Version.CommitHash)
 
-	log.SetLogger(klogr.New())
+	log.SetLogger(klogr.New()) // nolint:staticcheck
 
 	cfg, err := clientcmd.BuildConfigFromFlags(s.MasterURL, s.KubeconfigPath)
 	if err != nil {
@@ -142,13 +144,14 @@ func (s OperatorOptions) Run(ctx context.Context) error {
 
 	mgr, err := manager.New(cfg, manager.Options{
 		Scheme:                 apiserver.Scheme,
-		MetricsBindAddress:     s.metricsAddr,
-		Port:                   0,
+		Metrics:                metricsserver.Options{BindAddress: s.metricsAddr},
 		HealthProbeBindAddress: s.probeAddr,
 		LeaderElection:         s.enableLeaderElection,
 		LeaderElectionID:       "f14948a0.grafana-operator.openviz.dev",
-		SyncPeriod:             &s.ResyncPeriod,
 		NewClient:              cu.NewClient,
+		Cache: cache.Options{
+			SyncPeriod: &s.ResyncPeriod,
+		},
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")

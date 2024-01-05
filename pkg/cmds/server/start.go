@@ -102,8 +102,14 @@ func (o *UIServerOptions) Config() (*apiserver.Config, error) {
 	serverConfig.OpenAPIConfig = genericapiserver.DefaultOpenAPIConfig(
 		uiapi.GetOpenAPIDefinitions,
 		openapi.NewDefinitionNamer(apiserver.Scheme))
-	serverConfig.OpenAPIConfig.Info.Title = "ui-server"
+	serverConfig.OpenAPIConfig.Info.Title = "grafana-webhook-server"
 	serverConfig.OpenAPIConfig.Info.Version = "v0.0.1"
+
+	serverConfig.OpenAPIV3Config = genericapiserver.DefaultOpenAPIV3Config(
+		uiapi.GetOpenAPIDefinitions,
+		openapi.NewDefinitionNamer(apiserver.Scheme))
+	serverConfig.OpenAPIV3Config.Info.Title = "grafana-webhook-server"
+	serverConfig.OpenAPIV3Config.Info.Version = "v0.0.1"
 
 	extraConfig := apiserver.ExtraConfig{
 		ClientConfig: serverConfig.ClientConfig,
