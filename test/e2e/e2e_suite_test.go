@@ -33,6 +33,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 )
 
 const (
@@ -63,15 +64,18 @@ var _ = BeforeSuite(func() {
 
 	mgr, err := manager.New(clientConfig, manager.Options{
 		Scheme:                 apiserver.Scheme,
-		MetricsBindAddress:     "",
-		Port:                   0,
+		Metrics:                metricsserver.Options{BindAddress: ""},
 		HealthProbeBindAddress: "",
 		LeaderElection:         false,
 		LeaderElectionID:       "5b87adeb.grafana.test.openviz.dev",
-		ClientDisableCacheFor: []client.Object{
-			&core.Namespace{},
-			&core.Secret{},
-			&core.Pod{},
+		Client: client.Options{
+			Cache: &client.CacheOptions{
+				DisableFor: []client.Object{
+					&core.Namespace{},
+					&core.Secret{},
+					&core.Pod{},
+				},
+			},
 		},
 	})
 	Expect(err).NotTo(HaveOccurred())

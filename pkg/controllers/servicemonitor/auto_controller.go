@@ -37,7 +37,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 // AutoReconciler reconciles a ServiceMonitor object
@@ -220,7 +219,7 @@ func (r *AutoReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			return found && val == mona.PrometheusValueAuto
 		}))).
 		Watches(
-			&source.Kind{Type: &monitoringv1.Prometheus{}},
+			&monitoringv1.Prometheus{},
 			handler.EnqueueRequestsFromMapFunc(ServiceMonitorsForPrometheus(r.kc, map[string]string{
 				mona.PrometheusKey: mona.PrometheusValueAuto,
 			}))).

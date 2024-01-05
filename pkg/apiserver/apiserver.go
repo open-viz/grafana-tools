@@ -52,6 +52,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	chartsapi "x-helm.dev/apimachinery/apis/charts/v1alpha1"
 )
 
@@ -138,17 +139,20 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 	}
 
 	// ctrl.SetLogger(...)
-	log.SetLogger(klogr.New())
+	log.SetLogger(klogr.New()) // nolint:staticcheck
 
 	mgr, err := manager.New(c.ExtraConfig.ClientConfig, manager.Options{
 		Scheme:                 Scheme,
-		MetricsBindAddress:     "",
-		Port:                   0,
+		Metrics:                metricsserver.Options{BindAddress: ""},
 		HealthProbeBindAddress: "",
 		LeaderElection:         false,
 		LeaderElectionID:       "5b87adeb.ui.openviz.dev",
-		ClientDisableCacheFor: []client.Object{
-			&core.Pod{},
+		Client: client.Options{
+			Cache: &client.CacheOptions{
+				DisableFor: []client.Object{
+					&core.Pod{},
+				},
+			},
 		},
 	})
 	if err != nil {

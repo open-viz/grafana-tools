@@ -46,7 +46,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 const (
@@ -155,16 +154,16 @@ func (r *GrafanaDashboardReconciler) handleSetDashboardError(ctx context.Context
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *GrafanaDashboardReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	appHandler := handler.EnqueueRequestsFromMapFunc(func(a client.Object) []reconcile.Request {
+	appHandler := handler.EnqueueRequestsFromMapFunc(func(ctx context.Context, a client.Object) []reconcile.Request {
 		var dashboardList openvizapi.GrafanaDashboardList
-		err := r.Client.List(context.TODO(), &dashboardList, client.InNamespace(a.GetNamespace()))
+		err := r.Client.List(ctx, &dashboardList, client.InNamespace(a.GetNamespace()))
 		if err != nil {
 			return nil
 		}
 
 		var req []reconcile.Request
 		for _, db := range dashboardList.Items {
-			ab, err := openvizapi.GetGrafana(context.TODO(), r.Client, db.Spec.GrafanaRef.WithNamespace(db.Namespace))
+			ab, err := openvizapi.GetGrafana(ctx, r.Client, db.Spec.GrafanaRef.WithNamespace(db.Namespace))
 			if err != nil {
 				return nil
 			}
@@ -180,7 +179,7 @@ func (r *GrafanaDashboardReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&openvizapi.GrafanaDashboard{}, builder.WithPredicates(predicate.NewPredicateFuncs(func(obj client.Object) bool {
 			return !meta_util.MustAlreadyReconciled(obj)
 		}))).
-		Watches(&source.Kind{Type: &appcatalog.AppBinding{}}, appHandler).
+		Watches(&appcatalog.AppBinding{}, appHandler).
 		Complete(r)
 }
 
