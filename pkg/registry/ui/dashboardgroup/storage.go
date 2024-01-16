@@ -56,6 +56,7 @@ var (
 	_ rest.Scoper                   = &Storage{}
 	_ rest.Storage                  = &Storage{}
 	_ rest.Creater                  = &Storage{}
+	_ rest.SingularNameProvider     = &Storage{}
 )
 
 func NewStorage(kc client.Client, a authorizer.Authorizer) *Storage {
@@ -68,6 +69,10 @@ func NewStorage(kc client.Client, a authorizer.Authorizer) *Storage {
 
 func (r *Storage) GroupVersionKind(_ schema.GroupVersion) schema.GroupVersionKind {
 	return uiapi.SchemeGroupVersion.WithKind(uiapi.ResourceKindDashboardGroup)
+}
+
+func (r *Storage) GetSingularName() string {
+	return strings.ToLower(uiapi.ResourceKindDashboardGroup)
 }
 
 func (r *Storage) NamespaceScoped() bool {

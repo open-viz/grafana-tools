@@ -13,7 +13,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/zeebo/xxh3 v1.0.2
 	go.bytebuilders.dev/license-verifier v0.13.4
-	go.openviz.dev/apimachinery v0.0.7-0.20240105050246-85dfcd1152cb
+	go.openviz.dev/apimachinery v0.0.7
 	go.openviz.dev/grafana-sdk v0.0.4
 	golang.org/x/text v0.14.0
 	gomodules.xyz/logs v0.0.7
@@ -28,7 +28,7 @@ require (
 	k8s.io/client-go v0.29.0
 	k8s.io/klog/v2 v2.110.1
 	kmodules.xyz/authorizer v0.29.0
-	kmodules.xyz/client-go v0.29.5
+	kmodules.xyz/client-go v0.29.6
 	kmodules.xyz/custom-resources v0.29.0
 	kmodules.xyz/monitoring-agent-api v0.29.0
 	sigs.k8s.io/controller-runtime v0.16.3
