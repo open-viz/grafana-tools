@@ -31,8 +31,10 @@ import (
 	servicemonitorcontroller "go.openviz.dev/grafana-tools/pkg/controllers/servicemonitor"
 	dashgroupstorage "go.openviz.dev/grafana-tools/pkg/registry/ui/dashboardgroup"
 
+	"github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	core "k8s.io/api/core/v1"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -46,9 +48,11 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/klog/v2/klogr"
 	"kmodules.xyz/authorizer"
+	"kmodules.xyz/client-go/apiextensions"
 	clustermeta "kmodules.xyz/client-go/cluster"
 	appcatalogapi "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -71,6 +75,7 @@ func init() {
 	utilruntime.Must(monitoringv1.AddToScheme(Scheme))
 	utilruntime.Must(appcatalogapi.AddToScheme(Scheme))
 	utilruntime.Must(chartsapi.AddToScheme(Scheme))
+	utilruntime.Must(apiextensionsv1.AddToScheme(Scheme))
 
 	// we need to add the options to empty v1
 	// TODO fix the server code to avoid this
@@ -141,7 +146,7 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 	// ctrl.SetLogger(...)
 	log.SetLogger(klogr.New()) // nolint:staticcheck
 
-	mgr, err := manager.New(c.ExtraConfig.ClientConfig, manager.Options{
+	mgr, err := ctrl.NewManager(c.ExtraConfig.ClientConfig, ctrl.Options{
 		Scheme:                 Scheme,
 		Metrics:                metricsserver.Options{BindAddress: ""},
 		HealthProbeBindAddress: "",
@@ -173,30 +178,50 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 		}
 	}
 
-	if err = promtehsucontroller.NewReconciler(
-		mgr.GetClient(),
-		bc,
-		cid,
-	).SetupWithManager(mgr); err != nil {
-		klog.Error(err, "unable to create controller", "controller", "Prometheus")
+	if err := apiextensions.NewReconciler(ctx, mgr).SetupWithManager(mgr); err != nil {
+		klog.Error(err, "unable to create controller controller CustomResourceReconciler")
 		os.Exit(1)
 	}
 
-	if err = servicemonitorcontroller.NewFederationReconciler(
-		c.ExtraConfig.ClientConfig,
-		mgr.GetClient(),
-	).SetupWithManager(mgr); err != nil {
-		klog.Error(err, "unable to create controller", " federation controller", "ServiceMonitor")
-		os.Exit(1)
-	}
+	apiextensions.RegisterSetup(schema.GroupKind{
+		Group: monitoring.GroupName,
+		Kind:  monitoringv1.PrometheusesKind,
+	}, func(ctx context.Context, mgr ctrl.Manager) {
+		if err = promtehsucontroller.NewReconciler(
+			mgr.GetClient(),
+			bc,
+			cid,
+		).SetupWithManager(mgr); err != nil {
+			klog.Error(err, "unable to create controller", "controller", "Prometheus")
+			os.Exit(1)
+		}
+	})
 
-	if err = servicemonitorcontroller.NewAutoReconciler(
-		c.ExtraConfig.ClientConfig,
-		mgr.GetClient(),
-	).SetupWithManager(mgr); err != nil {
-		klog.Error(err, "unable to create controller", "auto controller", "ServiceMonitor")
-		os.Exit(1)
-	}
+	apiextensions.RegisterSetup(schema.GroupKind{
+		Group: monitoring.GroupName,
+		Kind:  monitoringv1.ServiceMonitorsKind,
+	}, func(ctx context.Context, mgr ctrl.Manager) {
+		if err = servicemonitorcontroller.NewFederationReconciler(
+			c.ExtraConfig.ClientConfig,
+			mgr.GetClient(),
+		).SetupWithManager(mgr); err != nil {
+			klog.Error(err, "unable to create controller", " federation controller", "ServiceMonitor")
+			os.Exit(1)
+		}
+	})
+
+	apiextensions.RegisterSetup(schema.GroupKind{
+		Group: monitoring.GroupName,
+		Kind:  monitoringv1.ServiceMonitorsKind,
+	}, func(ctx context.Context, mgr ctrl.Manager) {
+		if err = servicemonitorcontroller.NewAutoReconciler(
+			c.ExtraConfig.ClientConfig,
+			mgr.GetClient(),
+		).SetupWithManager(mgr); err != nil {
+			klog.Error(err, "unable to create controller", "auto controller", "ServiceMonitor")
+			os.Exit(1)
+		}
+	})
 
 	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &appcatalogapi.AppBinding{}, mona.DefaultGrafanaKey, func(rawObj client.Object) []string {
 		app := rawObj.(*appcatalogapi.AppBinding)

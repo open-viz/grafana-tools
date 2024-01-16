@@ -408,7 +408,7 @@ go.opentelemetry.io/proto/otlp/collector/trace/v1
 go.opentelemetry.io/proto/otlp/common/v1
 go.opentelemetry.io/proto/otlp/resource/v1
 go.opentelemetry.io/proto/otlp/trace/v1
-# go.openviz.dev/apimachinery v0.0.7-0.20240105050246-85dfcd1152cb
+# go.openviz.dev/apimachinery v0.0.7
 ## explicit; go 1.21.5
 go.openviz.dev/apimachinery/apis/openviz
 go.openviz.dev/apimachinery/apis/openviz/install
@@ -1325,7 +1325,7 @@ kmodules.xyz/authorizer/apiserver
 kmodules.xyz/authorizer/rbac
 kmodules.xyz/authorizer/rbac/helpers
 kmodules.xyz/authorizer/rbac/validation
-# kmodules.xyz/client-go v0.29.5
+# kmodules.xyz/client-go v0.29.6
 ## explicit; go 1.21.5
 kmodules.xyz/client-go
 kmodules.xyz/client-go/api/v1
