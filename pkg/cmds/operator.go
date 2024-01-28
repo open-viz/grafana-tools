@@ -28,7 +28,6 @@ import (
 )
 
 func NewCmdOperator(ctx context.Context) *cobra.Command {
-	// o := server.NewOperatorOptions()
 	o := server.NewOperatorOptions()
 
 	cmd := &cobra.Command{

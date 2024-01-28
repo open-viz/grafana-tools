@@ -201,24 +201,19 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 		Group: monitoring.GroupName,
 		Kind:  monitoringv1.ServiceMonitorsKind,
 	}, func(ctx context.Context, mgr ctrl.Manager) {
-		if err = servicemonitorcontroller.NewFederationReconciler(
-			c.ExtraConfig.ClientConfig,
-			mgr.GetClient(),
-		).SetupWithManager(mgr); err != nil {
-			klog.Error(err, "unable to create controller", " federation controller", "ServiceMonitor")
-			os.Exit(1)
-		}
-	})
-
-	apiextensions.RegisterSetup(schema.GroupKind{
-		Group: monitoring.GroupName,
-		Kind:  monitoringv1.ServiceMonitorsKind,
-	}, func(ctx context.Context, mgr ctrl.Manager) {
 		if err = servicemonitorcontroller.NewAutoReconciler(
 			c.ExtraConfig.ClientConfig,
 			mgr.GetClient(),
 		).SetupWithManager(mgr); err != nil {
 			klog.Error(err, "unable to create controller", "auto controller", "ServiceMonitor")
+			os.Exit(1)
+		}
+
+		if err = servicemonitorcontroller.NewFederationReconciler(
+			c.ExtraConfig.ClientConfig,
+			mgr.GetClient(),
+		).SetupWithManager(mgr); err != nil {
+			klog.Error(err, "unable to create controller", " federation controller", "ServiceMonitor")
 			os.Exit(1)
 		}
 	})
