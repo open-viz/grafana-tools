@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
+	"go.openviz.dev/grafana-tools/pkg/detector"
 
 	"github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
@@ -53,14 +54,16 @@ type PrometheusReconciler struct {
 	scheme     *runtime.Scheme
 	bc         *Client
 	clusterUID string
+	d          detector.Detector
 }
 
-func NewReconciler(kc client.Client, bc *Client, clusterUID string) *PrometheusReconciler {
+func NewReconciler(kc client.Client, bc *Client, clusterUID string, d detector.Detector) *PrometheusReconciler {
 	return &PrometheusReconciler{
 		kc:         kc,
 		scheme:     kc.Scheme(),
 		bc:         bc,
 		clusterUID: clusterUID,
+		d:          d,
 	}
 }
 
@@ -85,21 +88,15 @@ func (r *PrometheusReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	cm := clustermeta.DetectClusterManager(r.kc)
-	gvk := schema.GroupVersionKind{
-		Group:   monitoring.GroupName,
-		Version: monitoringv1.Version,
-		Kind:    "Prometheus",
-	}
-
-	key := client.ObjectKeyFromObject(&prom)
-	isDefault, err := r.IsDefault(cm, gvk, key)
-	if err != nil {
+	if ready, err := r.d.Ready(); !ready {
 		return ctrl.Result{}, err
 	}
 
+	key := req.NamespacedName
+	isDefault := r.d.IsDefault(key)
+
 	if prom.DeletionTimestamp != nil {
-		err := r.CleanupPreset(cm, &prom, isDefault)
+		err := r.CleanupPreset(&prom, isDefault)
 		if err != nil {
 			return ctrl.Result{}, err
 		}
@@ -146,20 +143,12 @@ func (r *PrometheusReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 	klog.Infof("%s Prometheus %s/%s to add finalizer %s", vt, prom.Namespace, prom.Name, mona.PrometheusKey)
 
-	if err := r.SetupClusterForPrometheus(cm, &prom, isDefault); err != nil {
+	if err := r.SetupClusterForPrometheus(&prom, isDefault); err != nil {
 		log.Error(err, "unable to setup Prometheus")
 		return ctrl.Result{}, err
 	}
 
 	return ctrl.Result{}, nil
-}
-
-func (r *PrometheusReconciler) IsDefault(cm kmapi.ClusterManager, gvk schema.GroupVersionKind, key types.NamespacedName) (bool, error) {
-	if cm.ManagedByRancher() {
-		return key.Namespace == clustermeta.NamespaceRancherMonitoring &&
-			key.Name == clustermeta.PrometheusRancherMonitoring, nil
-	}
-	return clustermeta.IsSingletonResource(r.kc, gvk, key)
 }
 
 func (r *PrometheusReconciler) findServiceForPrometheus(key types.NamespacedName) (*core.Service, error) {
@@ -176,7 +165,7 @@ const (
 	saTrickster    = "trickster"
 )
 
-func (r *PrometheusReconciler) SetupClusterForPrometheus(cm kmapi.ClusterManager, prom *monitoringv1.Prometheus, isDefault bool) error {
+func (r *PrometheusReconciler) SetupClusterForPrometheus(prom *monitoringv1.Prometheus, isDefault bool) error {
 	key := client.ObjectKeyFromObject(prom)
 
 	svc, err := r.findServiceForPrometheus(key)
@@ -273,7 +262,7 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(cm kmapi.ClusterManager
 	}
 	klog.Infof("%s role binding %s/%s", rbvt, rb.Namespace, rb.Name)
 
-	err = r.CreatePreset(cm, prom, isDefault)
+	err = r.CreatePreset(prom, isDefault)
 	if err != nil {
 		return err
 	}
@@ -362,21 +351,21 @@ var defaultPresetsLabels = map[string]string{
 	"charts.x-helm.dev/is-default-preset": "true",
 }
 
-func (r *PrometheusReconciler) CreatePreset(cm kmapi.ClusterManager, p *monitoringv1.Prometheus, isDefault bool) error {
+func (r *PrometheusReconciler) CreatePreset(p *monitoringv1.Prometheus, isDefault bool) error {
 	presets := r.GeneratePresetForPrometheus(*p)
 	presetBytes, err := json.Marshal(presets)
 	if err != nil {
 		return err
 	}
 
-	if cm.ManagedByRancher() && !isDefault {
+	if r.d.Federated() && !isDefault {
 		return r.CreateProjectPreset(p, presetBytes)
 	}
 	return r.CreateClusterPreset(presetBytes)
 }
 
-func (r *PrometheusReconciler) CleanupPreset(cm kmapi.ClusterManager, p *monitoringv1.Prometheus, isDefault bool) error {
-	if cm.ManagedByRancher() && !isDefault {
+func (r *PrometheusReconciler) CleanupPreset(p *monitoringv1.Prometheus, isDefault bool) error {
+	if r.d.Federated() && !isDefault {
 		ns, _, err := r.NamespaceForProjectSettings(p)
 		if err != nil {
 			return err

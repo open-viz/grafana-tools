@@ -23,6 +23,8 @@ import (
 	"sort"
 	"strings"
 
+	"go.openviz.dev/grafana-tools/pkg/detector"
+
 	"github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	core "k8s.io/api/core/v1"
@@ -52,13 +54,15 @@ type FederationReconciler struct {
 	cfg    *rest.Config
 	kc     client.Client
 	scheme *runtime.Scheme
+	d      detector.Detector
 }
 
-func NewFederationReconciler(cfg *rest.Config, kc client.Client) *FederationReconciler {
+func NewFederationReconciler(cfg *rest.Config, kc client.Client, d detector.Detector) *FederationReconciler {
 	return &FederationReconciler{
 		cfg:    cfg,
 		kc:     kc,
 		scheme: kc.Scheme(),
+		d:      d,
 	}
 }
 
@@ -105,7 +109,11 @@ func (r *FederationReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return prometheuses[i].Name < prometheuses[j].Name
 	})
 
-	if !clustermeta.IsRancherManaged(r.kc.RESTMapper()) {
+	if ready, err := r.d.Ready(); !ready {
+		return ctrl.Result{}, err
+	}
+
+	if !r.d.Federated() {
 		// non rancher
 		err := r.updateServiceMonitorLabels(prometheuses[0], &svcMon)
 		if err != nil {
@@ -158,7 +166,7 @@ func (r *FederationReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	var errList []error
 	for _, prom := range promList.Items {
-		isDefault := IsDefaultPrometheus(prom)
+		isDefault := r.d.IsDefault(client.ObjectKeyFromObject(prom))
 
 		if !isDefault && prom.Namespace == req.Namespace {
 			err := fmt.Errorf("federated service monitor can't be in the same namespace with project Prometheus %s/%s", prom.Namespace, prom.Namespace)
@@ -200,15 +208,6 @@ func (r *FederationReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	return ctrl.Result{}, errors.NewAggregate(errList)
-}
-
-func IsDefaultPrometheus(prom *monitoringv1.Prometheus) bool {
-	expected := client.ObjectKey{
-		Namespace: clustermeta.NamespaceRancherMonitoring,
-		Name:      clustermeta.PrometheusRancherMonitoring,
-	}
-	pk := client.ObjectKeyFromObject(prom)
-	return pk == expected
 }
 
 func (r *FederationReconciler) updateServiceMonitorLabels(prom *monitoringv1.Prometheus, src *monitoringv1.ServiceMonitor) error {
