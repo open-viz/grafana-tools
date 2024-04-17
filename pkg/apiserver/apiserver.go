@@ -29,6 +29,7 @@ import (
 	uiapi "go.openviz.dev/apimachinery/apis/ui/v1alpha1"
 	promtehsucontroller "go.openviz.dev/grafana-tools/pkg/controllers/prometheus"
 	servicemonitorcontroller "go.openviz.dev/grafana-tools/pkg/controllers/servicemonitor"
+	"go.openviz.dev/grafana-tools/pkg/detector"
 	dashgroupstorage "go.openviz.dev/grafana-tools/pkg/registry/ui/dashboardgroup"
 
 	"github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring"
@@ -183,6 +184,8 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 		os.Exit(1)
 	}
 
+	d := detector.New(mgr.GetClient())
+
 	apiextensions.RegisterSetup(schema.GroupKind{
 		Group: monitoring.GroupName,
 		Kind:  monitoringv1.PrometheusesKind,
@@ -191,6 +194,7 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 			mgr.GetClient(),
 			bc,
 			cid,
+			d,
 		).SetupWithManager(mgr); err != nil {
 			klog.Error(err, "unable to create controller", "controller", "Prometheus")
 			os.Exit(1)
@@ -212,6 +216,7 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 		if err = servicemonitorcontroller.NewFederationReconciler(
 			c.ExtraConfig.ClientConfig,
 			mgr.GetClient(),
+			d,
 		).SetupWithManager(mgr); err != nil {
 			klog.Error(err, "unable to create controller", " federation controller", "ServiceMonitor")
 			os.Exit(1)
