@@ -17,8 +17,11 @@ limitations under the License.
 package server
 
 import (
+	"os"
+
 	"go.openviz.dev/grafana-tools/pkg/apiserver"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/pflag"
 )
 
@@ -28,6 +31,7 @@ type ExtraOptions struct {
 
 	BaseURL string
 	Token   string
+	CAFile  string
 }
 
 func NewExtraOptions() *ExtraOptions {
@@ -42,11 +46,20 @@ func (s *ExtraOptions) AddFlags(fs *pflag.FlagSet) {
 	fs.IntVar(&s.Burst, "burst", s.Burst, "The maximum burst for throttle")
 	fs.StringVar(&s.BaseURL, "baseURL", s.BaseURL, "License server base url")
 	fs.StringVar(&s.Token, "token", s.Token, "License server token")
+	fs.StringVar(&s.CAFile, "platform-ca-file", s.Token, "Path to platform CA cert file")
 }
 
 func (s *ExtraOptions) ApplyTo(cfg *apiserver.ExtraConfig) error {
 	cfg.BaseURL = s.BaseURL
 	cfg.Token = s.Token
+	if s.CAFile != "" {
+		caCert, err := os.ReadFile(s.CAFile)
+		if err != nil {
+			return errors.Wrapf(err, "failed to read CA file %s", s.CAFile)
+		}
+		cfg.CACert = caCert
+	}
+
 	cfg.ClientConfig.QPS = float32(s.QPS)
 	cfg.ClientConfig.Burst = s.Burst
 

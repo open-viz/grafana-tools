@@ -98,6 +98,7 @@ type ExtraConfig struct {
 	ClientConfig *restclient.Config
 	BaseURL      string
 	Token        string
+	CACert       []byte
 }
 
 // Config defines the config for the apiserver
@@ -173,7 +174,7 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 
 	var bc *promtehsucontroller.Client
 	if c.ExtraConfig.BaseURL != "" && c.ExtraConfig.Token != "" {
-		bc, err = promtehsucontroller.NewClient(c.ExtraConfig.BaseURL, c.ExtraConfig.Token)
+		bc, err = promtehsucontroller.NewClient(c.ExtraConfig.BaseURL, c.ExtraConfig.Token, c.ExtraConfig.CACert)
 		if err != nil {
 			return nil, err
 		}
