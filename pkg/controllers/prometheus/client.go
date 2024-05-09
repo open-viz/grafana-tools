@@ -18,6 +18,8 @@ package prometheus
 
 import (
 	"bytes"
+	"crypto/tls"
+	"crypto/x509"
 	"io"
 	"net/http"
 	"path"
@@ -40,13 +42,27 @@ type GrafanaDatasourceResponse struct {
 type Client struct {
 	baseURL string
 	token   string
+	client  *http.Client
 }
 
-func NewClient(baseURL, token string) (*Client, error) {
-	return &Client{
+func NewClient(baseURL, token string, caCert []byte) (*Client, error) {
+	c := &Client{
 		baseURL: baseURL,
 		token:   token,
-	}, nil
+	}
+	if len(caCert) == 0 {
+		c.client = http.DefaultClient
+	} else {
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+
+		tlsConfig := &tls.Config{
+			RootCAs: caCertPool,
+		}
+		transport := &http.Transport{TLSClientConfig: tlsConfig}
+		c.client = &http.Client{Transport: transport}
+	}
+	return c, nil
 }
 
 const (
@@ -98,7 +114,7 @@ func (c *Client) Register(ctx mona.PrometheusContext, cfg mona.PrometheusConfig)
 	if c.token != "" {
 		req.Header.Add("Authorization", "Bearer "+c.token)
 	}
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +164,7 @@ func (c *Client) Unregister(ctx mona.PrometheusContext) error {
 	if c.token != "" {
 		req.Header.Add("Authorization", "Bearer "+c.token)
 	}
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := c.client.Do(req)
 	if err != nil {
 		return err
 	}
