@@ -23,6 +23,7 @@ import (
 	sdk "go.openviz.dev/grafana-sdk"
 	"go.openviz.dev/grafana-tools/pkg/grafana"
 
+	"github.com/go-resty/resty/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	apps "k8s.io/api/apps/v1"
@@ -51,8 +52,12 @@ func (f *Framework) GetGrafanaClient() (*sdk.Client, error) {
 	if err != nil {
 		return nil, err
 	}
+	httpClient := resty.New()
+	if cfg.TLS != nil && len(cfg.TLS.CABundle) > 0 {
+		httpClient.SetRootCertificateFromString(string(cfg.TLS.CABundle))
+	}
 
-	return sdk.NewClient(cfg.Addr, cfg.AuthConfig)
+	return sdk.NewClient(cfg.Addr, cfg.AuthConfig, httpClient)
 }
 
 func (f *Framework) DeployGrafanaServer() error {

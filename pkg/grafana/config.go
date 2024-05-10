@@ -21,4 +21,9 @@ import sdk "go.openviz.dev/grafana-sdk"
 type Config struct {
 	Addr string
 	*sdk.AuthConfig
+	TLS *TLS
+}
+
+type TLS struct {
+	CABundle []byte
 }

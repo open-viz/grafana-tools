@@ -607,6 +607,11 @@ func (r *PrometheusReconciler) CreateGrafanaAppBinding(prom *monitoringv1.Promet
 			Name: ab.Name + "-auth",
 		}
 
+		// TODO: handle TLS config returned in resp
+		if caCert := r.bc.CACert(); len(caCert) > 0 {
+			obj.Spec.ClientConfig.CABundle = caCert
+		}
+
 		params := openvizapi.GrafanaConfiguration{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "GrafanaConfiguration",

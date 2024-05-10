@@ -22,6 +22,7 @@ import (
 	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 	sdk "go.openviz.dev/grafana-sdk"
 
+	"github.com/go-resty/resty/v2"
 	core "k8s.io/api/core/v1"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
@@ -51,8 +52,12 @@ func newGrafanaClient(ctx context.Context, kc client.Client, ab *appcatalog.AppB
 	if err != nil {
 		return nil, err
 	}
+	httpClient := resty.New()
+	if cfg.TLS != nil && len(cfg.TLS.CABundle) > 0 {
+		httpClient.SetRootCertificateFromString(string(cfg.TLS.CABundle))
+	}
 
-	return sdk.NewClient(cfg.Addr, cfg.AuthConfig)
+	return sdk.NewClient(cfg.Addr, cfg.AuthConfig, httpClient)
 }
 
 func GetGrafanaConfig(ab *appcatalog.AppBinding, authSecret *core.Secret) (*Config, error) {
@@ -79,8 +84,15 @@ func GetGrafanaConfig(ab *appcatalog.AppBinding, authSecret *core.Secret) (*Conf
 			}
 		}
 	}
-	return &Config{
+	cfg := &Config{
 		Addr:       addr,
 		AuthConfig: auth,
-	}, nil
+	}
+	if len(ab.Spec.ClientConfig.CABundle) > 0 {
+		cfg.TLS = &TLS{
+			CABundle: ab.Spec.ClientConfig.CABundle,
+		}
+	}
+
+	return cfg, nil
 }

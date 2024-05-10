@@ -42,6 +42,7 @@ type GrafanaDatasourceResponse struct {
 type Client struct {
 	baseURL string
 	token   string
+	caCert  []byte
 	client  *http.Client
 }
 
@@ -49,6 +50,7 @@ func NewClient(baseURL, token string, caCert []byte) (*Client, error) {
 	c := &Client{
 		baseURL: baseURL,
 		token:   token,
+		caCert:  caCert,
 	}
 	if len(caCert) == 0 {
 		c.client = http.DefaultClient
@@ -182,4 +184,8 @@ func (c *Client) Unregister(ctx mona.PrometheusContext) error {
 		)
 	}
 	return nil
+}
+
+func (c *Client) CACert() []byte {
+	return c.caCert
 }

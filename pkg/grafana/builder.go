@@ -23,6 +23,7 @@ import (
 
 	sdk "go.openviz.dev/grafana-sdk"
 
+	"github.com/go-resty/resty/v2"
 	"github.com/zeebo/xxh3"
 	core "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
@@ -189,8 +190,12 @@ func (r *ClientBuilder) GetGrafanaClient() (*sdk.Client, error) {
 	if r.cfg == cfg { // pointer equality
 		return r.c, nil
 	}
+	httpClient := resty.New()
+	if cfg.TLS != nil && len(cfg.TLS.CABundle) > 0 {
+		httpClient.SetRootCertificateFromString(string(cfg.TLS.CABundle))
+	}
 
-	gc, err := sdk.NewClient(r.cfg.Addr, r.cfg.AuthConfig)
+	gc, err := sdk.NewClient(r.cfg.Addr, r.cfg.AuthConfig, httpClient)
 	if err != nil {
 		return nil, err
 	}

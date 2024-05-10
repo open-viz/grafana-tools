@@ -105,16 +105,21 @@ type Datasource struct {
 // NewClient initializes client for interacting with an instance of Grafana server;
 // apiKeyOrBasicAuth accepts either 'username:password' basic authentication credentials,
 // or a Grafana API key. If it is an empty string then no authentication is used.
-func NewClient(hostURL string, auth *AuthConfig) (*Client, error) {
+func NewClient(hostURL string, auth *AuthConfig, httpClient *resty.Client) (*Client, error) {
 	baseURL, err := url.Parse(hostURL)
 	if err != nil {
 		return nil, err
 	}
-	return &Client{
+	client := &Client{
 		baseURL: baseURL.String(),
 		auth:    auth,
-		client:  resty.New(),
-	}, nil
+	}
+	if httpClient == nil {
+		client.client = resty.New()
+	} else {
+		client.client = httpClient
+	}
+	return client, nil
 }
 
 // SetDashboard will create or update grafana dashboard
