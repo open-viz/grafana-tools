@@ -18,6 +18,9 @@ package grafana
 
 import (
 	"context"
+	"crypto/tls"
+	"net"
+	"net/url"
 
 	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 	sdk "go.openviz.dev/grafana-sdk"
@@ -55,6 +58,14 @@ func newGrafanaClient(ctx context.Context, kc client.Client, ab *appcatalog.AppB
 	httpClient := resty.New()
 	if cfg.TLS != nil && len(cfg.TLS.CABundle) > 0 {
 		httpClient.SetRootCertificateFromString(string(cfg.TLS.CABundle))
+	}
+	u, err := url.Parse(cfg.Addr)
+	if err != nil {
+		return nil, err
+	}
+	// use InsecureSkipVerify, if IP address is used for baseURL host
+	if ip := net.ParseIP(u.Hostname()); ip != nil && u.Scheme == "https" {
+		httpClient.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	}
 
 	return sdk.NewClient(cfg.Addr, cfg.AuthConfig, httpClient)
