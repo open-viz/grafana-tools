@@ -21,7 +21,9 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"io"
+	"net"
 	"net/http"
+	"net/url"
 	"path"
 
 	"go.openviz.dev/apimachinery/apis/openviz"
@@ -53,7 +55,18 @@ func NewClient(baseURL, token string, caCert []byte) (*Client, error) {
 		caCert:  caCert,
 	}
 	if len(caCert) == 0 {
-		c.client = http.DefaultClient
+		u, err := url.Parse(baseURL)
+		if err != nil {
+			return nil, err
+		}
+		// use InsecureSkipVerify, if IP address is used for baseURL host
+		if ip := net.ParseIP(u.Hostname()); ip != nil && u.Scheme == "https" {
+			customTransport := http.DefaultTransport.(*http.Transport).Clone()
+			customTransport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+			c.client = &http.Client{Transport: customTransport}
+		} else {
+			c.client = http.DefaultClient
+		}
 	} else {
 		caCertPool := x509.NewCertPool()
 		caCertPool.AppendCertsFromPEM(caCert)
