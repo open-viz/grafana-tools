@@ -33,8 +33,8 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/klog/v2/klogr"
 	cu "kmodules.xyz/client-go/client"
+	clustermeta "kmodules.xyz/client-go/cluster"
 	"kmodules.xyz/client-go/tools/clientcmd"
-	"kmodules.xyz/client-go/tools/clusterid"
 	appcatalogapi "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
@@ -84,7 +84,7 @@ func NewOperatorOptions() *OperatorOptions {
 }
 
 func (s *OperatorOptions) AddGoFlags(fs *flag.FlagSet) {
-	clusterid.AddGoFlags(fs)
+	clustermeta.AddGoFlags(fs)
 	fs.StringVar(&s.MasterURL, "master", s.MasterURL, "The address of the Kubernetes API server (overrides any value in kubeconfig)")
 	fs.StringVar(&s.KubeconfigPath, "kubeconfig", s.KubeconfigPath, "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
 

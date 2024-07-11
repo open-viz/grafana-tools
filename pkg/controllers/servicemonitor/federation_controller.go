@@ -282,9 +282,9 @@ func (r *FederationReconciler) copyServiceMonitor(prom *monitoringv1.Prometheus,
 
 			e.HonorLabels = true // keep original labels
 
-			if len(e.MetricRelabelConfigs) == 0 || !reflect.DeepEqual(keepNSMetrics, *e.MetricRelabelConfigs[0]) {
-				e.MetricRelabelConfigs = append([]*monitoringv1.RelabelConfig{
-					&keepNSMetrics,
+			if len(e.MetricRelabelConfigs) == 0 || !reflect.DeepEqual(keepNSMetrics, e.MetricRelabelConfigs[0]) {
+				e.MetricRelabelConfigs = append([]monitoringv1.RelabelConfig{
+					keepNSMetrics,
 				}, e.MetricRelabelConfigs...)
 			}
 			obj.Spec.Endpoints[i] = e
