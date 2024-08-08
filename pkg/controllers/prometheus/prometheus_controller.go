@@ -54,15 +54,17 @@ type PrometheusReconciler struct {
 	scheme     *runtime.Scheme
 	bc         *Client
 	clusterUID string
+	hubUID     string
 	d          detector.Detector
 }
 
-func NewReconciler(kc client.Client, bc *Client, clusterUID string, d detector.Detector) *PrometheusReconciler {
+func NewReconciler(kc client.Client, bc *Client, clusterUID, hubUID string, d detector.Detector) *PrometheusReconciler {
 	return &PrometheusReconciler{
 		kc:         kc,
 		scheme:     kc.Scheme(),
 		bc:         bc,
 		clusterUID: clusterUID,
+		hubUID:     hubUID,
 		d:          d,
 	}
 }
@@ -304,6 +306,7 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(prom *monitoringv1.Prom
 			}
 		}
 		resp, err := r.bc.Register(mona.PrometheusContext{
+			HubUID:     r.hubUID,
 			ClusterUID: r.clusterUID,
 			ProjectId:  projectId,
 			Default:    isDefault,

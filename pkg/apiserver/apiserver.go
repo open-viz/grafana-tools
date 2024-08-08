@@ -99,6 +99,7 @@ type ExtraConfig struct {
 	BaseURL      string
 	Token        string
 	CACert       []byte
+	HubUID       string
 }
 
 // Config defines the config for the apiserver
@@ -195,6 +196,7 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 			mgr.GetClient(),
 			bc,
 			cid,
+			c.ExtraConfig.HubUID,
 			d,
 		).SetupWithManager(mgr); err != nil {
 			klog.Error(err, "unable to create controller", "controller", "Prometheus")

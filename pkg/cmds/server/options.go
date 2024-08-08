@@ -32,6 +32,8 @@ type ExtraOptions struct {
 	BaseURL string
 	Token   string
 	CAFile  string
+
+	HubUID string
 }
 
 func NewExtraOptions() *ExtraOptions {
@@ -47,11 +49,13 @@ func (s *ExtraOptions) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&s.BaseURL, "baseURL", s.BaseURL, "License server base url")
 	fs.StringVar(&s.Token, "token", s.Token, "License server token")
 	fs.StringVar(&s.CAFile, "platform-ca-file", s.Token, "Path to platform CA cert file")
+	fs.StringVar(&s.HubUID, "hubUID", s.Token, "Cluster UID of ocm Hub")
 }
 
 func (s *ExtraOptions) ApplyTo(cfg *apiserver.ExtraConfig) error {
 	cfg.BaseURL = s.BaseURL
 	cfg.Token = s.Token
+	cfg.HubUID = s.HubUID
 	if s.CAFile != "" {
 		caCert, err := os.ReadFile(s.CAFile)
 		if err != nil {
