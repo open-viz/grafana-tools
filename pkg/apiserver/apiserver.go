@@ -47,7 +47,6 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
-	"k8s.io/klog/v2/klogr"
 	"kmodules.xyz/authorizer"
 	"kmodules.xyz/client-go/apiextensions"
 	clustermeta "kmodules.xyz/client-go/cluster"
@@ -146,8 +145,7 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 		return nil, err
 	}
 
-	// ctrl.SetLogger(...)
-	log.SetLogger(klogr.New()) // nolint:staticcheck
+	log.SetLogger(klog.NewKlogr())
 
 	mgr, err := ctrl.NewManager(c.ExtraConfig.ClientConfig, ctrl.Options{
 		Scheme:                 Scheme,

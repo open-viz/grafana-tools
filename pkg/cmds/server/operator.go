@@ -31,7 +31,6 @@ import (
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/klog/v2"
-	"k8s.io/klog/v2/klogr"
 	cu "kmodules.xyz/client-go/client"
 	clustermeta "kmodules.xyz/client-go/cluster"
 	"kmodules.xyz/client-go/tools/clientcmd"
@@ -121,7 +120,7 @@ func (s *OperatorOptions) Complete() error {
 func (s OperatorOptions) Run(ctx context.Context) error {
 	klog.Infof("Starting binary version %s+%s ...", v.Version.Version, v.Version.CommitHash)
 
-	log.SetLogger(klogr.New()) // nolint:staticcheck
+	log.SetLogger(klog.NewKlogr())
 
 	cfg, err := clientcmd.BuildConfigFromFlags(s.MasterURL, s.KubeconfigPath)
 	if err != nil {
