@@ -17,12 +17,12 @@ concurrency:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
-      - name: Set up Go 1.22
+      - name: Set up Go 1.23
         uses: actions/setup-go@v1
         with:
-          go-version: '1.22'
+          go-version: '1.23'
         id: go
 
       - uses: actions/checkout@v2
@@ -64,7 +64,7 @@ jobs:
 
   kubernetes:
     name: Kubernetes
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: build
     strategy:
       matrix:
@@ -116,7 +116,7 @@ jobs:
 
   cleanup:
     name: Cleanup
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     if: ${{ always() }}
     needs: [build, kubernetes]
     steps:
