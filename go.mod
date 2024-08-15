@@ -31,7 +31,7 @@ require (
 	k8s.io/client-go v0.30.2
 	k8s.io/klog/v2 v2.130.1
 	kmodules.xyz/authorizer v0.29.1
-	kmodules.xyz/client-go v0.30.9
+	kmodules.xyz/client-go v0.30.10
 	kmodules.xyz/custom-resources v0.30.0
 	kmodules.xyz/monitoring-agent-api v0.30.0
 	sigs.k8s.io/controller-runtime v0.18.4
