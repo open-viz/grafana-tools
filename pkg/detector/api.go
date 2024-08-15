@@ -38,7 +38,7 @@ var GVKPrometheus = schema.GroupVersionKind{
 
 type Detector interface {
 	Ready() (bool, error)
-	RancherManaged_() bool
+	RancherManaged() bool
 	Federated() bool
 	IsDefault(key types.NamespacedName) bool
 }
@@ -97,13 +97,13 @@ func (l *lazy) Ready() (bool, error) {
 	return true, nil
 }
 
-func (l *lazy) RancherManaged_() bool {
+func (l *lazy) RancherManaged() bool {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	if l.delegated == nil {
 		panic("NotReady")
 	}
-	return l.delegated.RancherManaged_()
+	return l.delegated.RancherManaged()
 }
 
 func (l *lazy) Federated() bool {
@@ -132,7 +132,7 @@ func (f federated) Ready() (bool, error) {
 	return true, nil
 }
 
-func (f federated) RancherManaged_() bool {
+func (f federated) RancherManaged() bool {
 	return true
 }
 
@@ -156,7 +156,7 @@ func (s standalone) Ready() (bool, error) {
 	return true, nil
 }
 
-func (s standalone) RancherManaged_() bool {
+func (s standalone) RancherManaged() bool {
 	return s.rancher
 }
 

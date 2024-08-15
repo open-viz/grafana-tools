@@ -277,7 +277,7 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 		apiGroupInfo := genericapiserver.NewDefaultAPIGroupInfo(ui.GroupName, Scheme, metav1.ParameterCodec, Codecs)
 
 		v1alpha1storage := map[string]rest.Storage{}
-		v1alpha1storage[uiapi.ResourceDashboardGroups] = dashgroupstorage.NewStorage(ctrlClient, rbacAuthorizer)
+		v1alpha1storage[uiapi.ResourceDashboardGroups] = dashgroupstorage.NewStorage(ctrlClient, rbacAuthorizer, d)
 		apiGroupInfo.VersionedResourcesStorageMap["v1alpha1"] = v1alpha1storage
 
 		if err := s.GenericAPIServer.InstallAPIGroup(&apiGroupInfo); err != nil {

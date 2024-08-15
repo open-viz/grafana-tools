@@ -26,6 +26,7 @@ import (
 
 	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 	uiapi "go.openviz.dev/apimachinery/apis/ui/v1alpha1"
+	"go.openviz.dev/grafana-tools/pkg/detector"
 
 	"github.com/grafana-tools/sdk"
 	"github.com/pkg/errors"
@@ -48,6 +49,7 @@ import (
 type Storage struct {
 	kc client.Client
 	a  authorizer.Authorizer
+	d  detector.Detector
 	gr schema.GroupResource
 }
 
@@ -59,10 +61,11 @@ var (
 	_ rest.SingularNameProvider     = &Storage{}
 )
 
-func NewStorage(kc client.Client, a authorizer.Authorizer) *Storage {
+func NewStorage(kc client.Client, a authorizer.Authorizer, d detector.Detector) *Storage {
 	return &Storage{
 		kc: kc,
 		a:  a,
+		d:  d,
 		gr: openvizapi.Resource(openvizapi.ResourceGrafanaDashboards),
 	}
 }
@@ -130,7 +133,7 @@ func (r *Storage) datasource(in *uiapi.DashboardGroup) (string, error) {
 		return "", err
 	}
 
-	if clustermeta.IsRancherManaged(r.kc.RESTMapper()) {
+	if r.d.Federated() {
 		nsName := r.appNamespace(in.Request.App, in.Request.Dashboards[0].Vars)
 		if nsName != "" {
 			sysProjctId, sysProjectExists, err := clustermeta.GetSystemProjectId(r.kc)
