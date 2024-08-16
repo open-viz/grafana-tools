@@ -18,21 +18,25 @@ package openviz
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
 	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 	sdk "go.openviz.dev/grafana-sdk"
 	"go.openviz.dev/grafana-tools/pkg/grafana"
 
-	"gomodules.xyz/pointer"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
+	"k8s.io/utils/ptr"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	kmc "kmodules.xyz/client-go/client"
 	condutil "kmodules.xyz/client-go/conditions"
@@ -156,7 +160,7 @@ func (r *GrafanaDashboardReconciler) handleSetDashboardError(ctx context.Context
 func (r *GrafanaDashboardReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	appHandler := handler.EnqueueRequestsFromMapFunc(func(ctx context.Context, a client.Object) []reconcile.Request {
 		var dashboardList openvizapi.GrafanaDashboardList
-		err := r.Client.List(ctx, &dashboardList, client.InNamespace(a.GetNamespace()))
+		err := r.Client.List(ctx, &dashboardList)
 		if err != nil {
 			return nil
 		}
@@ -167,20 +171,86 @@ func (r *GrafanaDashboardReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			if err != nil {
 				return nil
 			}
+
 			if ab.Name == a.GetName() &&
 				ab.Namespace == a.GetNamespace() &&
-				db.Status.Phase == openvizapi.GrafanaPhaseFailed {
+				(db.Status.Phase == openvizapi.GrafanaPhaseFailed || IsStateChanged(&db, a.(*appcatalog.AppBinding))) {
 				req = append(req, reconcile.Request{NamespacedName: client.ObjectKeyFromObject(&db)})
 			}
 		}
 		return req
 	})
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&openvizapi.GrafanaDashboard{}, builder.WithPredicates(predicate.NewPredicateFuncs(func(obj client.Object) bool {
-			return !meta_util.MustAlreadyReconciled(obj)
+			db := obj.(*openvizapi.GrafanaDashboard)
+			if !meta_util.MustAlreadyReconciled(obj) {
+				return true
+			}
+			if ab, err := openvizapi.GetGrafana(context.TODO(), r.Client, db.Spec.GrafanaRef.WithNamespace(db.Namespace)); err == nil {
+				return IsStateChanged(db, ab)
+			}
+			return false
 		}))).
 		Watches(&appcatalog.AppBinding{}, appHandler).
 		Complete(r)
+}
+
+func IsStateChanged(db *openvizapi.GrafanaDashboard, ab *appcatalog.AppBinding) bool {
+	if db.Status.Dashboard == nil || db.Status.Dashboard.State == nil {
+		return false
+	}
+	curState, err := GrafanaState(ab)
+	if err != nil {
+		return false
+	}
+	return curState != *db.Status.Dashboard.State
+}
+
+type stateKey struct {
+	uid        types.UID
+	generation int64
+}
+type stateValue struct {
+	state string
+	err   error
+}
+
+var (
+	stateMap = map[stateKey]stateValue{}
+	stateMu  sync.Mutex
+)
+
+func GrafanaState(ab *appcatalog.AppBinding) (string, error) {
+	stateMu.Lock()
+	defer stateMu.Unlock()
+
+	key := stateKey{uid: ab.UID, generation: ab.Generation}
+	result, ok := stateMap[key]
+	if ok {
+		return result.state, result.err
+	}
+
+	result.state, result.err = func() (string, error) {
+		dsConfig := &openvizapi.GrafanaConfiguration{}
+		if ab.Spec.Parameters != nil {
+			if err := json.Unmarshal(ab.Spec.Parameters.Raw, dsConfig); err != nil {
+				return "", err
+			}
+		}
+
+		u, err := ab.URL()
+		if err != nil {
+			return "", err
+		}
+
+		state := fmt.Sprintf("%s,%s,%d", u, dsConfig.Datasource, ptr.Deref(dsConfig.FolderID, 0))
+		h := sha256.New()
+		h.Write([]byte(state))
+		return base64.URLEncoding.EncodeToString(h.Sum(nil)), nil
+	}()
+	stateMap[key] = result
+	return result.state, result.err
 }
 
 func (r *GrafanaDashboardReconciler) deleteExternalDashboard(ctx context.Context, obj *openvizapi.GrafanaDashboard) error {
@@ -240,7 +310,7 @@ func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, obj *open
 	}
 	gDB := &sdk.GrafanaDashboard{
 		Dashboard: obj.Spec.Model,
-		FolderId:  int(pointer.Int64(dsConfig.FolderID)),
+		FolderId:  int(ptr.Deref(dsConfig.FolderID, 0)),
 		Overwrite: true,
 	}
 	resp, err := gc.SetDashboard(ctx, gDB)
@@ -257,16 +327,22 @@ func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, obj *open
 		return r.handleSetDashboardError(ctx, obj, err, false)
 	}
 
+	state, err := GrafanaState(ab)
+	if err != nil {
+		return r.handleSetDashboardError(ctx, obj, err, false)
+	}
+
 	_, err = kmc.PatchStatus(ctx, r.Client, obj, func(obj client.Object) client.Object {
 		in := obj.(*openvizapi.GrafanaDashboard)
 		reason := "Dashboard is successfully created"
 		in.Status.Dashboard = &openvizapi.GrafanaDashboardReference{
-			ID:      pointer.Int64P(int64(pointer.Int(resp.ID))),
+			ID:      ptr.To(int64(*resp.ID)),
 			UID:     resp.UID,
 			Slug:    resp.Slug,
 			URL:     resp.URL,
-			OrgID:   pointer.Int64P(int64(pointer.Int(orgId.ID))),
-			Version: pointer.Int64P(int64(pointer.Int(resp.Version))),
+			OrgID:   ptr.To(int64(*orgId.ID)),
+			Version: ptr.To(int64(*resp.Version)),
+			State:   ptr.To(state),
 		}
 		in.Status.Phase = openvizapi.GrafanaPhaseCurrent
 		in.Status.ObservedGeneration = in.Generation
