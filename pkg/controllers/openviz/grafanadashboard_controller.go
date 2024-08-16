@@ -273,16 +273,22 @@ func (r *GrafanaDashboardReconciler) deleteExternalDashboard(ctx context.Context
 }
 
 func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, obj *openvizapi.GrafanaDashboard) (ctrl.Result, error) {
-	if obj.Status.Dashboard != nil {
+	ab, err := openvizapi.GetGrafana(ctx, r.Client, obj.Spec.GrafanaRef.WithNamespace(obj.Namespace))
+	if err != nil {
+		return r.handleSetDashboardError(ctx, obj, err, false)
+	}
+
+	state, err := GrafanaState(ab)
+	if err != nil {
+		return r.handleSetDashboardError(ctx, obj, err, false)
+	}
+
+	if obj.Status.Dashboard != nil && (obj.Status.Dashboard.State == nil || *obj.Status.Dashboard.State == state) {
 		model, err := addDashboardID(obj.Spec.Model.Raw, *obj.Status.Dashboard.ID, *obj.Status.Dashboard.UID)
 		if err != nil {
 			return r.handleSetDashboardError(ctx, obj, err, false)
 		}
 		obj.Spec.Model = &runtime.RawExtension{Raw: model}
-	}
-	ab, err := openvizapi.GetGrafana(ctx, r.Client, obj.Spec.GrafanaRef.WithNamespace(obj.Namespace))
-	if err != nil {
-		return r.handleSetDashboardError(ctx, obj, err, false)
 	}
 
 	dsConfig := &openvizapi.GrafanaConfiguration{}
@@ -323,11 +329,6 @@ func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, obj *open
 		return r.handleSetDashboardError(ctx, obj, err, false)
 	}
 	orgId, err := gc.GetCurrentOrg(ctx)
-	if err != nil {
-		return r.handleSetDashboardError(ctx, obj, err, false)
-	}
-
-	state, err := GrafanaState(ab)
 	if err != nil {
 		return r.handleSetDashboardError(ctx, obj, err, false)
 	}
