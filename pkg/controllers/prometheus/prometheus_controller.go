@@ -25,7 +25,6 @@ import (
 
 	"github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
-	"gomodules.xyz/pointer"
 	core "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -34,6 +33,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/klog/v2"
+	"k8s.io/utils/ptr"
 	kutil "kmodules.xyz/client-go"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	cu "kmodules.xyz/client-go/client"
@@ -43,8 +43,12 @@ import (
 	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	chartsapi "x-helm.dev/apimachinery/apis/charts/v1alpha1"
 )
 
@@ -297,7 +301,28 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(prom *monitoringv1.Prom
 	pcfg.BearerToken = string(s.Data["token"])
 	pcfg.TLS.Ca = string(s.Data["ca.crt"])
 
-	if r.bc != nil && sa.Annotations[registeredKey] != "true" {
+	cm, err := clustermeta.ClusterMetadata(r.kc)
+	if err != nil {
+		return err
+	}
+	state := cm.State()
+
+	// fix legacy deployments
+	if sa.Annotations[registeredKey] == "true" {
+		savt, err = cu.CreateOrPatch(context.TODO(), r.kc, &sa, func(in client.Object, createOp bool) client.Object {
+			obj := in.(*core.ServiceAccount)
+			obj.Annotations = meta_util.OverwriteKeys(obj.Annotations, map[string]string{
+				registeredKey: state,
+			})
+			return obj
+		})
+		if err != nil {
+			return err
+		}
+		klog.Infof("%s service account %s/%s with %s annotation", savt, sa.Namespace, sa.Name, registeredKey)
+
+		return nil
+	} else if r.bc != nil && sa.Annotations[registeredKey] != state {
 		var projectId string
 		if !isDefault {
 			_, projectId, err = r.NamespaceForProjectSettings(prom)
@@ -330,7 +355,7 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(prom *monitoringv1.Prom
 		savt, err = cu.CreateOrPatch(context.TODO(), r.kc, &sa, func(in client.Object, createOp bool) client.Object {
 			obj := in.(*core.ServiceAccount)
 			obj.Annotations = meta_util.OverwriteKeys(obj.Annotations, map[string]string{
-				registeredKey: "true",
+				registeredKey: state,
 			})
 			return obj
 		})
@@ -593,7 +618,7 @@ func (r *PrometheusReconciler) CreateGrafanaAppBinding(prom *monitoringv1.Promet
 		obj.Spec.Type = "Grafana"
 		obj.Spec.AppRef = nil
 		obj.Spec.ClientConfig = appcatalog.ClientConfig{
-			URL: pointer.StringP(resp.Grafana.URL),
+			URL: ptr.To(resp.Grafana.URL),
 			//Service: &appcatalog.ServiceReference{
 			//	Scheme:    "http",
 			//	Namespace: svc.Namespace,
@@ -669,7 +694,24 @@ func (r *PrometheusReconciler) CreateGrafanaAppBinding(prom *monitoringv1.Promet
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *PrometheusReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	stateHandler := handler.EnqueueRequestsFromMapFunc(func(ctx context.Context, a client.Object) []reconcile.Request {
+		var promList monitoringv1.PrometheusList
+		err := r.kc.List(ctx, &promList)
+		if err != nil {
+			return nil
+		}
+
+		var req []reconcile.Request
+		for _, prom := range promList.Items {
+			req = append(req, reconcile.Request{NamespacedName: client.ObjectKeyFromObject(prom)})
+		}
+		return req
+	})
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&monitoringv1.Prometheus{}).
+		Watches(&core.ConfigMap{}, stateHandler, builder.WithPredicates(predicate.NewPredicateFuncs(func(obj client.Object) bool {
+			return obj.GetNamespace() == metav1.NamespacePublic && obj.GetName() == kmapi.AceInfoConfigMapName
+		}))).
 		Complete(r)
 }
