@@ -22,6 +22,7 @@ import (
 
 	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 	"go.openviz.dev/grafana-tools/pkg/detector"
+	"go.openviz.dev/grafana-tools/pkg/rancherutil"
 
 	"github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
@@ -52,24 +53,43 @@ import (
 	chartsapi "x-helm.dev/apimachinery/apis/charts/v1alpha1"
 )
 
-// PrometheusReconciler reconciles a Prometheus object
-type PrometheusReconciler struct {
-	kc         client.Client
-	scheme     *runtime.Scheme
-	bc         *Client
-	clusterUID string
-	hubUID     string
-	d          detector.Detector
+const (
+	portPrometheus = "http-web"
+	saTrickster    = "trickster"
+
+	registeredKey        = mona.GroupName + "/registered"
+	tokenIDKey           = mona.GroupName + "/token-id"
+	presetsMonitoring    = "monitoring-presets"
+	appBindingPrometheus = "default-prometheus"
+	appBindingGrafana    = "default-grafana"
+)
+
+var selfNamespace = meta_util.PodNamespace()
+
+var defaultPresetsLabels = map[string]string{
+	"charts.x-helm.dev/is-default-preset": "true",
 }
 
-func NewReconciler(kc client.Client, bc *Client, clusterUID, hubUID string, d detector.Detector) *PrometheusReconciler {
+// PrometheusReconciler reconciles a Prometheus object
+type PrometheusReconciler struct {
+	kc                    client.Client
+	scheme                *runtime.Scheme
+	bc                    *Client
+	clusterUID            string
+	hubUID                string
+	rancherAuthSecretName string
+	d                     detector.Detector
+}
+
+func NewReconciler(kc client.Client, bc *Client, clusterUID, hubUID, rancherAuthSecretName string, d detector.Detector) *PrometheusReconciler {
 	return &PrometheusReconciler{
-		kc:         kc,
-		scheme:     kc.Scheme(),
-		bc:         bc,
-		clusterUID: clusterUID,
-		hubUID:     hubUID,
-		d:          d,
+		kc:                    kc,
+		scheme:                kc.Scheme(),
+		bc:                    bc,
+		clusterUID:            clusterUID,
+		hubUID:                hubUID,
+		rancherAuthSecretName: rancherAuthSecretName,
+		d:                     d,
 	}
 }
 
@@ -149,7 +169,7 @@ func (r *PrometheusReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 	klog.Infof("%s Prometheus %s/%s to add finalizer %s", vt, prom.Namespace, prom.Name, mona.PrometheusKey)
 
-	if err := r.SetupClusterForPrometheus(&prom, isDefault); err != nil {
+	if err := r.SetupClusterForPrometheus(ctx, &prom, isDefault); err != nil {
 		log.Error(err, "unable to setup Prometheus")
 		return ctrl.Result{}, err
 	}
@@ -166,12 +186,7 @@ func (r *PrometheusReconciler) findServiceForPrometheus(key types.NamespacedName
 	return &svc, nil
 }
 
-const (
-	portPrometheus = "http-web"
-	saTrickster    = "trickster"
-)
-
-func (r *PrometheusReconciler) SetupClusterForPrometheus(prom *monitoringv1.Prometheus, isDefault bool) error {
+func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, prom *monitoringv1.Prometheus, isDefault bool) error {
 	key := client.ObjectKeyFromObject(prom)
 
 	svc, err := r.findServiceForPrometheus(key)
@@ -179,43 +194,63 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(prom *monitoringv1.Prom
 		return err
 	}
 
-	// https://github.com/bytebuilders/installer/blob/master/charts/monitoring-config/templates/trickster/trickster.yaml
-	sa := core.ServiceAccount{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      saTrickster,
-			Namespace: key.Namespace,
-		},
-	}
-	savt, err := cu.CreateOrPatch(context.TODO(), r.kc, &sa, func(in client.Object, createOp bool) client.Object {
-		obj := in.(*core.ServiceAccount)
-		ref := metav1.NewControllerRef(prom, schema.GroupVersionKind{
-			Group:   monitoring.GroupName,
-			Version: monitoringv1.Version,
-			Kind:    "Prometheus",
-		})
-		obj.OwnerReferences = []metav1.OwnerReference{*ref}
-
-		return obj
-	})
+	cm, err := clustermeta.ClusterMetadata(r.kc)
 	if err != nil {
 		return err
 	}
-	klog.Infof("%s service account %s/%s", savt, sa.Namespace, sa.Name)
+	state := cm.State()
 
-	role := rbac.Role{
+	var rancherToken *rancherutil.RancherToken
+	var saToken string
+	if r.d.RancherManaged() && r.rancherAuthSecretName != "" {
+		var rancherSecret core.Secret
+		rancherSecretKey := client.ObjectKey{Name: r.rancherAuthSecretName, Namespace: selfNamespace}
+		err = r.kc.Get(context.TODO(), rancherSecretKey, &rancherSecret)
+		if err != nil {
+			return err
+		}
+
+		_, rancherToken, err = rancherutil.FindToken(ctx, &rancherSecret, state)
+		if err != nil {
+			return err
+		}
+	} else {
+		sa := core.ServiceAccount{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      saTrickster,
+				Namespace: key.Namespace,
+			},
+		}
+		savt, err := cu.CreateOrPatch(context.TODO(), r.kc, &sa, func(in client.Object, createOp bool) client.Object {
+			obj := in.(*core.ServiceAccount)
+			ref := metav1.NewControllerRef(prom, schema.GroupVersionKind{
+				Group:   monitoring.GroupName,
+				Version: monitoringv1.Version,
+				Kind:    "Prometheus",
+			})
+			obj.OwnerReferences = []metav1.OwnerReference{*ref}
+
+			return obj
+		})
+		if err != nil {
+			return err
+		}
+		klog.Infof("%s service account %s/%s", savt, sa.Namespace, sa.Name)
+
+		s, err := cu.GetServiceAccountTokenSecret(r.kc, client.ObjectKeyFromObject(&sa))
+		if err != nil {
+			return err
+		}
+		saToken = string(s.Data["token"])
+	}
+
+	cr := rbac.ClusterRole{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      saTrickster,
-			Namespace: key.Namespace,
+			Name: saTrickster,
 		},
 	}
-	rolevt, err := cu.CreateOrPatch(context.TODO(), r.kc, &role, func(in client.Object, createOp bool) client.Object {
-		obj := in.(*rbac.Role)
-		ref := metav1.NewControllerRef(prom, schema.GroupVersionKind{
-			Group:   monitoring.GroupName,
-			Version: monitoringv1.Version,
-			Kind:    "Prometheus",
-		})
-		obj.OwnerReferences = []metav1.OwnerReference{*ref}
+	crvt, err := cu.CreateOrPatch(context.TODO(), r.kc, &cr, func(in client.Object, createOp bool) client.Object {
+		obj := in.(*rbac.ClusterRole)
 
 		obj.Rules = []rbac.PolicyRule{
 			{
@@ -230,7 +265,7 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(prom *monitoringv1.Prom
 	if err != nil {
 		return err
 	}
-	klog.Infof("%s role %s/%s", rolevt, role.Namespace, role.Name)
+	klog.Infof("%s ClusterRole %s", crvt, cr.Name)
 
 	rb := rbac.RoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
@@ -249,16 +284,25 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(prom *monitoringv1.Prom
 
 		obj.RoleRef = rbac.RoleRef{
 			APIGroup: rbac.GroupName,
-			Kind:     "Role",
-			Name:     role.Name,
+			Kind:     "ClusterRole",
+			Name:     cr.Name,
 		}
 
-		obj.Subjects = []rbac.Subject{
-			{
-				Kind:      "ServiceAccount",
-				Name:      sa.Name,
-				Namespace: sa.Namespace,
-			},
+		if rancherToken != nil {
+			obj.Subjects = []rbac.Subject{
+				{
+					Kind: "User",
+					Name: rancherToken.UserID,
+				},
+			}
+		} else {
+			obj.Subjects = []rbac.Subject{
+				{
+					Kind:      "ServiceAccount",
+					Name:      saTrickster,
+					Namespace: key.Namespace,
+				},
+			}
 		}
 
 		return obj
@@ -269,11 +313,6 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(prom *monitoringv1.Prom
 	klog.Infof("%s role binding %s/%s", rbvt, rb.Namespace, rb.Name)
 
 	err = r.CreatePreset(prom, isDefault)
-	if err != nil {
-		return err
-	}
-
-	s, err := cu.GetServiceAccountTokenSecret(r.kc, client.ObjectKeyFromObject(&sa))
 	if err != nil {
 		return err
 	}
@@ -295,34 +334,42 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(prom *monitoringv1.Prom
 	// pcfg.URL = fmt.Sprintf("%s/api/v1/namespaces/%s/services/%s:%s:%s/proxy/", r.cfg.Host, pcfg.Service.Namespace, pcfg.Service.Scheme, pcfg.Service.Name, pcfg.Service.Port)
 
 	// remove basic auth and client cert auth
+	if rancherToken != nil {
+		pcfg.BearerToken = rancherToken.Token
+	} else {
+		pcfg.BearerToken = saToken
+	}
 	pcfg.BasicAuth = mona.BasicAuth{}
 	pcfg.TLS.Cert = ""
 	pcfg.TLS.Key = ""
-	pcfg.BearerToken = string(s.Data["token"])
-	pcfg.TLS.Ca = string(s.Data["ca.crt"])
+	pcfg.TLS.Ca = ""
 
-	cm, err := clustermeta.ClusterMetadata(r.kc)
-	if err != nil {
-		return err
+	applyMarkers := func(in client.Object, createOp bool) client.Object {
+		obj := in.(*rbac.RoleBinding)
+		if obj.Annotations == nil {
+			obj.Annotations = map[string]string{}
+		}
+		obj.Annotations[registeredKey] = state
+		if rancherToken != nil {
+			obj.Annotations[tokenIDKey] = rancherToken.TokenID
+		} else {
+			delete(obj.Annotations, tokenIDKey)
+		}
+		return obj
 	}
-	state := cm.State()
 
 	// fix legacy deployments
-	if sa.Annotations[registeredKey] == "true" {
-		savt, err = cu.CreateOrPatch(context.TODO(), r.kc, &sa, func(in client.Object, createOp bool) client.Object {
-			obj := in.(*core.ServiceAccount)
-			obj.Annotations = meta_util.OverwriteKeys(obj.Annotations, map[string]string{
-				registeredKey: state,
-			})
-			return obj
-		})
+	if rb.Annotations[registeredKey] == "true" {
+		rbvt, err = cu.CreateOrPatch(context.TODO(), r.kc, &rb, applyMarkers)
 		if err != nil {
 			return err
 		}
-		klog.Infof("%s service account %s/%s with %s annotation", savt, sa.Namespace, sa.Name, registeredKey)
+		klog.Infof("%s rolebinding %s/%s with %s annotation", rbvt, rb.Namespace, rb.Name, registeredKey)
 
 		return nil
-	} else if r.bc != nil && sa.Annotations[registeredKey] != state {
+	} else if r.bc != nil &&
+		(rb.Annotations[registeredKey] != state ||
+			(rancherToken != nil && rb.Annotations[tokenIDKey] != rancherToken.TokenID)) {
 		var projectId string
 		if !isDefault {
 			_, projectId, err = r.NamespaceForProjectSettings(prom)
@@ -352,31 +399,14 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(prom *monitoringv1.Prom
 			}
 		}
 
-		savt, err = cu.CreateOrPatch(context.TODO(), r.kc, &sa, func(in client.Object, createOp bool) client.Object {
-			obj := in.(*core.ServiceAccount)
-			obj.Annotations = meta_util.OverwriteKeys(obj.Annotations, map[string]string{
-				registeredKey: state,
-			})
-			return obj
-		})
+		rbvt, err = cu.CreateOrPatch(context.TODO(), r.kc, &rb, applyMarkers)
 		if err != nil {
 			return err
 		}
-		klog.Infof("%s service account %s/%s with %s annotation", savt, sa.Namespace, sa.Name, registeredKey)
+		klog.Infof("%s rolebinding %s/%s with %s annotation", rbvt, rb.Namespace, rb.Name, registeredKey)
 	}
 
 	return nil
-}
-
-const (
-	registeredKey        = mona.GroupName + "/registered"
-	presetsMonitoring    = "monitoring-presets"
-	appBindingPrometheus = "default-prometheus"
-	appBindingGrafana    = "default-grafana"
-)
-
-var defaultPresetsLabels = map[string]string{
-	"charts.x-helm.dev/is-default-preset": "true",
 }
 
 func (r *PrometheusReconciler) CreatePreset(p *monitoringv1.Prometheus, isDefault bool) error {
@@ -708,10 +738,15 @@ func (r *PrometheusReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		return req
 	})
 
-	return ctrl.NewControllerManagedBy(mgr).
+	bldr := ctrl.NewControllerManagedBy(mgr).
 		For(&monitoringv1.Prometheus{}).
 		Watches(&core.ConfigMap{}, stateHandler, builder.WithPredicates(predicate.NewPredicateFuncs(func(obj client.Object) bool {
 			return obj.GetNamespace() == metav1.NamespacePublic && obj.GetName() == kmapi.AceInfoConfigMapName
-		}))).
-		Complete(r)
+		})))
+	if r.rancherAuthSecretName != "" {
+		bldr = bldr.Watches(&core.Secret{}, stateHandler, builder.WithPredicates(predicate.NewPredicateFuncs(func(obj client.Object) bool {
+			return obj.GetNamespace() == selfNamespace && obj.GetName() == r.rancherAuthSecretName
+		})))
+	}
+	return bldr.Complete(r)
 }

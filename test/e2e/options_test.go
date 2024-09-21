@@ -26,7 +26,7 @@ import (
 )
 
 type E2EOptions struct {
-	*server.OperatorOptions
+	*server.GrafanaOperatorOptions
 
 	kubeContext string
 	kubeConfig  string
@@ -36,7 +36,7 @@ type E2EOptions struct {
 }
 
 var options = &E2EOptions{
-	OperatorOptions: server.NewOperatorOptions(),
+	GrafanaOperatorOptions: server.NewGrafanaOperatorOptions(),
 
 	kubeConfig: func() string {
 		kubecfg := os.Getenv("KUBECONFIG")

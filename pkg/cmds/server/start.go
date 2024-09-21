@@ -39,8 +39,8 @@ import (
 
 const defaultEtcdPathPrefix = "/registry/k8s.appscode.com"
 
-// UIServerOptions contains state for master/api server
-type UIServerOptions struct {
+// MonitoringOperatorOptions contains state for master/api server
+type MonitoringOperatorOptions struct {
 	RecommendedOptions *genericoptions.RecommendedOptions
 	ExtraOptions       *ExtraOptions
 
@@ -48,10 +48,10 @@ type UIServerOptions struct {
 	StdErr io.Writer
 }
 
-// NewUIServerOptions returns a new UIServerOptions
-func NewUIServerOptions(out, errOut io.Writer) *UIServerOptions {
+// NewMonitoringOperatorOptions returns a new MonitoringOperatorOptions
+func NewMonitoringOperatorOptions(out, errOut io.Writer) *MonitoringOperatorOptions {
 	_ = feature.DefaultMutableFeatureGate.Set(fmt.Sprintf("%s=false", features.APIPriorityAndFairness))
-	o := &UIServerOptions{
+	o := &MonitoringOperatorOptions{
 		RecommendedOptions: genericoptions.NewRecommendedOptions(
 			defaultEtcdPathPrefix,
 			apiserver.Codecs.LegacyCodec(
@@ -67,13 +67,13 @@ func NewUIServerOptions(out, errOut io.Writer) *UIServerOptions {
 	return o
 }
 
-func (o UIServerOptions) AddFlags(fs *pflag.FlagSet) {
+func (o *MonitoringOperatorOptions) AddFlags(fs *pflag.FlagSet) {
 	o.RecommendedOptions.AddFlags(fs)
 	o.ExtraOptions.AddFlags(fs)
 }
 
-// Validate validates UIServerOptions
-func (o UIServerOptions) Validate(args []string) error {
+// Validate validates MonitoringOperatorOptions
+func (o *MonitoringOperatorOptions) Validate(args []string) error {
 	var errors []error
 	errors = append(errors, o.RecommendedOptions.Validate()...)
 	errors = append(errors, o.ExtraOptions.Validate()...)
@@ -81,12 +81,12 @@ func (o UIServerOptions) Validate(args []string) error {
 }
 
 // Complete fills in fields required to have valid data
-func (o *UIServerOptions) Complete() error {
+func (o *MonitoringOperatorOptions) Complete() error {
 	return nil
 }
 
-// Config returns config for the api server given UIServerOptions
-func (o *UIServerOptions) Config() (*apiserver.Config, error) {
+// Config returns config for the api server given MonitoringOperatorOptions
+func (o *MonitoringOperatorOptions) Config() (*apiserver.Config, error) {
 	// TODO have a "real" external address
 	if err := o.RecommendedOptions.SecureServing.MaybeDefaultWithSelfSignedCerts("localhost", nil, []net.IP{net.ParseIP("127.0.0.1")}); err != nil {
 		return nil, fmt.Errorf("error creating self-signed certificates: %v", err)
@@ -102,13 +102,13 @@ func (o *UIServerOptions) Config() (*apiserver.Config, error) {
 	serverConfig.OpenAPIConfig = genericapiserver.DefaultOpenAPIConfig(
 		uiapi.GetOpenAPIDefinitions,
 		openapi.NewDefinitionNamer(apiserver.Scheme))
-	serverConfig.OpenAPIConfig.Info.Title = "grafana-webhook-server"
+	serverConfig.OpenAPIConfig.Info.Title = "monitoring-operator"
 	serverConfig.OpenAPIConfig.Info.Version = "v0.0.1"
 
 	serverConfig.OpenAPIV3Config = genericapiserver.DefaultOpenAPIV3Config(
 		uiapi.GetOpenAPIDefinitions,
 		openapi.NewDefinitionNamer(apiserver.Scheme))
-	serverConfig.OpenAPIV3Config.Info.Title = "grafana-webhook-server"
+	serverConfig.OpenAPIV3Config.Info.Title = "monitoring-operator"
 	serverConfig.OpenAPIV3Config.Info.Version = "v0.0.1"
 
 	extraConfig := apiserver.ExtraConfig{
@@ -125,8 +125,8 @@ func (o *UIServerOptions) Config() (*apiserver.Config, error) {
 	return config, nil
 }
 
-// RunUIServer starts a new GrafanaOperator given UIServerOptions
-func (o UIServerOptions) RunUIServer(ctx context.Context) error {
+// Run starts a new MonitoringOperator given MonitoringOperatorOptions
+func (o *MonitoringOperatorOptions) Run(ctx context.Context) error {
 	config, err := o.Config()
 	if err != nil {
 		return err
@@ -137,7 +137,7 @@ func (o UIServerOptions) RunUIServer(ctx context.Context) error {
 		return err
 	}
 
-	server.GenericAPIServer.AddPostStartHookOrDie("start-ui-server-informers", func(context genericapiserver.PostStartHookContext) error {
+	server.GenericAPIServer.AddPostStartHookOrDie("start-monitoring-operator-informers", func(context genericapiserver.PostStartHookContext) error {
 		config.GenericConfig.SharedInformerFactory.Start(context.StopCh)
 		return nil
 	})
