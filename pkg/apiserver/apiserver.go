@@ -28,6 +28,7 @@ import (
 	uiinstall "go.openviz.dev/apimachinery/apis/ui/install"
 	uiapi "go.openviz.dev/apimachinery/apis/ui/v1alpha1"
 	promtehsucontroller "go.openviz.dev/grafana-tools/pkg/controllers/prometheus"
+	"go.openviz.dev/grafana-tools/pkg/controllers/ranchertoken"
 	servicemonitorcontroller "go.openviz.dev/grafana-tools/pkg/controllers/servicemonitor"
 	"go.openviz.dev/grafana-tools/pkg/detector"
 	dashgroupstorage "go.openviz.dev/grafana-tools/pkg/registry/ui/dashboardgroup"
@@ -94,11 +95,12 @@ func init() {
 
 // ExtraConfig holds custom apiserver config
 type ExtraConfig struct {
-	ClientConfig *restclient.Config
-	BaseURL      string
-	Token        string
-	CACert       []byte
-	HubUID       string
+	ClientConfig      *restclient.Config
+	BaseURL           string
+	Token             string
+	CACert            []byte
+	HubUID            string
+	RancherAuthSecret string
 }
 
 // Config defines the config for the apiserver
@@ -186,6 +188,16 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 
 	d := detector.New(mgr.GetClient())
 
+	if c.ExtraConfig.RancherAuthSecret != "" {
+		if err = ranchertoken.NewTokenRefresher(
+			mgr.GetClient(),
+			c.ExtraConfig.RancherAuthSecret,
+		).SetupWithManager(mgr); err != nil {
+			klog.Error(err, "unable to create token refresher", "controller", "TokenRefresher")
+			os.Exit(1)
+		}
+	}
+
 	apiextensions.RegisterSetup(schema.GroupKind{
 		Group: monitoring.GroupName,
 		Kind:  monitoringv1.PrometheusesKind,
@@ -195,6 +207,7 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 			bc,
 			cid,
 			c.ExtraConfig.HubUID,
+			c.ExtraConfig.RancherAuthSecret,
 			d,
 		).SetupWithManager(mgr); err != nil {
 			klog.Error(err, "unable to create controller", "controller", "Prometheus")
