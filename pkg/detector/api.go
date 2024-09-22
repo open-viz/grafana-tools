@@ -70,8 +70,8 @@ func (l *lazy) detect() error {
 
 	if clustermeta.IsRancherManaged(l.kc.RESTMapper()) {
 		for _, obj := range list.Items {
-			if obj.GetNamespace() == clustermeta.NamespaceRancherMonitoring &&
-				obj.GetName() == clustermeta.PrometheusRancherMonitoring {
+			if obj.GetNamespace() == clustermeta.RancherMonitoringNamespace &&
+				obj.GetName() == clustermeta.RancherMonitoringPrometheus {
 				l.delegated = &federated{} // rancher style federated
 				return nil
 			}
@@ -141,8 +141,8 @@ func (f federated) Federated() bool {
 }
 
 func (f federated) IsDefault(key types.NamespacedName) bool {
-	return key.Namespace == clustermeta.NamespaceRancherMonitoring &&
-		key.Name == clustermeta.PrometheusRancherMonitoring
+	return key.Namespace == clustermeta.RancherMonitoringNamespace &&
+		key.Name == clustermeta.RancherMonitoringPrometheus
 }
 
 type standalone struct {

@@ -459,8 +459,8 @@ func (r *PrometheusReconciler) CleanupPreset(p *monitoringv1.Prometheus, isDefau
 }
 
 func (r *PrometheusReconciler) NamespaceForProjectSettings(prom *monitoringv1.Prometheus) (ns string, projectId string, err error) {
-	if prom.Namespace == clustermeta.NamespaceRancherMonitoring &&
-		prom.Name == clustermeta.PrometheusRancherMonitoring {
+	if prom.Namespace == clustermeta.RancherMonitoringNamespace &&
+		prom.Name == clustermeta.RancherMonitoringPrometheus {
 		var found bool
 		projectId, found, err = clustermeta.GetSystemProjectId(r.kc)
 		if err != nil {

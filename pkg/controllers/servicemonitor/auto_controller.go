@@ -126,7 +126,7 @@ func (r *AutoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	if !found || projectId == sysProjectId {
 		// find system prometheus and use that
 		for _, prom := range prometheuses {
-			if prom.Namespace == clustermeta.NamespaceRancherMonitoring {
+			if prom.Namespace == clustermeta.RancherMonitoringNamespace {
 				err = r.updateServiceMonitorLabels(prom, &svcMon)
 				if err != nil {
 					log.Error(err, "failed to apply label")
@@ -149,7 +149,7 @@ func (r *AutoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	}
 
 	for _, prom := range prometheuses {
-		if prom.Namespace == clustermeta.NamespaceRancherMonitoring {
+		if prom.Namespace == clustermeta.RancherMonitoringNamespace {
 			continue
 		}
 
