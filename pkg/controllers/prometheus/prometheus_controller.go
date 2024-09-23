@@ -56,6 +56,7 @@ import (
 const (
 	portPrometheus = "http-web"
 	saTrickster    = "trickster"
+	crTrickster    = "appscode:trickster:proxy"
 
 	registeredKey        = mona.GroupName + "/registered"
 	tokenIDKey           = mona.GroupName + "/token-id"
@@ -246,7 +247,7 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, pr
 
 	cr := rbac.ClusterRole{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: saTrickster,
+			Name: crTrickster,
 		},
 	}
 	crvt, err := cu.CreateOrPatch(context.TODO(), r.kc, &cr, func(in client.Object, createOp bool) client.Object {
@@ -269,7 +270,7 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, pr
 
 	rb := rbac.RoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      saTrickster,
+			Name:      crTrickster,
 			Namespace: key.Namespace,
 		},
 	}
