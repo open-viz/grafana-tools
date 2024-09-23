@@ -30,7 +30,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/klog/v2"
 	apiregistrationv1 "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
@@ -57,7 +56,8 @@ import (
 
 const (
 	portAlertmanager = "http-web"
-	saTrickster      = "trickster"
+	saInboxAgent     = "inbox-agent"
+	crInboxAgent     = "appscode:inbox-agent:webhook"
 
 	registeredKey          = mona.GroupName + "/registered"
 	tokenIDKey             = mona.GroupName + "/token-id"
@@ -130,22 +130,8 @@ func (r *AlertmanagerReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	return ctrl.Result{}, nil
 }
 
-func (r *AlertmanagerReconciler) findServiceForAlertmanager(key types.NamespacedName) (*core.Service, error) {
-	var svc core.Service
-	err := r.kc.Get(context.TODO(), key, &svc)
-	if err != nil {
-		return nil, err
-	}
-	return &svc, nil
-}
-
-func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context, prom *monitoringv1.Alertmanager, isDefault bool) error {
-	key := client.ObjectKeyFromObject(prom)
-
-	svc, err := r.findServiceForAlertmanager(key)
-	if err != nil {
-		return err
-	}
+func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context, am *monitoringv1.Alertmanager, isDefault bool) error {
+	key := client.ObjectKeyFromObject(am)
 
 	cm, err := clustermeta.ClusterMetadata(r.kc)
 	if err != nil {
@@ -155,7 +141,7 @@ func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context
 
 	cr := rbac.ClusterRole{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: saTrickster,
+			Name: crInboxAgent,
 		},
 	}
 	crvt, err := cu.CreateOrPatch(context.TODO(), r.kc, &cr, func(in client.Object, createOp bool) client.Object {
@@ -178,13 +164,13 @@ func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context
 
 	rb := rbac.RoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      saTrickster,
+			Name:      crInboxAgent,
 			Namespace: key.Namespace,
 		},
 	}
 	rbvt, err := cu.CreateOrPatch(context.TODO(), r.kc, &rb, func(in client.Object, createOp bool) client.Object {
 		obj := in.(*rbac.RoleBinding)
-		ref := metav1.NewControllerRef(prom, schema.GroupVersionKind{
+		ref := metav1.NewControllerRef(am, schema.GroupVersionKind{
 			Group:   monitoring.GroupName,
 			Version: monitoringv1beta1.Version,
 			Kind:    "Alertmanager",
@@ -197,21 +183,12 @@ func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context
 			Name:     cr.Name,
 		}
 
-		if rancherToken != nil {
-			obj.Subjects = []rbac.Subject{
-				{
-					Kind: "User",
-					Name: rancherToken.UserID,
-				},
-			}
-		} else {
-			obj.Subjects = []rbac.Subject{
-				{
-					Kind:      "ServiceAccount",
-					Name:      saTrickster,
-					Namespace: key.Namespace,
-				},
-			}
+		obj.Subjects = []rbac.Subject{
+			{
+				Kind:      "ServiceAccount",
+				Name:      saInboxAgent,
+				Namespace: key.Namespace,
+			},
 		}
 
 		return obj
@@ -221,7 +198,7 @@ func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context
 	}
 	klog.Infof("%s role binding %s/%s", rbvt, rb.Namespace, rb.Name)
 
-	err = r.CreatePreset(prom, isDefault)
+	err = r.CreatePreset(am, isDefault)
 	if err != nil {
 		return err
 	}
@@ -259,11 +236,6 @@ func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context
 			obj.Annotations = map[string]string{}
 		}
 		obj.Annotations[registeredKey] = state
-		if rancherToken != nil {
-			obj.Annotations[tokenIDKey] = rancherToken.TokenID
-		} else {
-			delete(obj.Annotations, tokenIDKey)
-		}
 		return obj
 	}
 
@@ -281,7 +253,7 @@ func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context
 			(rancherToken != nil && rb.Annotations[tokenIDKey] != rancherToken.TokenID)) {
 		var projectId string
 		if !isDefault {
-			_, projectId, err = r.NamespaceForProjectSettings(prom)
+			_, projectId, err = r.NamespaceForProjectSettings(am)
 			if err != nil {
 				return err
 			}
@@ -297,12 +269,12 @@ func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context
 		}
 
 		if isDefault {
-			_, err := r.CreateAlertmanagerAppBinding(prom, svc)
+			_, err := r.CreateAlertmanagerAppBinding(am, svc)
 			if err != nil {
 				return err
 			}
 
-			err = r.CreateGrafanaAppBinding(prom, resp)
+			err = r.CreateGrafanaAppBinding(am, resp)
 			if err != nil {
 				return err
 			}
