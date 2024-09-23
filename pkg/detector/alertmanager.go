@@ -18,7 +18,6 @@ package detector
 
 import (
 	"context"
-	"errors"
 	"sync"
 
 	"github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring"
@@ -30,36 +29,34 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-var GVKPrometheus = schema.GroupVersionKind{
+var GVKAlertmanager = schema.GroupVersionKind{
 	Group:   monitoring.GroupName,
 	Version: monitoringv1.Version,
-	Kind:    "Prometheus",
+	Kind:    "Alertmanager",
 }
 
-type PrometheusDetector interface {
+type AlertmanagerDetector interface {
 	Ready() (bool, error)
 	RancherManaged() bool
 	Federated() bool
 	IsDefault(key types.NamespacedName) bool
 }
 
-func NewPrometheusDetector(kc client.Client) PrometheusDetector {
-	return &lazyPrometheus{kc: kc}
+func NewAlertmanagerDetector(kc client.Client) AlertmanagerDetector {
+	return &lazyAlertmanager{kc: kc}
 }
 
-var errUnknown = errors.New("unknown")
-
-type lazyPrometheus struct {
+type lazyAlertmanager struct {
 	kc        client.Client
-	delegated PrometheusDetector
+	delegated AlertmanagerDetector
 	mu        sync.Mutex
 }
 
-var _ PrometheusDetector = &lazyPrometheus{}
+var _ AlertmanagerDetector = &lazyAlertmanager{}
 
-func (l *lazyPrometheus) detect() error {
+func (l *lazyAlertmanager) detect() error {
 	var list unstructured.UnstructuredList
-	list.SetGroupVersionKind(GVKPrometheus)
+	list.SetGroupVersionKind(GVKAlertmanager)
 	err := l.kc.List(context.TODO(), &list)
 	if err != nil {
 		return err
@@ -71,23 +68,23 @@ func (l *lazyPrometheus) detect() error {
 	if clustermeta.IsRancherManaged(l.kc.RESTMapper()) {
 		for _, obj := range list.Items {
 			if obj.GetNamespace() == clustermeta.RancherMonitoringNamespace &&
-				obj.GetName() == clustermeta.RancherMonitoringPrometheus {
-				l.delegated = &federatedPrometheus{} // rancher style federatedPrometheus
+				obj.GetName() == clustermeta.RancherMonitoringAlertmanager {
+				l.delegated = &federatedAlertmanager{} // rancher style federatedAlertmanager
 				return nil
 			}
 		}
 
-		// rancher cluster but using prometheus directly
-		l.delegated = &standalonePrometheus{rancher: true, singleton: len(list.Items) == 1}
+		// rancher cluster but using alertmanager directly
+		l.delegated = &standaloneAlertmanager{rancher: true, singleton: len(list.Items) == 1}
 		return nil
 	}
 
-	// using prometheus directly and not rancher managed
-	l.delegated = &standalonePrometheus{rancher: false, singleton: len(list.Items) == 1}
+	// using alertmanager directly and not rancher managed
+	l.delegated = &standaloneAlertmanager{rancher: false, singleton: len(list.Items) == 1}
 	return nil
 }
 
-func (l *lazyPrometheus) Ready() (bool, error) {
+func (l *lazyAlertmanager) Ready() (bool, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	if l.delegated == nil {
@@ -97,7 +94,7 @@ func (l *lazyPrometheus) Ready() (bool, error) {
 	return true, nil
 }
 
-func (l *lazyPrometheus) RancherManaged() bool {
+func (l *lazyAlertmanager) RancherManaged() bool {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	if l.delegated == nil {
@@ -106,7 +103,7 @@ func (l *lazyPrometheus) RancherManaged() bool {
 	return l.delegated.RancherManaged()
 }
 
-func (l *lazyPrometheus) Federated() bool {
+func (l *lazyAlertmanager) Federated() bool {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	if l.delegated == nil {
@@ -115,7 +112,7 @@ func (l *lazyPrometheus) Federated() bool {
 	return l.delegated.Federated()
 }
 
-func (l *lazyPrometheus) IsDefault(key types.NamespacedName) bool {
+func (l *lazyAlertmanager) IsDefault(key types.NamespacedName) bool {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	if l.delegated == nil {
@@ -124,46 +121,46 @@ func (l *lazyPrometheus) IsDefault(key types.NamespacedName) bool {
 	return l.delegated.IsDefault(key)
 }
 
-type federatedPrometheus struct{}
+type federatedAlertmanager struct{}
 
-var _ PrometheusDetector = federatedPrometheus{}
+var _ AlertmanagerDetector = federatedAlertmanager{}
 
-func (f federatedPrometheus) Ready() (bool, error) {
+func (f federatedAlertmanager) Ready() (bool, error) {
 	return true, nil
 }
 
-func (f federatedPrometheus) RancherManaged() bool {
+func (f federatedAlertmanager) RancherManaged() bool {
 	return true
 }
 
-func (f federatedPrometheus) Federated() bool {
+func (f federatedAlertmanager) Federated() bool {
 	return true
 }
 
-func (f federatedPrometheus) IsDefault(key types.NamespacedName) bool {
+func (f federatedAlertmanager) IsDefault(key types.NamespacedName) bool {
 	return key.Namespace == clustermeta.RancherMonitoringNamespace &&
-		key.Name == clustermeta.RancherMonitoringPrometheus
+		key.Name == clustermeta.RancherMonitoringAlertmanager
 }
 
-type standalonePrometheus struct {
+type standaloneAlertmanager struct {
 	rancher   bool
 	singleton bool
 }
 
-var _ PrometheusDetector = standalonePrometheus{}
+var _ AlertmanagerDetector = standaloneAlertmanager{}
 
-func (s standalonePrometheus) Ready() (bool, error) {
+func (s standaloneAlertmanager) Ready() (bool, error) {
 	return true, nil
 }
 
-func (s standalonePrometheus) RancherManaged() bool {
+func (s standaloneAlertmanager) RancherManaged() bool {
 	return s.rancher
 }
 
-func (s standalonePrometheus) Federated() bool {
+func (s standaloneAlertmanager) Federated() bool {
 	return false
 }
 
-func (s standalonePrometheus) IsDefault(key types.NamespacedName) bool {
+func (s standaloneAlertmanager) IsDefault(key types.NamespacedName) bool {
 	return s.singleton
 }

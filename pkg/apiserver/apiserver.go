@@ -188,7 +188,7 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 		os.Exit(1)
 	}
 
-	d := detector.New(mgr.GetClient())
+	prometheusDetector := detector.NewPrometheusDetector(mgr.GetClient())
 
 	if c.ExtraConfig.RancherAuthSecret != "" {
 		if err = ranchertoken.NewTokenRefresher(
@@ -210,7 +210,7 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 			cid,
 			c.ExtraConfig.HubUID,
 			c.ExtraConfig.RancherAuthSecret,
-			d,
+			prometheusDetector,
 		).SetupWithManager(mgr); err != nil {
 			klog.Error(err, "unable to create controller", "controller", "Prometheus")
 			os.Exit(1)
@@ -232,7 +232,7 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 		if err = servicemonitorcontroller.NewFederationReconciler(
 			c.ExtraConfig.ClientConfig,
 			mgr.GetClient(),
-			d,
+			prometheusDetector,
 		).SetupWithManager(mgr); err != nil {
 			klog.Error(err, "unable to create controller", " federation controller", "ServiceMonitor")
 			os.Exit(1)
@@ -292,7 +292,7 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 		apiGroupInfo := genericapiserver.NewDefaultAPIGroupInfo(ui.GroupName, Scheme, metav1.ParameterCodec, Codecs)
 
 		v1alpha1storage := map[string]rest.Storage{}
-		v1alpha1storage[uiapi.ResourceDashboardGroups] = dashgroupstorage.NewStorage(ctrlClient, rbacAuthorizer, d)
+		v1alpha1storage[uiapi.ResourceDashboardGroups] = dashgroupstorage.NewStorage(ctrlClient, rbacAuthorizer, prometheusDetector)
 		apiGroupInfo.VersionedResourcesStorageMap["v1alpha1"] = v1alpha1storage
 
 		if err := s.GenericAPIServer.InstallAPIGroup(&apiGroupInfo); err != nil {
