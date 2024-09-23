@@ -61,10 +61,8 @@ const (
 	crInboxAgent     = "appscode:inbox-agent:webhook"
 
 	registeredKey          = mona.GroupName + "/registered"
-	tokenIDKey             = mona.GroupName + "/token-id"
 	presetsMonitoring      = "monitoring-presets"
 	appBindingAlertmanager = "default-alertmanager"
-	appBindingGrafana      = "default-grafana"
 )
 
 var selfNamespace = meta_util.PodNamespace()
@@ -119,8 +117,7 @@ func (r *AlertmanagerReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	isDefault := r.d.IsDefault(key)
 
 	if am.DeletionTimestamp != nil {
-		err := r.CleanupPreset(&am, isDefault)
-		return ctrl.Result{}, err
+		return ctrl.Result{}, nil
 	}
 
 	if err := r.SetupClusterForAlertmanager(ctx, &am, isDefault); err != nil {
@@ -204,33 +201,6 @@ func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context
 		return err
 	}
 
-	var pcfg mona.AlertmanagerConfig
-	pcfg.Service = mona.ServiceSpec{
-		Scheme:    "http",
-		Name:      svc.Name,
-		Namespace: svc.Namespace,
-		Port:      "",
-		Path:      "",
-		Query:     "",
-	}
-	for _, p := range svc.Spec.Ports {
-		if p.Name == portAlertmanager {
-			pcfg.Service.Port = fmt.Sprintf("%d", p.Port)
-		}
-	}
-	// pcfg.URL = fmt.Sprintf("%s/api/v1/namespaces/%s/services/%s:%s:%s/proxy/", r.cfg.Host, pcfg.Service.Namespace, pcfg.Service.Scheme, pcfg.Service.Name, pcfg.Service.Port)
-
-	// remove basic auth and client cert auth
-	if rancherToken != nil {
-		pcfg.BearerToken = rancherToken.Token
-	} else {
-		pcfg.BearerToken = saToken
-	}
-	pcfg.BasicAuth = mona.BasicAuth{}
-	pcfg.TLS.Cert = ""
-	pcfg.TLS.Key = ""
-	pcfg.TLS.Ca = ""
-
 	applyMarkers := func(in client.Object, createOp bool) client.Object {
 		obj := in.(*rbac.RoleBinding)
 		if obj.Annotations == nil {
@@ -241,46 +211,7 @@ func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context
 	}
 
 	// fix legacy deployments
-	if rb.Annotations[registeredKey] == "true" {
-		rbvt, err = cu.CreateOrPatch(context.TODO(), r.kc, &rb, applyMarkers)
-		if err != nil {
-			return err
-		}
-		klog.Infof("%s rolebinding %s/%s with %s annotation", rbvt, rb.Namespace, rb.Name, registeredKey)
-
-		return nil
-	} else if r.bc != nil &&
-		(rb.Annotations[registeredKey] != state ||
-			(rancherToken != nil && rb.Annotations[tokenIDKey] != rancherToken.TokenID)) {
-		var projectId string
-		if !isDefault {
-			_, projectId, err = r.NamespaceForProjectSettings(am)
-			if err != nil {
-				return err
-			}
-		}
-		resp, err := r.bc.Register(mona.AlertmanagerContext{
-			HubUID:     r.hubUID,
-			ClusterUID: r.clusterUID,
-			ProjectId:  projectId,
-			Default:    isDefault,
-		}, pcfg)
-		if err != nil {
-			return err
-		}
-
-		if isDefault {
-			_, err := r.CreateAlertmanagerAppBinding(am, svc)
-			if err != nil {
-				return err
-			}
-
-			err = r.CreateGrafanaAppBinding(am, resp)
-			if err != nil {
-				return err
-			}
-		}
-
+	if rb.Annotations[registeredKey] != state {
 		rbvt, err = cu.CreateOrPatch(context.TODO(), r.kc, &rb, applyMarkers)
 		if err != nil {
 			return err
@@ -302,42 +233,6 @@ func (r *AlertmanagerReconciler) CreatePreset(p *monitoringv1.Alertmanager, isDe
 		return r.CreateProjectPreset(p, presetBytes)
 	}
 	return r.CreateClusterPreset(presetBytes)
-}
-
-func (r *AlertmanagerReconciler) CleanupPreset(p *monitoringv1.Alertmanager, isDefault bool) error {
-	if r.d.Federated() && !isDefault {
-		ns, _, err := r.NamespaceForProjectSettings(p)
-		if err != nil {
-			return err
-		}
-
-		cp := chartsapi.ChartPreset{
-			TypeMeta: metav1.TypeMeta{},
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      presetsMonitoring,
-				Namespace: ns,
-			},
-		}
-		err = r.kc.Delete(context.TODO(), &cp)
-		if err != nil {
-			return err
-		}
-		klog.Infof("deleted ChartPreset %s/%s", cp.Namespace, cp.Name)
-		return nil
-	}
-
-	ccp := chartsapi.ClusterChartPreset{
-		TypeMeta: metav1.TypeMeta{},
-		ObjectMeta: metav1.ObjectMeta{
-			Name: presetsMonitoring,
-		},
-	}
-	err := r.kc.Delete(context.TODO(), &ccp)
-	if err != nil {
-		return err
-	}
-	klog.Infof("deleted ClusterChartPreset %s", ccp.Name)
-	return nil
 }
 
 func (r *AlertmanagerReconciler) NamespaceForProjectSettings(prom *monitoringv1.Alertmanager) (ns string, projectId string, err error) {
