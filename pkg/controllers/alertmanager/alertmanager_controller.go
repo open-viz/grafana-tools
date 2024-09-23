@@ -20,13 +20,11 @@ import (
 	"context"
 	"fmt"
 
-	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
-	"go.openviz.dev/grafana-tools/pkg/detector"
-	"go.openviz.dev/grafana-tools/pkg/rancherutil"
-
 	"github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	monitoringv1beta1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1beta1"
+	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
+	"go.openviz.dev/grafana-tools/pkg/detector"
 	core "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -41,7 +39,6 @@ import (
 	kmapi "kmodules.xyz/client-go/api/v1"
 	cu "kmodules.xyz/client-go/client"
 	clustermeta "kmodules.xyz/client-go/cluster"
-	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
@@ -56,6 +53,7 @@ import (
 )
 
 // v1alpha1.inbox.monitoring.appscode.com       monitoring/inbox-agent
+// Grant permission to alertmanager to call webhook
 
 const (
 	portAlertmanager = "http-web"
@@ -121,54 +119,11 @@ func (r *AlertmanagerReconciler) Reconcile(ctx context.Context, req ctrl.Request
 
 	if am.DeletionTimestamp != nil {
 		err := r.CleanupPreset(&am, isDefault)
-		if err != nil {
-			return ctrl.Result{}, err
-		}
-
-		var projectId string
-		if !isDefault {
-			_, projectId, err = r.NamespaceForProjectSettings(&am)
-			if err != nil {
-				return ctrl.Result{}, err
-			}
-		}
-		if r.bc != nil {
-			err := r.bc.Unregister(mona.AlertmanagerContext{
-				ClusterUID: r.clusterUID,
-				ProjectId:  projectId,
-				Default:    isDefault,
-			})
-			if err != nil {
-				return ctrl.Result{}, err
-			}
-		}
-
-		vt, err := cu.CreateOrPatch(context.TODO(), r.kc, &am, func(in client.Object, createOp bool) client.Object {
-			obj := in.(*monitoringv1.Alertmanager)
-			obj.ObjectMeta = core_util.RemoveFinalizer(obj.ObjectMeta, mona.AlertmanagerKey)
-
-			return obj
-		})
-		if err != nil {
-			return ctrl.Result{}, err
-		}
-		klog.Infof("%s Alertmanager %s/%s to remove finalizer %s", vt, am.Namespace, am.Name, mona.AlertmanagerKey)
-		return ctrl.Result{}, nil
-	}
-
-	vt, err := cu.CreateOrPatch(context.TODO(), r.kc, &am, func(in client.Object, createOp bool) client.Object {
-		obj := in.(*monitoringv1.Alertmanager)
-		obj.ObjectMeta = core_util.AddFinalizer(obj.ObjectMeta, mona.AlertmanagerKey)
-
-		return obj
-	})
-	if err != nil {
 		return ctrl.Result{}, err
 	}
-	klog.Infof("%s Alertmanager %s/%s to add finalizer %s", vt, am.Namespace, am.Name, mona.AlertmanagerKey)
 
 	if err := r.SetupClusterForAlertmanager(ctx, &am, isDefault); err != nil {
-		log.Error(err, "unable to setup Alertmanager")
+		log.Error(err, "unable to setup Alertmanager config")
 		return ctrl.Result{}, err
 	}
 
@@ -197,50 +152,6 @@ func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context
 		return err
 	}
 	state := cm.State()
-
-	var rancherToken *rancherutil.RancherToken
-	var saToken string
-	if r.d.RancherManaged() && r.rancherAuthSecretName != "" {
-		var rancherSecret core.Secret
-		rancherSecretKey := client.ObjectKey{Name: r.rancherAuthSecretName, Namespace: selfNamespace}
-		err = r.kc.Get(context.TODO(), rancherSecretKey, &rancherSecret)
-		if err != nil {
-			return err
-		}
-
-		_, rancherToken, err = rancherutil.FindToken(ctx, &rancherSecret, state)
-		if err != nil {
-			return err
-		}
-	} else {
-		sa := core.ServiceAccount{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      saTrickster,
-				Namespace: key.Namespace,
-			},
-		}
-		savt, err := cu.CreateOrPatch(context.TODO(), r.kc, &sa, func(in client.Object, createOp bool) client.Object {
-			obj := in.(*core.ServiceAccount)
-			ref := metav1.NewControllerRef(prom, schema.GroupVersionKind{
-				Group:   monitoring.GroupName,
-				Version: monitoringv1beta1.Version,
-				Kind:    "Alertmanager",
-			})
-			obj.OwnerReferences = []metav1.OwnerReference{*ref}
-
-			return obj
-		})
-		if err != nil {
-			return err
-		}
-		klog.Infof("%s service account %s/%s", savt, sa.Namespace, sa.Name)
-
-		s, err := cu.GetServiceAccountTokenSecret(r.kc, client.ObjectKeyFromObject(&sa))
-		if err != nil {
-			return err
-		}
-		saToken = string(s.Data["token"])
-	}
 
 	cr := rbac.ClusterRole{
 		ObjectMeta: metav1.ObjectMeta{
