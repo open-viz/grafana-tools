@@ -20,11 +20,12 @@ import (
 	"context"
 	"fmt"
 
+	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
+	"go.openviz.dev/grafana-tools/pkg/detector"
+
 	"github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	monitoringv1beta1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1beta1"
-	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
-	"go.openviz.dev/grafana-tools/pkg/detector"
 	core "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
