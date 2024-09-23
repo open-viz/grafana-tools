@@ -19,6 +19,7 @@ package alertmanager
 import (
 	"context"
 	"fmt"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 
 	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 	"go.openviz.dev/grafana-tools/pkg/detector"
@@ -75,10 +76,10 @@ type AlertmanagerReconciler struct {
 	kc         client.Client
 	scheme     *runtime.Scheme
 	clusterUID string
-	d          detector.PrometheusDetector
+	d          detector.AlertmanagerDetector
 }
 
-func NewReconciler(kc client.Client, clusterUID string, d detector.PrometheusDetector) *AlertmanagerReconciler {
+func NewReconciler(kc client.Client, clusterUID string, d detector.AlertmanagerDetector) *AlertmanagerReconciler {
 	return &AlertmanagerReconciler{
 		kc:         kc,
 		scheme:     kc.Scheme(),
@@ -99,8 +100,8 @@ func NewReconciler(kc client.Client, clusterUID string, d detector.PrometheusDet
 func (r *AlertmanagerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
 
-	var prom monitoringv1beta1.Alertmanager
-	if err := r.kc.Get(ctx, req.NamespacedName, &prom); err != nil {
+	var am monitoringv1.Alertmanager
+	if err := r.kc.Get(ctx, req.NamespacedName, &am); err != nil {
 		log.Error(err, "unable to fetch Alertmanager")
 		// we'll ignore not-found errors, since they can't be fixed by an immediate
 		// requeue (we'll need to wait for a new notification), and we can get them
@@ -115,15 +116,15 @@ func (r *AlertmanagerReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	key := req.NamespacedName
 	isDefault := r.d.IsDefault(key)
 
-	if prom.DeletionTimestamp != nil {
-		err := r.CleanupPreset(&prom, isDefault)
+	if am.DeletionTimestamp != nil {
+		err := r.CleanupPreset(&am, isDefault)
 		if err != nil {
 			return ctrl.Result{}, err
 		}
 
 		var projectId string
 		if !isDefault {
-			_, projectId, err = r.NamespaceForProjectSettings(&prom)
+			_, projectId, err = r.NamespaceForProjectSettings(&am)
 			if err != nil {
 				return ctrl.Result{}, err
 			}
@@ -139,8 +140,8 @@ func (r *AlertmanagerReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			}
 		}
 
-		vt, err := cu.CreateOrPatch(context.TODO(), r.kc, &prom, func(in client.Object, createOp bool) client.Object {
-			obj := in.(*monitoringv1beta1.Alertmanager)
+		vt, err := cu.CreateOrPatch(context.TODO(), r.kc, &am, func(in client.Object, createOp bool) client.Object {
+			obj := in.(*monitoringv1.Alertmanager)
 			obj.ObjectMeta = core_util.RemoveFinalizer(obj.ObjectMeta, mona.AlertmanagerKey)
 
 			return obj
@@ -148,12 +149,12 @@ func (r *AlertmanagerReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		if err != nil {
 			return ctrl.Result{}, err
 		}
-		klog.Infof("%s Alertmanager %s/%s to remove finalizer %s", vt, prom.Namespace, prom.Name, mona.AlertmanagerKey)
+		klog.Infof("%s Alertmanager %s/%s to remove finalizer %s", vt, am.Namespace, am.Name, mona.AlertmanagerKey)
 		return ctrl.Result{}, nil
 	}
 
-	vt, err := cu.CreateOrPatch(context.TODO(), r.kc, &prom, func(in client.Object, createOp bool) client.Object {
-		obj := in.(*monitoringv1beta1.Alertmanager)
+	vt, err := cu.CreateOrPatch(context.TODO(), r.kc, &am, func(in client.Object, createOp bool) client.Object {
+		obj := in.(*monitoringv1.Alertmanager)
 		obj.ObjectMeta = core_util.AddFinalizer(obj.ObjectMeta, mona.AlertmanagerKey)
 
 		return obj
@@ -161,9 +162,9 @@ func (r *AlertmanagerReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	klog.Infof("%s Alertmanager %s/%s to add finalizer %s", vt, prom.Namespace, prom.Name, mona.AlertmanagerKey)
+	klog.Infof("%s Alertmanager %s/%s to add finalizer %s", vt, am.Namespace, am.Name, mona.AlertmanagerKey)
 
-	if err := r.SetupClusterForAlertmanager(ctx, &prom, isDefault); err != nil {
+	if err := r.SetupClusterForAlertmanager(ctx, &am, isDefault); err != nil {
 		log.Error(err, "unable to setup Alertmanager")
 		return ctrl.Result{}, err
 	}
@@ -180,7 +181,7 @@ func (r *AlertmanagerReconciler) findServiceForAlertmanager(key types.Namespaced
 	return &svc, nil
 }
 
-func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context, prom *monitoringv1beta1.Alertmanager, isDefault bool) error {
+func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context, prom *monitoringv1.Alertmanager, isDefault bool) error {
 	key := client.ObjectKeyFromObject(prom)
 
 	svc, err := r.findServiceForAlertmanager(key)
@@ -403,7 +404,7 @@ func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context
 	return nil
 }
 
-func (r *AlertmanagerReconciler) CreatePreset(p *monitoringv1beta1.Alertmanager, isDefault bool) error {
+func (r *AlertmanagerReconciler) CreatePreset(p *monitoringv1.Alertmanager, isDefault bool) error {
 	presets := r.GeneratePresetForAlertmanager(*p)
 	presetBytes, err := json.Marshal(presets)
 	if err != nil {
@@ -416,7 +417,7 @@ func (r *AlertmanagerReconciler) CreatePreset(p *monitoringv1beta1.Alertmanager,
 	return r.CreateClusterPreset(presetBytes)
 }
 
-func (r *AlertmanagerReconciler) CleanupPreset(p *monitoringv1beta1.Alertmanager, isDefault bool) error {
+func (r *AlertmanagerReconciler) CleanupPreset(p *monitoringv1.Alertmanager, isDefault bool) error {
 	if r.d.Federated() && !isDefault {
 		ns, _, err := r.NamespaceForProjectSettings(p)
 		if err != nil {
@@ -452,7 +453,7 @@ func (r *AlertmanagerReconciler) CleanupPreset(p *monitoringv1beta1.Alertmanager
 	return nil
 }
 
-func (r *AlertmanagerReconciler) NamespaceForProjectSettings(prom *monitoringv1beta1.Alertmanager) (ns string, projectId string, err error) {
+func (r *AlertmanagerReconciler) NamespaceForProjectSettings(prom *monitoringv1.Alertmanager) (ns string, projectId string, err error) {
 	if prom.Namespace == clustermeta.RancherMonitoringNamespace &&
 		prom.Name == clustermeta.RancherMonitoringAlertmanager {
 		var found bool
@@ -505,7 +506,7 @@ func (r *AlertmanagerReconciler) CreateClusterPreset(presetBytes []byte) error {
 	return nil
 }
 
-func (r *AlertmanagerReconciler) CreateProjectPreset(p *monitoringv1beta1.Alertmanager, presetBytes []byte) error {
+func (r *AlertmanagerReconciler) CreateProjectPreset(p *monitoringv1.Alertmanager, presetBytes []byte) error {
 	ns, _, err := r.NamespaceForProjectSettings(p)
 	if err != nil {
 		return err
@@ -537,7 +538,7 @@ func (r *AlertmanagerReconciler) CreateProjectPreset(p *monitoringv1beta1.Alertm
 	return nil
 }
 
-func (r *AlertmanagerReconciler) GeneratePresetForAlertmanager(p monitoringv1beta1.Alertmanager) mona.MonitoringPresets {
+func (r *AlertmanagerReconciler) GeneratePresetForAlertmanager(p monitoringv1.Alertmanager) mona.MonitoringPresets {
 	var preset mona.MonitoringPresets
 
 	preset.Spec.Monitoring.Agent = string(mona.AgentAlertmanagerOperator)
@@ -557,7 +558,7 @@ func (r *AlertmanagerReconciler) GeneratePresetForAlertmanager(p monitoringv1bet
 	return preset
 }
 
-func (r *AlertmanagerReconciler) CreateAlertmanagerAppBinding(prom *monitoringv1beta1.Alertmanager, svc *core.Service) (kutil.VerbType, error) {
+func (r *AlertmanagerReconciler) CreateAlertmanagerAppBinding(prom *monitoringv1.Alertmanager, svc *core.Service) (kutil.VerbType, error) {
 	ab := appcatalog.AppBinding{
 		TypeMeta: metav1.TypeMeta{},
 		ObjectMeta: metav1.ObjectMeta{
@@ -616,7 +617,7 @@ func (r *AlertmanagerReconciler) CreateAlertmanagerAppBinding(prom *monitoringv1
 	return vt, err
 }
 
-func (r *AlertmanagerReconciler) CreateGrafanaAppBinding(prom *monitoringv1beta1.Alertmanager, resp *GrafanaDatasourceResponse) error {
+func (r *AlertmanagerReconciler) CreateGrafanaAppBinding(prom *monitoringv1.Alertmanager, resp *GrafanaDatasourceResponse) error {
 	ab := appcatalog.AppBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      appBindingGrafana,
@@ -719,21 +720,23 @@ func (r *AlertmanagerReconciler) CreateGrafanaAppBinding(prom *monitoringv1beta1
 // SetupWithManager sets up the controller with the Manager.
 func (r *AlertmanagerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	stateHandler := handler.EnqueueRequestsFromMapFunc(func(ctx context.Context, a client.Object) []reconcile.Request {
-		var promList monitoringv1beta1.AlertmanagerList
-		err := r.kc.List(ctx, &promList)
+		var amList monitoringv1.AlertmanagerList
+		err := r.kc.List(ctx, &amList)
 		if err != nil {
 			return nil
 		}
 
 		var req []reconcile.Request
-		for _, prom := range promList.Items {
-			req = append(req, reconcile.Request{NamespacedName: client.ObjectKeyFromObject(prom)})
+		for _, am := range amList.Items {
+			req = append(req, reconcile.Request{NamespacedName: client.ObjectKeyFromObject(&am)})
 		}
 		return req
 	})
 
+	// v1alpha1.inbox.monitoring.appscode.com       monitoring/inbox-agent
+
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&monitoringv1beta1.Alertmanager{}).
+		For(&monitoringv1.Alertmanager{}).
 		Watches(&core.ConfigMap{}, stateHandler, builder.WithPredicates(predicate.NewPredicateFuncs(func(obj client.Object) bool {
 			return obj.GetNamespace() == metav1.NamespacePublic && obj.GetName() == kmapi.AceInfoConfigMapName
 		}))).

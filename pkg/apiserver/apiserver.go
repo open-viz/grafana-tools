@@ -32,6 +32,7 @@ import (
 	servicemonitorcontroller "go.openviz.dev/grafana-tools/pkg/controllers/servicemonitor"
 	"go.openviz.dev/grafana-tools/pkg/detector"
 	dashgroupstorage "go.openviz.dev/grafana-tools/pkg/registry/ui/dashboardgroup"
+	_ "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
 
 	"github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
