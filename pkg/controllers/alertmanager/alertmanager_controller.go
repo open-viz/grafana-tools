@@ -19,13 +19,13 @@ package alertmanager
 import (
 	"context"
 	"fmt"
-	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 
 	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 	"go.openviz.dev/grafana-tools/pkg/detector"
 	"go.openviz.dev/grafana-tools/pkg/rancherutil"
 
 	"github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	monitoringv1beta1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1beta1"
 	core "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
@@ -35,6 +35,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/klog/v2"
+	apiregistrationv1 "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
 	"k8s.io/utils/ptr"
 	kutil "kmodules.xyz/client-go"
 	kmapi "kmodules.xyz/client-go/api/v1"
@@ -53,6 +54,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	chartsapi "x-helm.dev/apimachinery/apis/charts/v1alpha1"
 )
+
+// v1alpha1.inbox.monitoring.appscode.com       monitoring/inbox-agent
 
 const (
 	portAlertmanager = "http-web"
@@ -733,12 +736,11 @@ func (r *AlertmanagerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		return req
 	})
 
-	// v1alpha1.inbox.monitoring.appscode.com       monitoring/inbox-agent
-
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&monitoringv1.Alertmanager{}).
-		Watches(&core.ConfigMap{}, stateHandler, builder.WithPredicates(predicate.NewPredicateFuncs(func(obj client.Object) bool {
-			return obj.GetNamespace() == metav1.NamespacePublic && obj.GetName() == kmapi.AceInfoConfigMapName
+		Watches(&apiregistrationv1.APIService{}, stateHandler, builder.WithPredicates(predicate.NewPredicateFuncs(func(obj client.Object) bool {
+			apisvc := obj.(*apiregistrationv1.APIService)
+			return apisvc.Spec.Group == "inbox.monitoring.appscode.com"
 		}))).
 		Complete(r)
 }
