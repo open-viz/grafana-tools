@@ -55,13 +55,13 @@ import (
 
 const (
 	portAlertmanager = "http-web"
-	saTrickster    = "trickster"
+	saTrickster      = "trickster"
 
-	registeredKey        = mona.GroupName + "/registered"
-	tokenIDKey           = mona.GroupName + "/token-id"
-	presetsMonitoring    = "monitoring-presets"
+	registeredKey          = mona.GroupName + "/registered"
+	tokenIDKey             = mona.GroupName + "/token-id"
+	presetsMonitoring      = "monitoring-presets"
 	appBindingAlertmanager = "default-alertmanager"
-	appBindingGrafana    = "default-grafana"
+	appBindingGrafana      = "default-grafana"
 )
 
 var selfNamespace = meta_util.PodNamespace()
