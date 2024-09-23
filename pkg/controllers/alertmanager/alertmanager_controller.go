@@ -732,15 +732,10 @@ func (r *AlertmanagerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		return req
 	})
 
-	bldr := ctrl.NewControllerManagedBy(mgr).
+	return ctrl.NewControllerManagedBy(mgr).
 		For(&monitoringv1.Alertmanager{}).
 		Watches(&core.ConfigMap{}, stateHandler, builder.WithPredicates(predicate.NewPredicateFuncs(func(obj client.Object) bool {
 			return obj.GetNamespace() == metav1.NamespacePublic && obj.GetName() == kmapi.AceInfoConfigMapName
-		})))
-	if r.rancherAuthSecretName != "" {
-		bldr = bldr.Watches(&core.Secret{}, stateHandler, builder.WithPredicates(predicate.NewPredicateFuncs(func(obj client.Object) bool {
-			return obj.GetNamespace() == selfNamespace && obj.GetName() == r.rancherAuthSecretName
-		})))
-	}
-	return bldr.Complete(r)
+		}))).
+		Complete(r)
 }
