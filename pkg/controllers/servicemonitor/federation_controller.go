@@ -54,10 +54,10 @@ type FederationReconciler struct {
 	cfg    *rest.Config
 	kc     client.Client
 	scheme *runtime.Scheme
-	d      detector.Detector
+	d      detector.PrometheusDetector
 }
 
-func NewFederationReconciler(cfg *rest.Config, kc client.Client, d detector.Detector) *FederationReconciler {
+func NewFederationReconciler(cfg *rest.Config, kc client.Client, d detector.PrometheusDetector) *FederationReconciler {
 	return &FederationReconciler{
 		cfg:    cfg,
 		kc:     kc,
