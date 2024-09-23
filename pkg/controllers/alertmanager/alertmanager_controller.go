@@ -72,24 +72,18 @@ var defaultPresetsLabels = map[string]string{
 
 // AlertmanagerReconciler reconciles an Alertmanager object
 type AlertmanagerReconciler struct {
-	kc                    client.Client
-	scheme                *runtime.Scheme
-	bc                    *Client
-	clusterUID            string
-	hubUID                string
-	rancherAuthSecretName string
-	d                     detector.Detector
+	kc         client.Client
+	scheme     *runtime.Scheme
+	clusterUID string
+	d          detector.Detector
 }
 
-func NewReconciler(kc client.Client, bc *Client, clusterUID, hubUID, rancherAuthSecretName string, d detector.Detector) *AlertmanagerReconciler {
+func NewReconciler(kc client.Client, clusterUID string, d detector.Detector) *AlertmanagerReconciler {
 	return &AlertmanagerReconciler{
-		kc:                    kc,
-		scheme:                kc.Scheme(),
-		bc:                    bc,
-		clusterUID:            clusterUID,
-		hubUID:                hubUID,
-		rancherAuthSecretName: rancherAuthSecretName,
-		d:                     d,
+		kc:         kc,
+		scheme:     kc.Scheme(),
+		clusterUID: clusterUID,
+		d:          d,
 	}
 }
 
