@@ -203,6 +203,7 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, pr
 
 	var rancherToken *rancherutil.RancherToken
 	var saToken string
+	var caCrt string
 	if r.d.RancherManaged() && r.rancherAuthSecretName != "" {
 		var rancherSecret core.Secret
 		rancherSecretKey := client.ObjectKey{Name: r.rancherAuthSecretName, Namespace: selfNamespace}
@@ -215,6 +216,7 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, pr
 		if err != nil {
 			return err
 		}
+		caCrt = string(rancherSecret.Data["ca.crt"])
 	} else {
 		sa := core.ServiceAccount{
 			ObjectMeta: metav1.ObjectMeta{
@@ -243,6 +245,7 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, pr
 			return err
 		}
 		saToken = string(s.Data["token"])
+		caCrt = string(s.Data["ca.crt"])
 	}
 
 	cr := rbac.ClusterRole{
@@ -343,7 +346,7 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, pr
 	pcfg.BasicAuth = mona.BasicAuth{}
 	pcfg.TLS.Cert = ""
 	pcfg.TLS.Key = ""
-	pcfg.TLS.Ca = ""
+	pcfg.TLS.Ca = caCrt
 
 	applyMarkers := func(in client.Object, createOp bool) client.Object {
 		obj := in.(*rbac.RoleBinding)
