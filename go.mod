@@ -20,7 +20,7 @@ require (
 	go.bytebuilders.dev/license-verifier v0.14.1
 	go.openviz.dev/apimachinery v0.0.8
 	go.openviz.dev/grafana-sdk v0.0.5
-	golang.org/x/text v0.16.0
+	golang.org/x/text v0.18.0
 	gomodules.xyz/logs v0.0.7
 	gomodules.xyz/pointer v0.1.0
 	gomodules.xyz/runtime v0.3.0
@@ -34,9 +34,9 @@ require (
 	k8s.io/klog/v2 v2.130.1
 	k8s.io/utils v0.0.0-20240502163921-fe8a2dddb1d0
 	kmodules.xyz/authorizer v0.29.1
-	kmodules.xyz/client-go v0.30.15
+	kmodules.xyz/client-go v0.30.17
 	kmodules.xyz/custom-resources v0.30.0
-	kmodules.xyz/monitoring-agent-api v0.30.0
+	kmodules.xyz/monitoring-agent-api v0.30.1
 	moul.io/http2curl/v2 v2.3.1-0.20221024080105-10c404f653f7
 	sigs.k8s.io/controller-runtime v0.18.4
 	x-helm.dev/apimachinery v0.0.16
@@ -53,7 +53,7 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
-	github.com/cespare/xxhash/v2 v2.2.0 // indirect
+	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/coreos/go-semver v0.3.1 // indirect
 	github.com/coreos/go-systemd/v22 v22.5.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
@@ -133,13 +133,13 @@ require (
 	go.starlark.net v0.0.0-20230525235612-a134d8f9ddca // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.26.0 // indirect
-	golang.org/x/crypto v0.24.0 // indirect
+	golang.org/x/crypto v0.27.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
-	golang.org/x/net v0.26.0 // indirect
-	golang.org/x/oauth2 v0.21.0 // indirect
+	golang.org/x/net v0.29.0 // indirect
+	golang.org/x/oauth2 v0.22.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/sys v0.21.0 // indirect
-	golang.org/x/term v0.21.0 // indirect
+	golang.org/x/sys v0.25.0 // indirect
+	golang.org/x/term v0.24.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
 	gomodules.xyz/clock v0.0.0-20200817085942-06523dba733f // indirect
@@ -171,10 +171,10 @@ require (
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
-replace github.com/Masterminds/sprig/v3 => github.com/gomodules/sprig/v3 v3.2.3-0.20220405051441-0a8a99bac1b8
+replace github.com/Masterminds/sprig/v3 => github.com/gomodules/sprig/v3 v3.2.3-0.20240908185247-10b1687ea668
 
 replace sigs.k8s.io/controller-runtime => github.com/kmodules/controller-runtime v0.18.4-0.20240603164526-fa88ec2314fe
 
 replace github.com/imdario/mergo => github.com/imdario/mergo v0.3.6
 
-replace k8s.io/apiserver => github.com/kmodules/apiserver v0.30.3-0.20240710215914-588ed1f51176
+replace k8s.io/apiserver => github.com/kmodules/apiserver v0.30.3-0.20240717062442-8d4dcc0bdd0b
