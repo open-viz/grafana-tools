@@ -65,11 +65,18 @@ const (
 	appBindingGrafana    = "default-grafana"
 )
 
-var selfNamespace = meta_util.PodNamespace()
-
-var defaultPresetsLabels = map[string]string{
-	"charts.x-helm.dev/is-default-preset": "true",
-}
+var (
+	selfNamespace        = meta_util.PodNamespace()
+	defaultPresetsLabels = map[string]string{
+		"charts.x-helm.dev/is-default-preset": "true",
+	}
+	defaultPrometheusStackLabels = map[string]string{
+		"release": "kube-prometheus-stack",
+	}
+	defaultRancherMonitoringLabels = map[string]string{
+		"release": "rancher-monitoring",
+	}
+)
 
 // PrometheusReconciler reconciles a Prometheus object
 type PrometheusReconciler struct {
@@ -414,7 +421,7 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, pr
 }
 
 func (r *PrometheusReconciler) CreatePreset(p *monitoringv1.Prometheus, isDefault bool) error {
-	presets := r.GeneratePresetForPrometheus(*p)
+	presets := r.GeneratePresetForPrometheus(*p, isDefault)
 	presetBytes, err := json.Marshal(presets)
 	if err != nil {
 		return err
@@ -547,7 +554,7 @@ func (r *PrometheusReconciler) CreateProjectPreset(p *monitoringv1.Prometheus, p
 	return nil
 }
 
-func (r *PrometheusReconciler) GeneratePresetForPrometheus(p monitoringv1.Prometheus) mona.MonitoringPresets {
+func (r *PrometheusReconciler) GeneratePresetForPrometheus(p monitoringv1.Prometheus, isDefault bool) mona.MonitoringPresets {
 	var preset mona.MonitoringPresets
 
 	preset.Spec.Monitoring.Agent = string(mona.AgentPrometheusOperator)
@@ -555,12 +562,26 @@ func (r *PrometheusReconciler) GeneratePresetForPrometheus(p monitoringv1.Promet
 	if !ok {
 		klog.Warningf("Prometheus %s/%s uses match expressions in ServiceMonitorSelector", p.Namespace, p.Name)
 	}
+	if len(svcmonLabels) == 0 {
+		if isDefault && r.d.RancherManaged() {
+			svcmonLabels = defaultRancherMonitoringLabels
+		} else {
+			svcmonLabels = defaultPrometheusStackLabels
+		}
+	}
 	preset.Spec.Monitoring.ServiceMonitor.Labels = svcmonLabels
 
 	preset.Form.Alert.Enabled = mona.SeverityFlagCritical
 	ruleLabels, ok := meta_util.LabelsForLabelSelector(p.Spec.RuleSelector)
 	if !ok {
 		klog.Warningf("Prometheus %s/%s uses match expressions in RuleSelector", p.Namespace, p.Name)
+	}
+	if len(ruleLabels) == 0 {
+		if isDefault && r.d.RancherManaged() {
+			ruleLabels = defaultRancherMonitoringLabels
+		} else {
+			ruleLabels = defaultPrometheusStackLabels
+		}
 	}
 	preset.Form.Alert.Labels = ruleLabels
 

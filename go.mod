@@ -34,7 +34,7 @@ require (
 	k8s.io/klog/v2 v2.130.1
 	k8s.io/utils v0.0.0-20240502163921-fe8a2dddb1d0
 	kmodules.xyz/authorizer v0.29.1
-	kmodules.xyz/client-go v0.30.17
+	kmodules.xyz/client-go v0.30.18
 	kmodules.xyz/custom-resources v0.30.0
 	kmodules.xyz/monitoring-agent-api v0.30.1
 	moul.io/http2curl/v2 v2.3.1-0.20221024080105-10c404f653f7
