@@ -103,9 +103,15 @@ func decodeToken(opts clientbase.ClientOpts) (*rancher.Client, *RancherToken, er
 	if err != nil {
 		return nil, nil, err
 	}
-	expiresAt, err := time.Parse(time.RFC3339, token.ExpiresAt)
-	if err != nil {
-		return nil, nil, err
+
+	var expiresAt time.Time
+	if token.ExpiresAt != "" {
+		expiresAt, err = time.Parse(time.RFC3339, token.ExpiresAt)
+		if err != nil {
+			return nil, nil, err
+		}
+	} else {
+		expiresAt = time.Now().Add(time.Duration(token.TTLMillis) * time.Millisecond)
 	}
 
 	return rc, &RancherToken{
