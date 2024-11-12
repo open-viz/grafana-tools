@@ -12,10 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+FROM ghcr.io/appscode/dlv:1.23
+
 FROM {ARG_FROM}
 
 LABEL org.opencontainers.image.source https://github.com/open-viz/grafana-tools
 
-ADD bin/{ARG_OS}_{ARG_ARCH}/{ARG_BIN} /{ARG_BIN}
+RUN set -x \
+  && apt-get update \
+  && apt-get upgrade -y \
+  && apt-get install -y --no-install-recommends ca-certificates \
+  && rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man /tmp/* \
+  && echo 'Etc/UTC' > /etc/timezone
 
-ENTRYPOINT ["/{ARG_BIN}"]
+ADD bin/{ARG_OS}_{ARG_ARCH}/{ARG_BIN} /{ARG_BIN}
+COPY --from=0 /usr/local/bin/dlv /bin/dlv
+
+EXPOSE 40000
+
+ENTRYPOINT ["/bin/dlv", "--listen=:40000", "--headless=true", "--api-version=2", "exec", "/{ARG_BIN}", "--"]

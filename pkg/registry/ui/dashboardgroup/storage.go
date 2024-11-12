@@ -26,15 +26,18 @@ import (
 
 	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 	uiapi "go.openviz.dev/apimachinery/apis/ui/v1alpha1"
+	"go.openviz.dev/grafana-tools/pkg/controllers/clientorg"
 	"go.openviz.dev/grafana-tools/pkg/detector"
 
 	"github.com/grafana-tools/sdk"
 	"github.com/pkg/errors"
+	core "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/json"
+	"k8s.io/apiserver/pkg/authentication/user"
 	"k8s.io/apiserver/pkg/authorization/authorizer"
 	apirequest "k8s.io/apiserver/pkg/endpoints/request"
 	"k8s.io/apiserver/pkg/registry/rest"
@@ -92,6 +95,10 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 	in := obj.(*uiapi.DashboardGroup)
 	if in.Request == nil {
 		return nil, apierrors.NewBadRequest("missing apirequest")
+	}
+
+	if ready, err := r.d.Ready(); !ready {
+		return nil, apierrors.NewInternalError(err)
 	}
 
 	ds, err := r.datasource(in)
@@ -182,6 +189,11 @@ func (r *Storage) getDashboardLink(
 	timeRange *uiapi.TimeRange,
 	embed bool,
 ) (*uiapi.DashboardResponse, error) {
+	user, ok := apirequest.UserFrom(ctx)
+	if !ok {
+		return nil, apierrors.NewBadRequest("missing user info")
+	}
+
 	var d openvizapi.GrafanaDashboard
 	if req.ObjectReference != nil {
 		ns := req.Namespace
@@ -194,11 +206,23 @@ func (r *Storage) getDashboardLink(
 		}
 	} else if req.Title != "" {
 		var dashboardList openvizapi.GrafanaDashboardList
-		// any namespace, using default grafana and with the given title
-		if err := r.kc.List(ctx, &dashboardList, client.MatchingFields{
-			mona.DefaultGrafanaKey:              "true",
-			openvizapi.GrafanaDashboardTitleKey: req.Title,
-		}); err != nil {
+		dsNamespace, useClientDashboard, err := useClientOrgDashboard(ctx, r.kc, user)
+		if err != nil {
+			return nil, err
+		}
+		if useClientDashboard {
+			// in {client}-monitoring namespace
+			err = r.kc.List(ctx, &dashboardList, client.InNamespace(dsNamespace), client.MatchingFields{
+				openvizapi.GrafanaDashboardTitleKey: req.Title,
+			})
+		} else {
+			// any namespace, using default grafana and with the given title
+			err = r.kc.List(ctx, &dashboardList, client.MatchingFields{
+				mona.DefaultGrafanaKey:              "true",
+				openvizapi.GrafanaDashboardTitleKey: req.Title,
+			})
+		}
+		if err != nil {
 			return nil, err
 		}
 		if len(dashboardList.Items) == 0 {
@@ -211,11 +235,6 @@ func (r *Storage) getDashboardLink(
 			return nil, apierrors.NewBadRequest(fmt.Sprintf("multiple dashboards %s with title %s uses the default Grafana", strings.Join(names, ","), req.Title))
 		}
 		d = dashboardList.Items[0]
-	}
-
-	user, ok := apirequest.UserFrom(ctx)
-	if !ok {
-		return nil, apierrors.NewBadRequest("missing user info")
 	}
 
 	{
@@ -232,7 +251,7 @@ func (r *Storage) getDashboardLink(
 			return nil, apierrors.NewInternalError(err)
 		}
 		if decision != authorizer.DecisionAllow {
-			return nil, apierrors.NewForbidden(r.gr, d.Name, errors.New(why))
+			return nil, apierrors.NewForbidden(r.gr, d.Namespace+"/"+d.Name, errors.New(why))
 		}
 	}
 	if d.Status.Dashboard == nil {
@@ -258,7 +277,10 @@ func (r *Storage) getDashboardLink(
 			return nil, apierrors.NewInternalError(err)
 		}
 		if decision != authorizer.DecisionAllow {
-			return nil, apierrors.NewForbidden(r.gr, g.Name, errors.New(why))
+			return nil, apierrors.NewForbidden(schema.GroupResource{
+				Group:    appcatalog.GroupName,
+				Resource: appcatalogapi.ResourceApps,
+			}, g.Namespace+"/"+g.Name, errors.New(why))
 		}
 	}
 
@@ -334,6 +356,28 @@ func (r *Storage) getDashboardLink(
 	}
 
 	return resp, nil
+}
+
+func useClientOrgDashboard(ctx context.Context, kc client.Client, user user.Info) (string, bool, error) {
+	orgId, found := user.GetExtra()[kmapi.AceOrgIDKey]
+	if !found || len(orgId) == 0 || len(orgId) > 1 {
+		return "", false, nil
+	}
+
+	var nsList core.NamespaceList
+	err := kc.List(ctx, &nsList, client.MatchingLabels{
+		kmapi.ClientOrgKey: "true",
+	})
+	if err != nil {
+		return "", false, err
+	}
+
+	for _, ns := range nsList.Items {
+		if ns.Annotations[kmapi.AceOrgIDKey] == orgId[0] {
+			return clientorg.MonitoringNamespace(ns.Name), true, nil
+		}
+	}
+	return "", false, nil
 }
 
 func toEmbeddedPanel(p *sdk.Panel, grafanaHost string, d openvizapi.GrafanaDashboard, refreshInterval string, timeRange *uiapi.TimeRange, req *uiapi.DashboardRequest, panelMap map[string]int) (*uiapi.PanelLinkResponse, error) {
