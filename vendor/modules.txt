@@ -1414,7 +1414,7 @@ kmodules.xyz/authorizer/apiserver
 kmodules.xyz/authorizer/rbac
 kmodules.xyz/authorizer/rbac/helpers
 kmodules.xyz/authorizer/rbac/validation
-# kmodules.xyz/client-go v0.30.32
+# kmodules.xyz/client-go v0.30.38
 ## explicit; go 1.22.0
 kmodules.xyz/client-go
 kmodules.xyz/client-go/api/v1
@@ -1435,7 +1435,7 @@ kmodules.xyz/client-go/tools/clientcmd
 kmodules.xyz/custom-resources/apis/appcatalog
 kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1
 kmodules.xyz/custom-resources/crds
-# kmodules.xyz/monitoring-agent-api v0.30.2
+# kmodules.xyz/monitoring-agent-api v0.30.4
 ## explicit; go 1.22.0
 kmodules.xyz/monitoring-agent-api/api/v1
 # moul.io/http2curl/v2 v2.3.1-0.20221024080105-10c404f653f7

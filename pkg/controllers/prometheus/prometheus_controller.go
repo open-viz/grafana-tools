@@ -54,11 +54,11 @@ import (
 )
 
 const (
-	portPrometheus = "http-web"
-	saTrickster    = "trickster"
-	crTrickster    = "appscode:trickster:proxy"
+	PortPrometheus          = "http-web"
+	ServiceAccountTrickster = "trickster"
+	crTrickster             = "appscode:trickster:proxy"
 
-	registeredKey        = mona.GroupName + "/registered"
+	RegisteredKey        = mona.GroupName + "/registered"
 	tokenIDKey           = mona.GroupName + "/token-id"
 	presetsMonitoring    = "monitoring-presets"
 	appBindingPrometheus = "default-prometheus"
@@ -227,7 +227,7 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, pr
 	} else {
 		sa := core.ServiceAccount{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      saTrickster,
+				Name:      ServiceAccountTrickster,
 				Namespace: key.Namespace,
 			},
 		}
@@ -310,7 +310,7 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, pr
 			obj.Subjects = []rbac.Subject{
 				{
 					Kind:      "ServiceAccount",
-					Name:      saTrickster,
+					Name:      ServiceAccountTrickster,
 					Namespace: key.Namespace,
 				},
 			}
@@ -338,7 +338,7 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, pr
 		Query:     "",
 	}
 	for _, p := range svc.Spec.Ports {
-		if p.Name == portPrometheus {
+		if p.Name == PortPrometheus {
 			pcfg.Service.Port = fmt.Sprintf("%d", p.Port)
 		}
 	}
@@ -360,7 +360,7 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, pr
 		if obj.Annotations == nil {
 			obj.Annotations = map[string]string{}
 		}
-		obj.Annotations[registeredKey] = state
+		obj.Annotations[RegisteredKey] = state
 		if rancherToken != nil {
 			obj.Annotations[tokenIDKey] = rancherToken.TokenID
 		} else {
@@ -370,16 +370,16 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, pr
 	}
 
 	// fix legacy deployments
-	if rb.Annotations[registeredKey] == "true" {
+	if rb.Annotations[RegisteredKey] == "true" {
 		rbvt, err = cu.CreateOrPatch(context.TODO(), r.kc, &rb, applyMarkers)
 		if err != nil {
 			return err
 		}
-		klog.Infof("%s rolebinding %s/%s with %s annotation", rbvt, rb.Namespace, rb.Name, registeredKey)
+		klog.Infof("%s rolebinding %s/%s with %s annotation", rbvt, rb.Namespace, rb.Name, RegisteredKey)
 
 		return nil
 	} else if r.bc != nil &&
-		(rb.Annotations[registeredKey] != state ||
+		(rb.Annotations[RegisteredKey] != state ||
 			(rancherToken != nil && rb.Annotations[tokenIDKey] != rancherToken.TokenID)) {
 		var projectId string
 		if !isDefault {
@@ -414,7 +414,7 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, pr
 		if err != nil {
 			return err
 		}
-		klog.Infof("%s rolebinding %s/%s with %s annotation", rbvt, rb.Namespace, rb.Name, registeredKey)
+		klog.Infof("%s rolebinding %s/%s with %s annotation", rbvt, rb.Namespace, rb.Name, RegisteredKey)
 	}
 
 	return nil
@@ -634,7 +634,7 @@ func (r *PrometheusReconciler) CreatePrometheusAppBinding(prom *monitoringv1.Pro
 			// ServerName:            "",
 		}
 		for _, p := range svc.Spec.Ports {
-			if p.Name == portPrometheus {
+			if p.Name == PortPrometheus {
 				obj.Spec.ClientConfig.Service.Port = p.Port
 			}
 		}

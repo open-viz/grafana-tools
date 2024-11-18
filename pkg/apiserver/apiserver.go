@@ -27,6 +27,7 @@ import (
 	"go.openviz.dev/apimachinery/apis/ui"
 	uiinstall "go.openviz.dev/apimachinery/apis/ui/install"
 	uiapi "go.openviz.dev/apimachinery/apis/ui/v1alpha1"
+	namespacecontroller "go.openviz.dev/grafana-tools/pkg/controllers/namespace"
 	promtehsucontroller "go.openviz.dev/grafana-tools/pkg/controllers/prometheus"
 	"go.openviz.dev/grafana-tools/pkg/controllers/ranchertoken"
 	servicemonitorcontroller "go.openviz.dev/grafana-tools/pkg/controllers/servicemonitor"
@@ -202,6 +203,17 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 		Group: monitoring.GroupName,
 		Kind:  monitoringv1.PrometheusesKind,
 	}, func(ctx context.Context, mgr ctrl.Manager) {
+		if err = namespacecontroller.NewReconciler(
+			mgr.GetClient(),
+			bc,
+			cid,
+			c.ExtraConfig.HubUID,
+			d,
+		).SetupWithManager(mgr); err != nil {
+			klog.Error(err, "unable to create controller", "controller", "ClientOrg")
+			os.Exit(1)
+		}
+
 		if err = promtehsucontroller.NewReconciler(
 			mgr.GetClient(),
 			bc,
