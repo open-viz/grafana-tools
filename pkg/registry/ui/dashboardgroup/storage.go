@@ -292,8 +292,8 @@ func (r *Storage) getDashboardLink(
 	if d.Spec.Model == nil {
 		return nil, apierrors.NewBadRequest(fmt.Sprintf("GrafanaDashboard %s/%s is missing a model", d.Namespace, d.Name))
 	}
-	board := &sdk.Board{}
-	err = json.Unmarshal(d.Spec.Model.Raw, board)
+	var board sdk.Board
+	err = json.Unmarshal(d.Spec.Model.Raw, &board)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal model for GrafanaDashboard %s/%s, reason: %v", d.Namespace, d.Name, err)
 	}
