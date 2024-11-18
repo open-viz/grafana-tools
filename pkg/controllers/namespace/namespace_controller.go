@@ -26,6 +26,7 @@ import (
 	"go.openviz.dev/grafana-tools/pkg/controllers/prometheus"
 	"go.openviz.dev/grafana-tools/pkg/detector"
 
+	"github.com/grafana-tools/sdk"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	core "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
@@ -80,6 +81,7 @@ const (
 	srcHashKey = "meta.appcode.com/hash"
 
 	crClientOrgMonitoring = "appscode:client-org:monitoring"
+	abClientOrgGrafana    = "grafana"
 )
 
 func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -312,6 +314,29 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		if _, found := dashboard.Annotations[srcRefKey]; found {
 			continue
 		}
+
+		if dashboard.Spec.Model == nil {
+			return ctrl.Result{}, apierrors.NewBadRequest(fmt.Sprintf("GrafanaDashboard %s/%s is missing a model", dashboard.Namespace, dashboard.Name))
+		}
+		var board sdk.Board
+		err = json.Unmarshal(dashboard.Spec.Model.Raw, &board)
+		if err != nil {
+			return ctrl.Result{}, fmt.Errorf("failed to unmarshal model for GrafanaDashboard %s/%s, reason: %v", dashboard.Namespace, dashboard.Name, err)
+		}
+		for idx, item := range board.Templating.List {
+			if item.Name != "namespace" {
+				continue
+			}
+
+			item.Type = "constant"
+			item.Query = ns.Name
+			board.Templating.List[idx] = item
+		}
+		boardBytes, err := json.Marshal(board)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+
 		copiedDashboard := dashboard.DeepCopy()
 		copiedDashboard.Namespace = monNamespace.Name
 
@@ -329,7 +354,10 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 			// use client Grafana appbinding
 			copiedDashboard.Spec.GrafanaRef = &kmapi.ObjectReference{
 				Namespace: monNamespace.Name,
-				Name:      "grafana",
+				Name:      abClientOrgGrafana,
+			}
+			copiedDashboard.Spec.Model = &runtime.RawExtension{
+				Raw: boardBytes,
 			}
 
 			return copiedDashboard
@@ -348,7 +376,7 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 func (r *ClientOrgReconciler) CreateGrafanaAppBinding(monNamespace string, resp *prometheus.GrafanaDatasourceResponse) error {
 	ab := appcatalog.AppBinding{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "grafana",
+			Name:      abClientOrgGrafana,
 			Namespace: monNamespace,
 		},
 	}
