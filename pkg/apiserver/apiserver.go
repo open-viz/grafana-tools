@@ -36,6 +36,7 @@ import (
 
 	"github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	monitoringv1beta1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1beta1"
 	core "k8s.io/api/core/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -49,6 +50,7 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
+	apiregistrationv1 "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
 	"kmodules.xyz/authorizer"
 	"kmodules.xyz/client-go/apiextensions"
 	clustermeta "kmodules.xyz/client-go/cluster"
@@ -74,7 +76,9 @@ func init() {
 	uiinstall.Install(Scheme)
 	openvizinstall.Install(Scheme)
 	utilruntime.Must(clientgoscheme.AddToScheme(Scheme))
+	utilruntime.Must(apiregistrationv1.AddToScheme(Scheme))
 	utilruntime.Must(monitoringv1.AddToScheme(Scheme))
+	utilruntime.Must(monitoringv1beta1.AddToScheme(Scheme))
 	utilruntime.Must(appcatalogapi.AddToScheme(Scheme))
 	utilruntime.Must(chartsapi.AddToScheme(Scheme))
 	utilruntime.Must(apiextensionsv1.AddToScheme(Scheme))
@@ -187,7 +191,7 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 		os.Exit(1)
 	}
 
-	d := detector.New(mgr.GetClient())
+	prometheusDetector := detector.NewPrometheusDetector(mgr.GetClient())
 
 	if c.ExtraConfig.RancherAuthSecret != "" {
 		if err = ranchertoken.NewTokenRefresher(
@@ -220,7 +224,7 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 			cid,
 			c.ExtraConfig.HubUID,
 			c.ExtraConfig.RancherAuthSecret,
-			d,
+			prometheusDetector,
 		).SetupWithManager(mgr); err != nil {
 			klog.Error(err, "unable to create controller", "controller", "Prometheus")
 			os.Exit(1)
@@ -242,7 +246,7 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 		if err = servicemonitorcontroller.NewFederationReconciler(
 			c.ExtraConfig.ClientConfig,
 			mgr.GetClient(),
-			d,
+			prometheusDetector,
 		).SetupWithManager(mgr); err != nil {
 			klog.Error(err, "unable to create controller", " federation controller", "ServiceMonitor")
 			os.Exit(1)
@@ -302,7 +306,7 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 		apiGroupInfo := genericapiserver.NewDefaultAPIGroupInfo(ui.GroupName, Scheme, metav1.ParameterCodec, Codecs)
 
 		v1alpha1storage := map[string]rest.Storage{}
-		v1alpha1storage[uiapi.ResourceDashboardGroups] = dashgroupstorage.NewStorage(ctrlClient, rbacAuthorizer, d)
+		v1alpha1storage[uiapi.ResourceDashboardGroups] = dashgroupstorage.NewStorage(ctrlClient, rbacAuthorizer, prometheusDetector)
 		apiGroupInfo.VersionedResourcesStorageMap["v1alpha1"] = v1alpha1storage
 
 		if err := s.GenericAPIServer.InstallAPIGroup(&apiGroupInfo); err != nil {
