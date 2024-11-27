@@ -36,28 +36,28 @@ var GVKPrometheus = schema.GroupVersionKind{
 	Kind:    "Prometheus",
 }
 
-type Detector interface {
+type PrometheusDetector interface {
 	Ready() (bool, error)
 	RancherManaged() bool
 	Federated() bool
 	IsDefault(key types.NamespacedName) bool
 }
 
-func New(kc client.Client) Detector {
-	return &lazy{kc: kc}
+func NewPrometheusDetector(kc client.Client) PrometheusDetector {
+	return &lazyPrometheus{kc: kc}
 }
 
 var errUnknown = errors.New("unknown")
 
-type lazy struct {
+type lazyPrometheus struct {
 	kc        client.Client
-	delegated Detector
+	delegated PrometheusDetector
 	mu        sync.Mutex
 }
 
-var _ Detector = &lazy{}
+var _ PrometheusDetector = &lazyPrometheus{}
 
-func (l *lazy) detect() error {
+func (l *lazyPrometheus) detect() error {
 	var list unstructured.UnstructuredList
 	list.SetGroupVersionKind(GVKPrometheus)
 	err := l.kc.List(context.TODO(), &list)
@@ -72,22 +72,22 @@ func (l *lazy) detect() error {
 		for _, obj := range list.Items {
 			if obj.GetNamespace() == clustermeta.RancherMonitoringNamespace &&
 				obj.GetName() == clustermeta.RancherMonitoringPrometheus {
-				l.delegated = &federated{} // rancher style federated
+				l.delegated = &federatedPrometheus{} // rancher style federatedPrometheus
 				return nil
 			}
 		}
 
 		// rancher cluster but using prometheus directly
-		l.delegated = &standalone{rancher: true, singleton: len(list.Items) == 1}
+		l.delegated = &standalonePrometheus{rancher: true, singleton: len(list.Items) == 1}
 		return nil
 	}
 
 	// using prometheus directly and not rancher managed
-	l.delegated = &standalone{rancher: false, singleton: len(list.Items) == 1}
+	l.delegated = &standalonePrometheus{rancher: false, singleton: len(list.Items) == 1}
 	return nil
 }
 
-func (l *lazy) Ready() (bool, error) {
+func (l *lazyPrometheus) Ready() (bool, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	if l.delegated == nil {
@@ -97,7 +97,7 @@ func (l *lazy) Ready() (bool, error) {
 	return true, nil
 }
 
-func (l *lazy) RancherManaged() bool {
+func (l *lazyPrometheus) RancherManaged() bool {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	if l.delegated == nil {
@@ -106,7 +106,7 @@ func (l *lazy) RancherManaged() bool {
 	return l.delegated.RancherManaged()
 }
 
-func (l *lazy) Federated() bool {
+func (l *lazyPrometheus) Federated() bool {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	if l.delegated == nil {
@@ -115,7 +115,7 @@ func (l *lazy) Federated() bool {
 	return l.delegated.Federated()
 }
 
-func (l *lazy) IsDefault(key types.NamespacedName) bool {
+func (l *lazyPrometheus) IsDefault(key types.NamespacedName) bool {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	if l.delegated == nil {
@@ -124,46 +124,46 @@ func (l *lazy) IsDefault(key types.NamespacedName) bool {
 	return l.delegated.IsDefault(key)
 }
 
-type federated struct{}
+type federatedPrometheus struct{}
 
-var _ Detector = federated{}
+var _ PrometheusDetector = federatedPrometheus{}
 
-func (f federated) Ready() (bool, error) {
+func (f federatedPrometheus) Ready() (bool, error) {
 	return true, nil
 }
 
-func (f federated) RancherManaged() bool {
+func (f federatedPrometheus) RancherManaged() bool {
 	return true
 }
 
-func (f federated) Federated() bool {
+func (f federatedPrometheus) Federated() bool {
 	return true
 }
 
-func (f federated) IsDefault(key types.NamespacedName) bool {
+func (f federatedPrometheus) IsDefault(key types.NamespacedName) bool {
 	return key.Namespace == clustermeta.RancherMonitoringNamespace &&
 		key.Name == clustermeta.RancherMonitoringPrometheus
 }
 
-type standalone struct {
+type standalonePrometheus struct {
 	rancher   bool
 	singleton bool
 }
 
-var _ Detector = standalone{}
+var _ PrometheusDetector = standalonePrometheus{}
 
-func (s standalone) Ready() (bool, error) {
+func (s standalonePrometheus) Ready() (bool, error) {
 	return true, nil
 }
 
-func (s standalone) RancherManaged() bool {
+func (s standalonePrometheus) RancherManaged() bool {
 	return s.rancher
 }
 
-func (s standalone) Federated() bool {
+func (s standalonePrometheus) Federated() bool {
 	return false
 }
 
-func (s standalone) IsDefault(key types.NamespacedName) bool {
+func (s standalonePrometheus) IsDefault(key types.NamespacedName) bool {
 	return s.singleton
 }

@@ -52,7 +52,7 @@ import (
 type Storage struct {
 	kc client.Client
 	a  authorizer.Authorizer
-	d  detector.Detector
+	d  detector.PrometheusDetector
 	gr schema.GroupResource
 }
 
@@ -64,7 +64,7 @@ var (
 	_ rest.SingularNameProvider     = &Storage{}
 )
 
-func NewStorage(kc client.Client, a authorizer.Authorizer, d detector.Detector) *Storage {
+func NewStorage(kc client.Client, a authorizer.Authorizer, d detector.PrometheusDetector) *Storage {
 	return &Storage{
 		kc: kc,
 		a:  a,
