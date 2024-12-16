@@ -86,10 +86,10 @@ type PrometheusReconciler struct {
 	clusterUID            string
 	hubUID                string
 	rancherAuthSecretName string
-	d                     detector.Detector
+	d                     detector.PrometheusDetector
 }
 
-func NewReconciler(kc client.Client, bc *Client, clusterUID, hubUID, rancherAuthSecretName string, d detector.Detector) *PrometheusReconciler {
+func NewReconciler(kc client.Client, bc *Client, clusterUID, hubUID, rancherAuthSecretName string, d detector.PrometheusDetector) *PrometheusReconciler {
 	return &PrometheusReconciler{
 		kc:                    kc,
 		scheme:                kc.Scheme(),

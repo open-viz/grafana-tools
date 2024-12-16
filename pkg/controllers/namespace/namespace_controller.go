@@ -62,10 +62,10 @@ type ClientOrgReconciler struct {
 	bc         *prometheus.Client
 	clusterUID string
 	hubUID     string
-	d          detector.Detector
+	d          detector.PrometheusDetector
 }
 
-func NewReconciler(kc client.Client, bc *prometheus.Client, clusterUID, hubUID string, d detector.Detector) *ClientOrgReconciler {
+func NewReconciler(kc client.Client, bc *prometheus.Client, clusterUID, hubUID string, d detector.PrometheusDetector) *ClientOrgReconciler {
 	return &ClientOrgReconciler{
 		kc:         kc,
 		scheme:     kc.Scheme(),
