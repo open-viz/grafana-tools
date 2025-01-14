@@ -17,7 +17,7 @@ require (
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
 	github.com/zeebo/xxh3 v1.0.2
-	go.bytebuilders.dev/license-verifier v0.14.4
+	go.bytebuilders.dev/license-verifier v0.14.5
 	go.openviz.dev/apimachinery v0.0.8
 	go.openviz.dev/grafana-sdk v0.0.5
 	golang.org/x/text v0.21.0

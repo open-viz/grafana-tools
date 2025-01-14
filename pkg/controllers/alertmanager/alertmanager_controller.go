@@ -23,7 +23,7 @@ import (
 	"go.openviz.dev/grafana-tools/pkg/detector"
 
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
-	monitoringv1beta1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1beta1"
+	monitoringv1alpha1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/klog/v2"
@@ -114,23 +114,23 @@ func (r *AlertmanagerReconciler) Reconcile(ctx context.Context, req ctrl.Request
 }
 
 func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context, am *monitoringv1.Alertmanager, apisvc *apiregistrationv1.APIService) error {
-	cr := monitoringv1beta1.AlertmanagerConfig{
+	cr := monitoringv1alpha1.AlertmanagerConfig{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      amcfgInboxAgent,
 			Namespace: am.Namespace,
 		},
 	}
 	crvt, err := cu.CreateOrPatch(ctx, r.kc, &cr, func(in client.Object, createOp bool) client.Object {
-		obj := in.(*monitoringv1beta1.AlertmanagerConfig)
+		obj := in.(*monitoringv1alpha1.AlertmanagerConfig)
 
-		obj.Spec.Receivers = []monitoringv1beta1.Receiver{
+		obj.Spec.Receivers = []monitoringv1alpha1.Receiver{
 			{
 				Name: "webhook",
-				WebhookConfigs: []monitoringv1beta1.WebhookConfig{
+				WebhookConfigs: []monitoringv1alpha1.WebhookConfig{
 					{
 						SendResolved: ptr.To(true),
 						URL:          ptr.To(fmt.Sprintf("https://%s.%s.svc:443/alerts", apisvc.Spec.Service.Name, apisvc.Spec.Service.Namespace)),
-						HTTPConfig: &monitoringv1beta1.HTTPConfig{
+						HTTPConfig: &monitoringv1alpha1.HTTPConfig{
 							TLSConfig: &monitoringv1.SafeTLSConfig{
 								InsecureSkipVerify: ptr.To(true),
 							},
@@ -141,7 +141,7 @@ func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context
 			},
 		}
 
-		obj.Spec.Route = &monitoringv1beta1.Route{
+		obj.Spec.Route = &monitoringv1alpha1.Route{
 			GroupBy:        []string{"job"},
 			GroupWait:      "10s",
 			GroupInterval:  "1m",
