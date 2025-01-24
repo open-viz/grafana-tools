@@ -92,7 +92,7 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	if ns.Labels[kmapi.ClientOrgKey] == "" {
+	if ns.Labels[kmapi.ClientOrgKey] == "" || ns.Labels[kmapi.ClientOrgKey] == "terminating" {
 		return ctrl.Result{}, nil
 	}
 	clientOrgId := ns.Annotations[kmapi.AceOrgIDKey]
