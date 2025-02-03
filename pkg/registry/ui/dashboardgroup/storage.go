@@ -213,7 +213,7 @@ func (r *Storage) getDashboardLink(
 		if useClientDashboard {
 			// in {client}-monitoring namespace
 			err = r.kc.List(ctx, &dashboardList, client.InNamespace(dsNamespace), client.MatchingFields{
-				openvizapi.GrafanaDashboardTitleKey: req.Title,
+				openvizapi.GrafanaDashboardTitleKey: detector.ClientDashboardTitle(req.Title),
 			})
 		} else {
 			// any namespace, using default grafana and with the given title
