@@ -222,7 +222,6 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	} else if len(promList.Items) > 1 {
 		return ctrl.Result{}, fmt.Errorf("more than one prometheus found in namespace %s", saKey.Namespace)
 	}
-	// prom := promList.Items[0]
 
 	var promService core.Service
 	err = r.kc.Get(context.TODO(), client.ObjectKeyFromObject(promList.Items[0]), &promService)
@@ -339,8 +338,22 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 			continue
 		}
 
-		copiedDashboard := dashboard.DeepCopy()
-		copiedDashboard.Namespace = monNamespace.Name
+		copiedDashboard := &v1alpha1.GrafanaDashboard{}
+		err = r.kc.Get(context.TODO(), types.NamespacedName{
+			Namespace: monNamespace.Name,
+			Name:      dashboard.Name,
+		}, copiedDashboard)
+		if err != nil {
+			if !apierrors.IsNotFound(err) {
+				return ctrl.Result{}, err
+			}
+			copiedDashboard = dashboard.DeepCopy()
+			copiedDashboard.Namespace = monNamespace.Name
+		} else {
+			copiedDashboard.Spec = *dashboard.Spec.DeepCopy()
+		}
+
+		klog.Infof("------------------------- original= %v/%v , copy-to-ns= %v \n", dashboard.Namespace, dashboard.Name, copiedDashboard.Namespace)
 
 		opresult, err := cu.CreateOrPatch(ctx, r.kc, copiedDashboard, func(obj client.Object, createOp bool) client.Object {
 			if createOp {
