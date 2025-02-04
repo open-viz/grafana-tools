@@ -17,6 +17,7 @@ limitations under the License.
 package namespace
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 
@@ -311,10 +312,6 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return ctrl.Result{}, err
 	}
 	for _, dashboard := range dashboardList.Items {
-		if _, found := dashboard.Annotations[srcRefKey]; found {
-			continue
-		}
-
 		if dashboard.Spec.Model == nil {
 			return ctrl.Result{}, apierrors.NewBadRequest(fmt.Sprintf("GrafanaDashboard %s/%s is missing a model", dashboard.Namespace, dashboard.Name))
 		}
@@ -336,6 +333,10 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		boardBytes, err := json.Marshal(board)
 		if err != nil {
 			return ctrl.Result{}, err
+		}
+
+		if _, found := dashboard.Annotations[srcRefKey]; found && bytes.Equal(dashboard.Spec.Model.Raw, boardBytes) {
+			continue
 		}
 
 		copiedDashboard := dashboard.DeepCopy()
