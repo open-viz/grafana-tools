@@ -36,6 +36,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/ptr"
@@ -222,7 +223,6 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	} else if len(promList.Items) > 1 {
 		return ctrl.Result{}, fmt.Errorf("more than one prometheus found in namespace %s", saKey.Namespace)
 	}
-	// prom := promList.Items[0]
 
 	var promService core.Service
 	err = r.kc.Get(context.TODO(), client.ObjectKeyFromObject(promList.Items[0]), &promService)
@@ -311,6 +311,8 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	if err := r.kc.List(ctx, &dashboardList); err != nil {
 		return ctrl.Result{}, err
 	}
+
+	var errList []error
 	for _, dashboard := range dashboardList.Items {
 		if dashboard.Spec.Model == nil {
 			return ctrl.Result{}, apierrors.NewBadRequest(fmt.Sprintf("GrafanaDashboard %s/%s is missing a model", dashboard.Namespace, dashboard.Name))
@@ -339,8 +341,20 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 			continue
 		}
 
-		copiedDashboard := dashboard.DeepCopy()
-		copiedDashboard.Namespace = monNamespace.Name
+		copiedDashboard := &v1alpha1.GrafanaDashboard{}
+		err = r.kc.Get(context.TODO(), types.NamespacedName{
+			Namespace: monNamespace.Name,
+			Name:      dashboard.Name,
+		}, copiedDashboard)
+		if err != nil {
+			if !apierrors.IsNotFound(err) {
+				return ctrl.Result{}, err
+			}
+			copiedDashboard = dashboard.DeepCopy()
+			copiedDashboard.Namespace = monNamespace.Name
+		} else {
+			copiedDashboard.Spec = *dashboard.Spec.DeepCopy()
+		}
 
 		opresult, err := cu.CreateOrPatch(ctx, r.kc, copiedDashboard, func(obj client.Object, createOp bool) client.Object {
 			if createOp {
@@ -365,14 +379,13 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 			return copiedDashboard
 		})
 		if err != nil {
-			return ctrl.Result{}, err
-		}
-		if opresult != kutil.VerbUnchanged {
+			errList = append(errList, err)
+		} else if opresult != kutil.VerbUnchanged {
 			log.Info(fmt.Sprintf("%s GrafanaDashboard %s/%s", opresult, copiedDashboard.Namespace, copiedDashboard.Name))
 		}
 	}
 
-	return ctrl.Result{}, nil
+	return ctrl.Result{}, errors.NewAggregate(errList)
 }
 
 func (r *ClientOrgReconciler) CreateGrafanaAppBinding(monNamespace string, resp *prometheus.GrafanaDatasourceResponse) error {

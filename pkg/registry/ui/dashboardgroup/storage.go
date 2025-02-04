@@ -210,13 +210,16 @@ func (r *Storage) getDashboardLink(
 		if err != nil {
 			return nil, err
 		}
+		title := ""
 		if useClientDashboard {
 			// in {client}-monitoring namespace
+			title = detector.ClientDashboardTitle(req.Title)
 			err = r.kc.List(ctx, &dashboardList, client.InNamespace(dsNamespace), client.MatchingFields{
-				openvizapi.GrafanaDashboardTitleKey: detector.ClientDashboardTitle(req.Title),
+				openvizapi.GrafanaDashboardTitleKey: title,
 			})
 		} else {
 			// any namespace, using default grafana and with the given title
+			title = req.Title
 			err = r.kc.List(ctx, &dashboardList, client.MatchingFields{
 				mona.DefaultGrafanaKey:              "true",
 				openvizapi.GrafanaDashboardTitleKey: req.Title,
@@ -226,13 +229,13 @@ func (r *Storage) getDashboardLink(
 			return nil, err
 		}
 		if len(dashboardList.Items) == 0 {
-			return nil, apierrors.NewNotFound(openvizapi.Resource(openvizapi.ResourceKindGrafanaDashboard), fmt.Sprintf("No dashboard with title %s uses the default Grafana", req.Title))
+			return nil, apierrors.NewNotFound(openvizapi.Resource(openvizapi.ResourceKindGrafanaDashboard), fmt.Sprintf("No dashboard with title %s uses the default Grafana", title))
 		} else if len(dashboardList.Items) > 1 {
 			names := make([]string, len(dashboardList.Items))
 			for idx, item := range dashboardList.Items {
 				names[idx] = fmt.Sprintf("%s/%s", item.Namespace, item.Name)
 			}
-			return nil, apierrors.NewBadRequest(fmt.Sprintf("multiple dashboards %s with title %s uses the default Grafana", strings.Join(names, ","), req.Title))
+			return nil, apierrors.NewBadRequest(fmt.Sprintf("multiple dashboards %s with title %s uses the default Grafana", strings.Join(names, ","), title))
 		}
 		d = dashboardList.Items[0]
 	}
