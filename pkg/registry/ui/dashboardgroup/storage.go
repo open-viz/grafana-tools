@@ -213,7 +213,7 @@ func (r *Storage) getDashboardLink(
 		title := ""
 		if useClientDashboard {
 			// in {client}-monitoring namespace
-			title = detector.ClientDashboardTitle(req.Title)
+			title = clustermeta.ClientDashboardTitle(req.Title)
 			err = r.kc.List(ctx, &dashboardList, client.InNamespace(dsNamespace), client.MatchingFields{
 				openvizapi.GrafanaDashboardTitleKey: title,
 			})

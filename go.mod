@@ -35,7 +35,7 @@ require (
 	k8s.io/kube-aggregator v0.30.2
 	k8s.io/utils v0.0.0-20240502163921-fe8a2dddb1d0
 	kmodules.xyz/authorizer v0.29.1
-	kmodules.xyz/client-go v0.30.44
+	kmodules.xyz/client-go v0.30.45
 	kmodules.xyz/custom-resources v0.30.0
 	kmodules.xyz/monitoring-agent-api v0.30.4
 	moul.io/http2curl/v2 v2.3.1-0.20221024080105-10c404f653f7

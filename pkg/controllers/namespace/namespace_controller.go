@@ -331,7 +331,7 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 			item.Query = ns.Name
 			board.Templating.List[idx] = item
 		}
-		board.Title = detector.ClientDashboardTitle(board.Title)
+		board.Title = clustermeta.ClientDashboardTitle(board.Title)
 		boardBytes, err := json.Marshal(board)
 		if err != nil {
 			return ctrl.Result{}, err
