@@ -492,7 +492,8 @@ func (r *ClientOrgReconciler) CreateGrafanaAppBinding(monNamespace string, resp 
 func (r *ClientOrgReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&core.Namespace{}, builder.WithPredicates(predicate.NewPredicateFuncs(func(obj client.Object) bool {
-			return obj.GetLabels()[kmapi.ClientOrgKey] == "true"
+			return obj.GetLabels()[kmapi.ClientOrgKey] == "true" &&
+				obj.GetLabels()[kmapi.ClientOrgMonitoringKey] != "false"
 		}))).
 		Watches(&core.ServiceAccount{}, handler.EnqueueRequestsFromMapFunc(func(ctx context.Context, _ client.Object) []reconcile.Request {
 			var list core.NamespaceList
