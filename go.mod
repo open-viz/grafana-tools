@@ -1,8 +1,8 @@
 module go.openviz.dev/grafana-tools
 
-go 1.22.0
+go 1.23.0
 
-toolchain go1.22.2
+toolchain go1.24.1
 
 require (
 	github.com/go-resty/resty/v2 v2.16.2
@@ -20,7 +20,7 @@ require (
 	go.bytebuilders.dev/license-verifier v0.14.5
 	go.openviz.dev/apimachinery v0.0.8
 	go.openviz.dev/grafana-sdk v0.0.5
-	golang.org/x/text v0.21.0
+	golang.org/x/text v0.22.0
 	gomodules.xyz/logs v0.0.7
 	gomodules.xyz/pointer v0.1.0
 	gomodules.xyz/runtime v0.3.0
@@ -35,7 +35,7 @@ require (
 	k8s.io/kube-aggregator v0.30.2
 	k8s.io/utils v0.0.0-20240502163921-fe8a2dddb1d0
 	kmodules.xyz/authorizer v0.29.1
-	kmodules.xyz/client-go v0.30.46
+	kmodules.xyz/client-go v0.30.48
 	kmodules.xyz/custom-resources v0.30.0
 	kmodules.xyz/monitoring-agent-api v0.30.4
 	moul.io/http2curl/v2 v2.3.1-0.20221024080105-10c404f653f7
@@ -134,18 +134,18 @@ require (
 	go.starlark.net v0.0.0-20230525235612-a134d8f9ddca // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.26.0 // indirect
-	golang.org/x/crypto v0.31.0 // indirect
+	golang.org/x/crypto v0.35.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
-	golang.org/x/net v0.33.0 // indirect
-	golang.org/x/oauth2 v0.22.0 // indirect
-	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
-	golang.org/x/term v0.27.0 // indirect
+	golang.org/x/net v0.36.0 // indirect
+	golang.org/x/oauth2 v0.27.0 // indirect
+	golang.org/x/sync v0.11.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
+	golang.org/x/term v0.29.0 // indirect
 	golang.org/x/time v0.6.0 // indirect
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
 	gomodules.xyz/clock v0.0.0-20200817085942-06523dba733f // indirect
 	gomodules.xyz/flags v0.1.3 // indirect
-	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
+	gomodules.xyz/jsonpatch/v2 v2.5.0 // indirect
 	gomodules.xyz/mergo v0.3.13 // indirect
 	gomodules.xyz/password-generator v0.2.9 // indirect
 	gomodules.xyz/sets v0.2.1 // indirect
