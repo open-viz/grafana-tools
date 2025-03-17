@@ -224,7 +224,7 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, pr
 			return err
 		}
 		caCrt = string(rancherSecret.Data["ca.crt"])
-	} else {
+	} else if !clustermeta.IsOpenClusterSpoke(r.kc) {
 		sa := core.ServiceAccount{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      ServiceAccountTrickster,
@@ -307,12 +307,22 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, pr
 				},
 			}
 		} else {
-			obj.Subjects = []rbac.Subject{
-				{
-					Kind:      "ServiceAccount",
-					Name:      ServiceAccountTrickster,
-					Namespace: key.Namespace,
-				},
+			if clustermeta.IsOpenClusterSpoke(r.kc) {
+				obj.Subjects = []rbac.Subject{
+					{
+						Kind:      "ServiceAccount",
+						Name:      ServiceAccountTrickster,
+						Namespace: "monitoring", // ocm spokes use sa in "monitoring" namespace
+					},
+				}
+			} else {
+				obj.Subjects = []rbac.Subject{
+					{
+						Kind:      "ServiceAccount",
+						Name:      ServiceAccountTrickster,
+						Namespace: key.Namespace,
+					},
+				}
 			}
 		}
 
