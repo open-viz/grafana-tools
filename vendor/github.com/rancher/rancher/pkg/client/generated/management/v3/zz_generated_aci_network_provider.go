@@ -30,9 +30,11 @@ const (
 	AciNetworkProviderFieldDisableWaitForNetwork                = "disableWaitForNetwork"
 	AciNetworkProviderFieldDropLogDisableEvents                 = "dropLogDisableEvents"
 	AciNetworkProviderFieldDropLogEnable                        = "dropLogEnable"
+	AciNetworkProviderFieldDropLogOpflexRedirectDropLogs        = "dropLogOpflexRedirectDropLogs"
 	AciNetworkProviderFieldDurationWaitForNetwork               = "durationWaitForNetwork"
 	AciNetworkProviderFieldDynamicExternalSubnet                = "externDynamic"
 	AciNetworkProviderFieldEnableEndpointSlice                  = "enableEndpointSlice"
+	AciNetworkProviderFieldEnableHppDirect                      = "enableHppDirect"
 	AciNetworkProviderFieldEnableOpflexAgentReconnect           = "enableOpflexAgentReconnect"
 	AciNetworkProviderFieldEncapType                            = "encapType"
 	AciNetworkProviderFieldEpRegistry                           = "epRegistry"
@@ -70,6 +72,7 @@ const (
 	AciNetworkProviderFieldOpflexAgentOpflexAsyncjsonEnabled    = "opflexAgentOpflexAsyncjsonEnabled"
 	AciNetworkProviderFieldOpflexAgentOvsAsyncjsonEnabled       = "opflexAgentOvsAsyncjsonEnabled"
 	AciNetworkProviderFieldOpflexAgentPolicyRetryDelayTimer     = "opflexAgentPolicyRetryDelayTimer"
+	AciNetworkProviderFieldOpflexAgentResetWaitDelay            = "opflexAgentResetWaitDelay"
 	AciNetworkProviderFieldOpflexAgentStatistics                = "opflexAgentStatistics"
 	AciNetworkProviderFieldOpflexClientSSL                      = "opflexClientSsl"
 	AciNetworkProviderFieldOpflexDeviceDeleteTimeout            = "opflexDeviceDeleteTimeout"
@@ -85,6 +88,7 @@ const (
 	AciNetworkProviderFieldOverlayVRFName                       = "overlayVrfName"
 	AciNetworkProviderFieldPBRTrackingNonSnat                   = "pbrTrackingNonSnat"
 	AciNetworkProviderFieldPodSubnetChunkSize                   = "podSubnetChunkSize"
+	AciNetworkProviderFieldProactiveConf                        = "proactiveConf"
 	AciNetworkProviderFieldRunGbpContainer                      = "runGbpContainer"
 	AciNetworkProviderFieldRunOpflexServerContainer             = "runOpflexServerContainer"
 	AciNetworkProviderFieldServiceGraphEndpointAddDelay         = "serviceGraphEndpointAddDelay"
@@ -149,9 +153,11 @@ type AciNetworkProvider struct {
 	DisableWaitForNetwork                string              `json:"disableWaitForNetwork,omitempty" yaml:"disableWaitForNetwork,omitempty"`
 	DropLogDisableEvents                 string              `json:"dropLogDisableEvents,omitempty" yaml:"dropLogDisableEvents,omitempty"`
 	DropLogEnable                        string              `json:"dropLogEnable,omitempty" yaml:"dropLogEnable,omitempty"`
+	DropLogOpflexRedirectDropLogs        string              `json:"dropLogOpflexRedirectDropLogs,omitempty" yaml:"dropLogOpflexRedirectDropLogs,omitempty"`
 	DurationWaitForNetwork               string              `json:"durationWaitForNetwork,omitempty" yaml:"durationWaitForNetwork,omitempty"`
 	DynamicExternalSubnet                string              `json:"externDynamic,omitempty" yaml:"externDynamic,omitempty"`
 	EnableEndpointSlice                  string              `json:"enableEndpointSlice,omitempty" yaml:"enableEndpointSlice,omitempty"`
+	EnableHppDirect                      string              `json:"enableHppDirect,omitempty" yaml:"enableHppDirect,omitempty"`
 	EnableOpflexAgentReconnect           string              `json:"enableOpflexAgentReconnect,omitempty" yaml:"enableOpflexAgentReconnect,omitempty"`
 	EncapType                            string              `json:"encapType,omitempty" yaml:"encapType,omitempty"`
 	EpRegistry                           string              `json:"epRegistry,omitempty" yaml:"epRegistry,omitempty"`
@@ -189,6 +195,7 @@ type AciNetworkProvider struct {
 	OpflexAgentOpflexAsyncjsonEnabled    string              `json:"opflexAgentOpflexAsyncjsonEnabled,omitempty" yaml:"opflexAgentOpflexAsyncjsonEnabled,omitempty"`
 	OpflexAgentOvsAsyncjsonEnabled       string              `json:"opflexAgentOvsAsyncjsonEnabled,omitempty" yaml:"opflexAgentOvsAsyncjsonEnabled,omitempty"`
 	OpflexAgentPolicyRetryDelayTimer     string              `json:"opflexAgentPolicyRetryDelayTimer,omitempty" yaml:"opflexAgentPolicyRetryDelayTimer,omitempty"`
+	OpflexAgentResetWaitDelay            string              `json:"opflexAgentResetWaitDelay,omitempty" yaml:"opflexAgentResetWaitDelay,omitempty"`
 	OpflexAgentStatistics                string              `json:"opflexAgentStatistics,omitempty" yaml:"opflexAgentStatistics,omitempty"`
 	OpflexClientSSL                      string              `json:"opflexClientSsl,omitempty" yaml:"opflexClientSsl,omitempty"`
 	OpflexDeviceDeleteTimeout            string              `json:"opflexDeviceDeleteTimeout,omitempty" yaml:"opflexDeviceDeleteTimeout,omitempty"`
@@ -204,6 +211,7 @@ type AciNetworkProvider struct {
 	OverlayVRFName                       string              `json:"overlayVrfName,omitempty" yaml:"overlayVrfName,omitempty"`
 	PBRTrackingNonSnat                   string              `json:"pbrTrackingNonSnat,omitempty" yaml:"pbrTrackingNonSnat,omitempty"`
 	PodSubnetChunkSize                   string              `json:"podSubnetChunkSize,omitempty" yaml:"podSubnetChunkSize,omitempty"`
+	ProactiveConf                        string              `json:"proactiveConf,omitempty" yaml:"proactiveConf,omitempty"`
 	RunGbpContainer                      string              `json:"runGbpContainer,omitempty" yaml:"runGbpContainer,omitempty"`
 	RunOpflexServerContainer             string              `json:"runOpflexServerContainer,omitempty" yaml:"runOpflexServerContainer,omitempty"`
 	ServiceGraphEndpointAddDelay         string              `json:"serviceGraphEndpointAddDelay,omitempty" yaml:"serviceGraphEndpointAddDelay,omitempty"`

@@ -28,10 +28,9 @@ import (
 	"github.com/spf13/pflag"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apiserver/pkg/endpoints/openapi"
-	"k8s.io/apiserver/pkg/features"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	genericoptions "k8s.io/apiserver/pkg/server/options"
-	"k8s.io/apiserver/pkg/util/feature"
+	utilversion "k8s.io/component-base/version"
 	"kmodules.xyz/client-go/tools/clientcmd"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -50,7 +49,6 @@ type MonitoringOperatorOptions struct {
 
 // NewMonitoringOperatorOptions returns a new MonitoringOperatorOptions
 func NewMonitoringOperatorOptions(out, errOut io.Writer) *MonitoringOperatorOptions {
-	_ = feature.DefaultMutableFeatureGate.Set(fmt.Sprintf("%s=false", features.APIPriorityAndFairness))
 	o := &MonitoringOperatorOptions{
 		RecommendedOptions: genericoptions.NewRecommendedOptions(
 			defaultEtcdPathPrefix,
@@ -99,6 +97,8 @@ func (o *MonitoringOperatorOptions) Config() (*apiserver.Config, error) {
 	// Fixes https://github.com/Azure/AKS/issues/522
 	clientcmd.Fix(serverConfig.ClientConfig)
 
+	serverConfig.EffectiveVersion = utilversion.NewEffectiveVersion("v1.0.0")
+
 	serverConfig.OpenAPIConfig = genericapiserver.DefaultOpenAPIConfig(
 		uiapi.GetOpenAPIDefinitions,
 		openapi.NewDefinitionNamer(apiserver.Scheme))
@@ -137,13 +137,13 @@ func (o *MonitoringOperatorOptions) Run(ctx context.Context) error {
 		return err
 	}
 
-	server.GenericAPIServer.AddPostStartHookOrDie("start-monitoring-operator-informers", func(context genericapiserver.PostStartHookContext) error {
-		config.GenericConfig.SharedInformerFactory.Start(context.StopCh)
+	server.GenericAPIServer.AddPostStartHookOrDie("start-monitoring-operator-informers", func(ctx genericapiserver.PostStartHookContext) error {
+		config.GenericConfig.SharedInformerFactory.Start(ctx.Done())
 		return nil
 	})
 
 	err = server.Manager.Add(manager.RunnableFunc(func(ctx context.Context) error {
-		return server.GenericAPIServer.PrepareRun().Run(ctx.Done())
+		return server.GenericAPIServer.PrepareRun().RunWithContext(ctx)
 	}))
 	if err != nil {
 		return err
