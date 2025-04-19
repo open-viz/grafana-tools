@@ -214,6 +214,7 @@ func (r *AutoReconciler) updateServiceMonitorLabels(prom *monitoringv1.Prometheu
 // SetupWithManager sets up the controller with the Manager.
 func (r *AutoReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
+		Named("servicemonitor-auto").
 		For(&monitoringv1.ServiceMonitor{}, builder.WithPredicates(predicate.NewPredicateFuncs(func(obj client.Object) bool {
 			val, found := obj.GetLabels()[mona.PrometheusKey]
 			return found && val == mona.PrometheusValueAuto
