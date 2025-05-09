@@ -362,8 +362,6 @@ func (r *Storage) getDashboardLink(
 }
 
 func useClientOrgDashboard(ctx context.Context, kc client.Client, user user.Info) (string, bool, error) {
-	fmt.Println("user-extra: ", user.GetExtra())
-
 	orgId, found := user.GetExtra()[kmapi.AceOrgIDKey]
 	if !found || len(orgId) == 0 || len(orgId) > 1 {
 		return "", false, nil
@@ -379,7 +377,6 @@ func useClientOrgDashboard(ctx context.Context, kc client.Client, user user.Info
 
 	for _, ns := range nsList.Items {
 		if ns.Annotations[kmapi.AceOrgIDKey] == orgId[0] {
-			fmt.Println("found client org: ", ns.Name)
 			return clientorg.MonitoringNamespace(ns.Name), true, nil
 		}
 	}
