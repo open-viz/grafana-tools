@@ -216,12 +216,12 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	}
 
 	var promList monitoringv1.PrometheusList
-	if err := r.kc.List(ctx, &promList, client.InNamespace(rbKey.Namespace)); err != nil {
+	if err := r.kc.List(ctx, &promList, client.InNamespace(meta.PodNamespace())); err != nil {
 		return ctrl.Result{}, err
 	} else if len(promList.Items) == 0 {
-		return ctrl.Result{}, fmt.Errorf("prometheus not found in namespace %s", rbKey.Namespace)
+		return ctrl.Result{}, fmt.Errorf("prometheus not found in namespace %s", meta.PodNamespace())
 	} else if len(promList.Items) > 1 {
-		return ctrl.Result{}, fmt.Errorf("more than one prometheus found in namespace %s", rbKey.Namespace)
+		return ctrl.Result{}, fmt.Errorf("more than one prometheus found in namespace %s", meta.PodNamespace())
 	}
 
 	var promService core.Service
