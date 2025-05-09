@@ -82,6 +82,7 @@ const (
 	srcRefKey  = "meta.appcode.com/source"
 	srcHashKey = "meta.appcode.com/hash"
 
+	// cr created via monitoring-operator chart
 	crClientOrgMonitoring = "appscode:client-org:monitoring"
 	abClientOrgGrafana    = "grafana"
 )
@@ -192,36 +193,36 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	}
 	klog.Infof("%s role binding %s/%s", rbvt, rb.Namespace, rb.Name)
 
-	// confirm trickter sa registered
-	var saList core.ServiceAccountList
-	if err := r.kc.List(ctx, &saList); err != nil {
+	// confirm trickter rb registered
+	var rbList rbac.RoleBindingList
+	if err := r.kc.List(ctx, &rbList); err != nil {
 		return ctrl.Result{}, err
 	}
-	var saKey types.NamespacedName
-	for _, sa := range saList.Items {
-		if sa.Name != prometheus.ServiceAccountTrickster {
+	var rbKey types.NamespacedName
+	for _, rb := range rbList.Items {
+		if rb.Name != prometheus.CRTrickster {
 			continue
 		}
-		if sa.Annotations[prometheus.RegisteredKey] != "" {
+		if rb.Annotations[prometheus.RegisteredKey] == "" {
+			continue
 		}
-
-		saKey = types.NamespacedName{
-			Namespace: sa.Namespace,
-			Name:      sa.Name,
+		rbKey = types.NamespacedName{
+			Namespace: rb.Namespace,
+			Name:      rb.Name,
 		}
 		break
 	}
-	if saKey.Namespace == "" {
-		return ctrl.Result{}, fmt.Errorf("service account %s is not registered", prometheus.ServiceAccountTrickster)
+	if rbKey.Namespace == "" {
+		return ctrl.Result{}, fmt.Errorf("rolebinding %s is not registered yet", prometheus.CRTrickster)
 	}
 
 	var promList monitoringv1.PrometheusList
-	if err := r.kc.List(ctx, &promList, client.InNamespace(saKey.Namespace)); err != nil {
+	if err := r.kc.List(ctx, &promList, client.InNamespace(rbKey.Namespace)); err != nil {
 		return ctrl.Result{}, err
 	} else if len(promList.Items) == 0 {
-		return ctrl.Result{}, fmt.Errorf("prometheus not found in namespace %s", saKey.Namespace)
+		return ctrl.Result{}, fmt.Errorf("prometheus not found in namespace %s", rbKey.Namespace)
 	} else if len(promList.Items) > 1 {
-		return ctrl.Result{}, fmt.Errorf("more than one prometheus found in namespace %s", saKey.Namespace)
+		return ctrl.Result{}, fmt.Errorf("more than one prometheus found in namespace %s", rbKey.Namespace)
 	}
 
 	var promService core.Service
@@ -229,15 +230,6 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-
-	var saToken string
-	var caCrt string
-	s, err := cu.GetServiceAccountTokenSecret(r.kc, saKey)
-	if err != nil {
-		return ctrl.Result{}, err
-	}
-	saToken = string(s.Data["token"])
-	caCrt = string(s.Data["ca.crt"])
 
 	var pcfg mona.PrometheusConfig
 	pcfg.Service = mona.ServiceSpec{
@@ -259,12 +251,12 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	//if rancherToken != nil {
 	//	pcfg.BearerToken = rancherToken.Token
 	//} else {
-	pcfg.BearerToken = saToken
+	pcfg.BearerToken = "" // set in b3
 	// }
 	pcfg.BasicAuth = mona.BasicAuth{}
 	pcfg.TLS.Cert = ""
 	pcfg.TLS.Key = ""
-	pcfg.TLS.Ca = caCrt
+	pcfg.TLS.Ca = "" // set in b3
 
 	cm, err := clustermeta.ClusterMetadata(r.kc)
 	if err != nil {
