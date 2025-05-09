@@ -203,7 +203,7 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		if rb.Name != prometheus.CRTrickster {
 			continue
 		}
-		if rb.Annotations[prometheus.RegisteredKey] != "" {
+		if rb.Annotations[prometheus.RegisteredKey] == "" {
 			continue
 		}
 		rbKey = types.NamespacedName{
