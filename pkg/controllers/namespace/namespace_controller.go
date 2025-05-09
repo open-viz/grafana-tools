@@ -82,6 +82,7 @@ const (
 	srcRefKey  = "meta.appcode.com/source"
 	srcHashKey = "meta.appcode.com/hash"
 
+	// cr created via monitoring-operator chart
 	crClientOrgMonitoring = "appscode:client-org:monitoring"
 	abClientOrgGrafana    = "grafana"
 )
@@ -199,7 +200,7 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	}
 	var rbKey types.NamespacedName
 	for _, rb := range rbList.Items {
-		if rb.Name != crClientOrgMonitoring {
+		if rb.Name != prometheus.CRTrickster {
 			continue
 		}
 		if rb.Annotations[prometheus.RegisteredKey] != "" {
@@ -212,16 +213,16 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		break
 	}
 	if rbKey.Namespace == "" {
-		return ctrl.Result{}, fmt.Errorf("rolebinding %s is not found", crClientOrgMonitoring)
+		return ctrl.Result{}, fmt.Errorf("rolebinding %s is not registered yet", prometheus.CRTrickster)
 	}
 
 	var promList monitoringv1.PrometheusList
-	if err := r.kc.List(ctx, &promList, client.InNamespace(meta.PodNamespace())); err != nil {
+	if err := r.kc.List(ctx, &promList, client.InNamespace(rbKey.Namespace)); err != nil {
 		return ctrl.Result{}, err
 	} else if len(promList.Items) == 0 {
-		return ctrl.Result{}, fmt.Errorf("prometheus not found in namespace %s", meta.PodNamespace())
+		return ctrl.Result{}, fmt.Errorf("prometheus not found in namespace %s", rbKey.Namespace)
 	} else if len(promList.Items) > 1 {
-		return ctrl.Result{}, fmt.Errorf("more than one prometheus found in namespace %s", meta.PodNamespace())
+		return ctrl.Result{}, fmt.Errorf("more than one prometheus found in namespace %s", rbKey.Namespace)
 	}
 
 	var promService core.Service
