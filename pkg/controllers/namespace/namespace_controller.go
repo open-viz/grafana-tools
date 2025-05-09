@@ -199,7 +199,7 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	}
 	var rbKey types.NamespacedName
 	for _, rb := range rbList.Items {
-		if rb.Name != prometheus.CRTrickster {
+		if rb.Name != crClientOrgMonitoring {
 			continue
 		}
 		if rb.Annotations[prometheus.RegisteredKey] != "" {
@@ -212,7 +212,7 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		break
 	}
 	if rbKey.Namespace == "" {
-		return ctrl.Result{}, fmt.Errorf("rolebinding %s is not found", prometheus.CRTrickster)
+		return ctrl.Result{}, fmt.Errorf("rolebinding %s is not found", crClientOrgMonitoring)
 	}
 
 	var promList monitoringv1.PrometheusList
