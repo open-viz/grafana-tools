@@ -46,6 +46,8 @@ import (
 const (
 	inboxAPIServiceGroup = "inbox.monitoring.appscode.com"
 	amcfgInboxAgent      = "inbox-agent"
+	amcfgLabelKey        = "alertmanagerConfig"
+	amcfgLabelValue      = "inbox-agent-alertmanager-config"
 )
 
 var selfNamespace = meta_util.PodNamespace()
@@ -105,6 +107,10 @@ func (r *AlertmanagerReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		return ctrl.Result{}, err
 	}
 
+	am.Spec.AlertmanagerConfigSelector = &metav1.LabelSelector{
+		MatchLabels: map[string]string{amcfgLabelKey: amcfgLabelValue},
+	}
+
 	if err := r.SetupClusterForAlertmanager(ctx, &am, apisvc); err != nil {
 		log.Error(err, "unable to setup Alertmanager config")
 		return ctrl.Result{}, err
@@ -122,6 +128,8 @@ func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context
 	}
 	crvt, err := cu.CreateOrPatch(ctx, r.kc, &cr, func(in client.Object, createOp bool) client.Object {
 		obj := in.(*monitoringv1alpha1.AlertmanagerConfig)
+
+		obj.Labels = map[string]string{amcfgLabelKey: amcfgLabelValue}
 
 		obj.Spec.Receivers = []monitoringv1alpha1.Receiver{
 			{
