@@ -46,8 +46,8 @@ import (
 const (
 	inboxAPIServiceGroup = "inbox.monitoring.appscode.com"
 	amcfgInboxAgent      = "inbox-agent"
-	amcfgLabelKey        = "inbox-agent-amcfg-label"
-	amcfgLabelValue      = "inbox-agent-amcfg"
+	amcfgLabelKey        = "app"
+	amcfgLabelValue      = "inbox-agent"
 )
 
 var selfNamespace = meta_util.PodNamespace()
