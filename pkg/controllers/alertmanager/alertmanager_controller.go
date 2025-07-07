@@ -46,7 +46,7 @@ import (
 const (
 	inboxAPIServiceGroup = "inbox.monitoring.appscode.com"
 	amcfgInboxAgent      = "inbox-agent"
-	amcfgLabelKey        = "app"
+	amcfgLabelKey        = "app.kubernetes.io/name"
 	amcfgLabelValue      = "inbox-agent"
 )
 
