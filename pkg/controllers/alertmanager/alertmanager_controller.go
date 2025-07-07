@@ -108,12 +108,12 @@ func (r *AlertmanagerReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	if am.Spec.AlertmanagerConfigSelector == nil {
-		am.Spec.AlertmanagerConfigSelector = &metav1.LabelSelector{
-			MatchLabels: map[string]string{amcfgLabelKey: amcfgLabelValue},
-		}
-	} else {
-		am.Spec.AlertmanagerConfigSelector.MatchLabels[amcfgLabelKey] = amcfgLabelValue
+		am.Spec.AlertmanagerConfigSelector = &metav1.LabelSelector{}
 	}
+	if am.Spec.AlertmanagerConfigSelector.MatchLabels == nil {
+		am.Spec.AlertmanagerConfigSelector.MatchLabels = make(map[string]string)
+	}
+	am.Spec.AlertmanagerConfigSelector.MatchLabels[amcfgLabelKey] = amcfgLabelValue
 
 	if err := r.SetupClusterForAlertmanager(ctx, &am, apisvc); err != nil {
 		log.Error(err, "unable to setup Alertmanager config")
@@ -133,6 +133,9 @@ func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context
 	crvt, err := cu.CreateOrPatch(ctx, r.kc, &cr, func(in client.Object, createOp bool) client.Object {
 		obj := in.(*monitoringv1alpha1.AlertmanagerConfig)
 
+		if obj.Labels == nil {
+			obj.Labels = make(map[string]string)
+		}
 		obj.Labels[amcfgLabelKey] = amcfgLabelValue
 
 		obj.Spec.Receivers = []monitoringv1alpha1.Receiver{
