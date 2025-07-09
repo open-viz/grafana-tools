@@ -768,7 +768,7 @@ func (r *PrometheusReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 		var req []reconcile.Request
 		for _, prom := range promList.Items {
-			req = append(req, reconcile.Request{NamespacedName: client.ObjectKeyFromObject(prom)})
+			req = append(req, reconcile.Request{NamespacedName: client.ObjectKeyFromObject(&prom)})
 		}
 		return req
 	})

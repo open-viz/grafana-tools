@@ -226,7 +226,7 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	}
 
 	var promService core.Service
-	err = r.kc.Get(context.TODO(), client.ObjectKeyFromObject(promList.Items[0]), &promService)
+	err = r.kc.Get(context.TODO(), client.ObjectKeyFromObject(&promList.Items[0]), &promService)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
