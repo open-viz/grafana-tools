@@ -103,7 +103,7 @@ func (r *AutoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 
 	if !clustermeta.IsRancherManaged(r.kc.RESTMapper()) {
 		// non rancher
-		err := r.updateServiceMonitorLabels(prometheuses[0], &svcMon)
+		err := r.updateServiceMonitorLabels(&prometheuses[0], &svcMon)
 		if err != nil {
 			log.Error(err, "failed to apply label")
 		}
@@ -127,7 +127,7 @@ func (r *AutoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		// find system prometheus and use that
 		for _, prom := range prometheuses {
 			if prom.Namespace == clustermeta.RancherMonitoringNamespace {
-				err = r.updateServiceMonitorLabels(prom, &svcMon)
+				err = r.updateServiceMonitorLabels(&prom, &svcMon)
 				if err != nil {
 					log.Error(err, "failed to apply label")
 				}
@@ -158,7 +158,7 @@ func (r *AutoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 			return ctrl.Result{}, err
 		}
 		if sel.Matches(labels.Set{clustermeta.LabelKeyRancherHelmProjectId: helmProjectId}) {
-			err := r.updateServiceMonitorLabels(prom, &svcMon)
+			err := r.updateServiceMonitorLabels(&prom, &svcMon)
 			if err != nil {
 				log.Error(err, "failed to apply label")
 			}
@@ -168,7 +168,7 @@ func (r *AutoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	return ctrl.Result{}, nil
 }
 
-func HasProm(kc client.Client, svcmon *monitoringv1.ServiceMonitor, prometheuses []*monitoringv1.Prometheus) (*monitoringv1.Prometheus, error) {
+func HasProm(kc client.Client, svcmon *monitoringv1.ServiceMonitor, prometheuses []monitoringv1.Prometheus) (*monitoringv1.Prometheus, error) {
 	var ns core.Namespace
 	err := kc.Get(context.TODO(), client.ObjectKey{Name: svcmon.Namespace}, &ns)
 	if err != nil {
@@ -189,7 +189,7 @@ func HasProm(kc client.Client, svcmon *monitoringv1.ServiceMonitor, prometheuses
 			return nil, err
 		}
 		if sel.Matches(labels.Set(svcmon.Labels)) {
-			return prom, nil
+			return &prom, nil
 		}
 	}
 	return nil, nil

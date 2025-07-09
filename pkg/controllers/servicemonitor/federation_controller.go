@@ -115,7 +115,7 @@ func (r *FederationReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	if !r.d.Federated() {
 		// non rancher
-		err := r.updateServiceMonitorLabels(prometheuses[0], &svcMon)
+		err := r.updateServiceMonitorLabels(&prometheuses[0], &svcMon)
 		if err != nil {
 			log.Error(err, "failed to apply label")
 		}
@@ -165,7 +165,8 @@ func (r *FederationReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	var errList []error
-	for _, prom := range promList.Items {
+	for _, item := range promList.Items {
+		prom := &item
 		isDefault := r.d.IsDefault(client.ObjectKeyFromObject(prom))
 
 		if !isDefault && prom.Namespace == req.Namespace {
@@ -477,7 +478,7 @@ func (r *FederationReconciler) ServiceMonitorsForService(ctx context.Context, ob
 			return nil
 		}
 		if sel.Matches(labels.Set(obj.GetLabels())) {
-			req = append(req, reconcile.Request{NamespacedName: client.ObjectKeyFromObject(svcMon)})
+			req = append(req, reconcile.Request{NamespacedName: client.ObjectKeyFromObject(&svcMon)})
 		}
 	}
 	return req
@@ -495,7 +496,7 @@ func ServiceMonitorsForPrometheus(kc client.Client, labels map[string]string) fu
 
 		var req []reconcile.Request
 		for _, svcMon := range list.Items {
-			req = append(req, reconcile.Request{NamespacedName: client.ObjectKeyFromObject(svcMon)})
+			req = append(req, reconcile.Request{NamespacedName: client.ObjectKeyFromObject(&svcMon)})
 		}
 		return req
 	}
