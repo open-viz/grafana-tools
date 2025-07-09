@@ -30,7 +30,6 @@ import (
 	apiregistrationv1 "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
 	"k8s.io/utils/ptr"
 	cu "kmodules.xyz/client-go/client"
-	meta_util "kmodules.xyz/client-go/meta"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -47,14 +46,7 @@ const (
 	inboxAPIServiceGroup = "inbox.monitoring.appscode.com"
 	amcfgInboxAgent      = "inbox-agent"
 	amcfgLabelKey        = "app.kubernetes.io/name"
-	amcfgLabelValue      = "inbox-agent"
 )
-
-var selfNamespace = meta_util.PodNamespace()
-
-var defaultPresetsLabels = map[string]string{
-	"charts.x-helm.dev/is-default-preset": "true",
-}
 
 // AlertmanagerReconciler reconciles an Alertmanager object
 type AlertmanagerReconciler struct {
@@ -113,7 +105,7 @@ func (r *AlertmanagerReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	if am.Spec.AlertmanagerConfigSelector.MatchLabels == nil {
 		am.Spec.AlertmanagerConfigSelector.MatchLabels = make(map[string]string)
 	}
-	am.Spec.AlertmanagerConfigSelector.MatchLabels[amcfgLabelKey] = amcfgLabelValue
+	am.Spec.AlertmanagerConfigSelector.MatchLabels[amcfgLabelKey] = amcfgInboxAgent
 
 	if err := r.SetupClusterForAlertmanager(ctx, &am, apisvc); err != nil {
 		log.Error(err, "unable to setup Alertmanager config")
@@ -136,7 +128,7 @@ func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context
 		if obj.Labels == nil {
 			obj.Labels = make(map[string]string)
 		}
-		obj.Labels[amcfgLabelKey] = amcfgLabelValue
+		obj.Labels[amcfgLabelKey] = amcfgInboxAgent
 
 		obj.Spec.Receivers = []monitoringv1alpha1.Receiver{
 			{
