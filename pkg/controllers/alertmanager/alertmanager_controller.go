@@ -99,6 +99,8 @@ func (r *AlertmanagerReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		return ctrl.Result{}, err
 	}
 
+	original := am.DeepCopy()
+
 	if am.Spec.AlertmanagerConfigSelector == nil {
 		am.Spec.AlertmanagerConfigSelector = &metav1.LabelSelector{}
 	}
@@ -106,6 +108,11 @@ func (r *AlertmanagerReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		am.Spec.AlertmanagerConfigSelector.MatchLabels = make(map[string]string)
 	}
 	am.Spec.AlertmanagerConfigSelector.MatchLabels[amcfgLabelKey] = amcfgInboxAgent
+
+	if err := r.kc.Patch(ctx, &am, client.MergeFrom(original)); err != nil {
+		log.Error(err, "failed to patch Alertmanager")
+		return ctrl.Result{}, err
+	}
 
 	if err := r.SetupClusterForAlertmanager(ctx, &am, apisvc); err != nil {
 		log.Error(err, "unable to setup Alertmanager config")
