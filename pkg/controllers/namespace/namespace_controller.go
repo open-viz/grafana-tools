@@ -95,6 +95,8 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
+	klog.Infof("11111111111111111111111: %v %v %v \n", ns.Name, ns.Labels, ns.Annotations)
+
 	if ns.Labels[kmapi.ClientOrgKey] == "" || ns.Labels[kmapi.ClientOrgKey] == "terminating" {
 		return ctrl.Result{}, nil
 	}
@@ -102,6 +104,7 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	if clientOrgId == "" {
 		return ctrl.Result{}, nil
 	}
+	klog.Infof("2222222222222222")
 
 	if ready, err := r.d.Ready(); err != nil || !ready {
 		return ctrl.Result{}, err
@@ -109,6 +112,7 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	if r.d.RancherManaged() && r.d.Federated() {
 		return ctrl.Result{}, fmt.Errorf("client organization mode is not supported when federated prometheus is used in a Rancher managed cluster")
 	}
+	klog.Infof("333333333333333333")
 
 	if ns.DeletionTimestamp != nil {
 		if r.bc != nil {
@@ -147,6 +151,7 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return ctrl.Result{}, err
 	}
 	klog.Infof("%s Namespace %s to add finalizer %s", vt, ns.Name, mona.PrometheusKey)
+	klog.Infof("44444444444444444444")
 
 	// create {client}-monitoring namespace
 	monNamespace := core.Namespace{
@@ -192,6 +197,7 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return ctrl.Result{}, err
 	}
 	klog.Infof("%s role binding %s/%s", rbvt, rb.Namespace, rb.Name)
+	klog.Infof("5555555555555555555555")
 
 	// confirm trickter rb registered
 	var rbList rbac.RoleBindingList
@@ -257,6 +263,7 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	pcfg.TLS.Cert = ""
 	pcfg.TLS.Key = ""
 	pcfg.TLS.Ca = "" // set in b3
+	klog.Infof("6666666666666666666")
 
 	cm, err := clustermeta.ClusterMetadata(r.kc)
 	if err != nil {
@@ -305,6 +312,7 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	}
 
 	var errList []error
+	klog.Infof("777777777777777777")
 	for _, dashboard := range dashboardList.Items {
 		if dashboard.Spec.Model == nil {
 			return ctrl.Result{}, apierrors.NewBadRequest(fmt.Sprintf("GrafanaDashboard %s/%s is missing a model", dashboard.Namespace, dashboard.Name))
@@ -333,6 +341,7 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 			continue
 		}
 
+		klog.Infof("88888888888888888 %v/%v", dashboard.Namespace, dashboard.Name)
 		copiedDashboard := &v1alpha1.GrafanaDashboard{}
 		err = r.kc.Get(context.TODO(), types.NamespacedName{
 			Namespace: monNamespace.Name,
