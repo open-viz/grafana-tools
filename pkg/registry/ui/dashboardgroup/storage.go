@@ -24,13 +24,16 @@ import (
 	"strconv"
 	"strings"
 
+	v1 "github.com/perses/perses/pkg/model/api/v1"
 	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 	uiapi "go.openviz.dev/apimachinery/apis/ui/v1alpha1"
 	"go.openviz.dev/grafana-tools/pkg/controllers/clientorg"
 	"go.openviz.dev/grafana-tools/pkg/detector"
+	perses "go.openviz.dev/grafana-tools/pkg/perses"
 
 	"github.com/grafana-tools/sdk"
 	"github.com/pkg/errors"
+	"gomodules.xyz/oneliners"
 	core "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -107,8 +110,9 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 	}
 
 	in.Response = &uiapi.DashboardGroupResponse{
-		Dashboards: make([]uiapi.DashboardResponse, 0, len(in.Request.Dashboards)),
+		Dashboards: make([]uiapi.DashboardResponse, 0, len(in.Request.Dashboards)*2),
 	}
+	oneliners.PrettyJson(in.Request.Dashboards, "in.Request.Dashboards")
 	for _, req := range in.Request.Dashboards {
 		req.Vars = upsertDatasourceVar(req.Vars, ds)
 		resp, err := r.getDashboardLink(ctx, &req, in.Request.RefreshInterval, in.Request.TimeRange, in.Request.EmbeddedLink)
@@ -240,6 +244,52 @@ func (r *Storage) getDashboardLink(
 		d = dashboardList.Items[0]
 	}
 
+	var persesDashboard openvizapi.PersesDashboard
+	if req.ObjectReference != nil {
+		ns := req.Namespace
+		if ns == "" {
+			return nil, fmt.Errorf("missing namespace for Dashboard")
+		}
+		err := r.kc.Get(ctx, client.ObjectKey{Namespace: ns, Name: req.Name}, &d)
+		if err != nil {
+			return nil, err
+		}
+	} else if req.Title != "" {
+		var dashboardList openvizapi.PersesDashboardList
+		dsNamespace, useClientDashboard, err := useClientOrgDashboard(ctx, r.kc, user)
+		if err != nil {
+			return nil, err
+		}
+		title := ""
+		if useClientDashboard {
+			// in {client}-monitoring namespace
+			title = clustermeta.ClientDashboardTitle(req.Title)
+			err = r.kc.List(ctx, &dashboardList, client.InNamespace(dsNamespace), client.MatchingFields{
+				openvizapi.PersesDashboardTitleKey: title,
+			})
+		} else {
+			// any namespace, using default grafana and with the given title
+			title = req.Title
+			err = r.kc.List(ctx, &dashboardList, client.MatchingFields{
+				mona.DefaultPersesKey:              "true",
+				openvizapi.PersesDashboardTitleKey: req.Title,
+			})
+		}
+		if err != nil {
+			return nil, err
+		}
+		if len(dashboardList.Items) == 0 {
+			return nil, apierrors.NewNotFound(openvizapi.Resource(openvizapi.ResourceKindPersesDashboard), fmt.Sprintf("No dashboard with title %s uses the default Perses", title))
+		} else if len(dashboardList.Items) > 1 {
+			names := make([]string, len(dashboardList.Items))
+			for idx, item := range dashboardList.Items {
+				names[idx] = fmt.Sprintf("%s/%s", item.Namespace, item.Name)
+			}
+			return nil, apierrors.NewBadRequest(fmt.Sprintf("multiple dashboards %s with title %s uses the default Perses", strings.Join(names, ","), title))
+		}
+		persesDashboard = dashboardList.Items[0]
+	}
+
 	{
 		attrs := authorizer.AttributesRecord{
 			User:      user,
@@ -262,6 +312,11 @@ func (r *Storage) getDashboardLink(
 	}
 
 	g, err := openvizapi.GetGrafana(ctx, r.kc, d.Spec.GrafanaRef.WithNamespace(d.Namespace))
+	if err != nil {
+		return nil, err
+	}
+
+	ps, err := perses.GetPerses(ctx, r.kc, persesDashboard.Spec.PersesRef.WithNamespace(persesDashboard.Namespace))
 	if err != nil {
 		return nil, err
 	}
@@ -292,6 +347,11 @@ func (r *Storage) getDashboardLink(
 		return nil, err
 	}
 
+	persesHost, err := ps.URL()
+	if err != nil {
+		return nil, err
+	}
+
 	if d.Spec.Model == nil {
 		return nil, apierrors.NewBadRequest(fmt.Sprintf("GrafanaDashboard %s/%s is missing a model", d.Namespace, d.Name))
 	}
@@ -301,11 +361,45 @@ func (r *Storage) getDashboardLink(
 		return nil, fmt.Errorf("failed to unmarshal model for GrafanaDashboard %s/%s, reason: %v", d.Namespace, d.Name, err)
 	}
 
+	var pDashboard v1.Dashboard
+	err = json.Unmarshal(persesDashboard.Spec.Model.Raw, &pDashboard)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal model for PersesDashboard %s/%s, reason: %v", d.Namespace, d.Name, err)
+	}
+
+	var persesConfig openvizapi.PersesConfiguration
+	err = json.Unmarshal(ps.Spec.Parameters.Raw, &persesConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal PersesConfiguration %s/%s, reason: %v", d.Namespace, d.Name, err)
+	}
+
 	resp := &uiapi.DashboardResponse{
 		DashboardRef: req.DashboardRef,
 	}
 	if embed {
-		resp.Panels = make([]uiapi.PanelLinkResponse, 0, len(board.Panels))
+		resp.Panels = make([]uiapi.PanelLinkResponse, 0, len(pDashboard.Spec.Panels))
+		if persesHost != "" && persesDashboard.Status.Dashboard != nil {
+			panelMap := map[string]int{}
+			for _, p := range req.Panels {
+				panelMap[p.Title] = p.Width
+			}
+
+			panelRespMap := map[string]*uiapi.PanelLinkResponse{}
+			for panelRef, p := range pDashboard.Spec.Panels {
+				if panel, err := toEmbeddedPersesPanel(p, persesHost, persesDashboard, req, refreshInterval, persesConfig.Datasource, panelRef, panelMap); err != nil {
+					return nil, err
+				} else if panel != nil {
+					panelRespMap[panel.Title] = panel
+				}
+			}
+			for _, panel := range req.Panels {
+				if panelRespMap[panel.Title] == nil {
+					continue
+				}
+				resp.Panels = append(resp.Panels, *panelRespMap[panel.Title])
+			}
+			return resp, nil
+		}
 
 		panelMap := map[string]int{}
 		for _, p := range req.Panels {
@@ -356,6 +450,18 @@ func (r *Storage) getDashboardLink(
 		baseURL.RawQuery = addVars(q, req.Vars)
 
 		resp.URL = baseURL.String()
+
+		if persesHost != "" && persesDashboard.Status.Dashboard != nil {
+			baseURL, err = url.Parse(persesHost)
+			if err != nil {
+				return nil, apierrors.NewInternalError(err)
+			}
+
+			baseURL.Path = path.Join(baseURL.Path, "projects", persesDashboard.Status.Dashboard.ProjectName, "folders", persesDashboard.Status.Dashboard.FolderName, "dashboards", persesDashboard.Status.Dashboard.Name)
+
+			resp.URL = baseURL.String()
+		}
+
 	}
 
 	return resp, nil
@@ -427,6 +533,58 @@ func toEmbeddedPanel(p *sdk.Panel, grafanaHost string, d openvizapi.GrafanaDashb
 		Title: p.Title,
 		URL:   baseURL.String(),
 		Width: panelMap[p.Title],
+	}, nil
+}
+
+func toEmbeddedPersesPanel(p *v1.Panel, persesHost string, persesDashboard openvizapi.PersesDashboard, req *uiapi.DashboardRequest, refreshInterval string, datasourceName string, panelRef string, panelMap map[string]int) (*uiapi.PanelLinkResponse, error) {
+	includePanel := func(title string) bool {
+		if len(panelMap) == 0 {
+			return true
+		}
+		_, ok := panelMap[title]
+		return ok
+	}
+
+	if !includePanel(p.Spec.Display.Name) {
+		return nil, nil
+	}
+
+	baseURL, err := url.Parse(persesHost)
+	if err != nil {
+		return nil, apierrors.NewInternalError(err)
+	}
+
+	// if embedded
+
+	// https://10.2.0.66/observe/projects/default/folders/ace/dashboards/vnogk2hnky?viewPanelRef=%7B%22ref%22%3A%2216%22%7D
+	baseURL.Path = path.Join(baseURL.Path, "projects", persesDashboard.Status.Dashboard.ProjectName, "folders", persesDashboard.Status.Dashboard.FolderName, "dashboards", persesDashboard.Status.Dashboard.Name)
+	panelRefObj := struct {
+		Ref string `json:"ref"`
+	}{
+		Ref: panelRef,
+	}
+
+	b, err := json.Marshal(panelRefObj)
+	if err != nil {
+		return nil, err
+	}
+	//https://10.2.0.66/observe/projects/default/folders/ace/dashboards/vnogk2hnky?var-datasource=ace&var-namespace=ace&var-app=ace-db&start=1h&refresh=0s&viewPanelRef=%7B%22ref%22%3A%2216%22%7D&detailedView=1
+	q := url.Values{}
+	q.Set("viewPanelRef", string(b))
+	q.Set("detailedView", strconv.Itoa(1))
+
+	if refreshInterval == "" {
+		q.Add("refresh", "30s")
+	} else {
+		q.Add("refresh", refreshInterval)
+	}
+	q.Add("var-datasource", datasourceName)
+	baseURL.RawQuery = addVars(q, req.Vars)
+
+	return &uiapi.PanelLinkResponse{
+		Title: p.Spec.Display.Name,
+		URL:   baseURL.String(),
+		Width: panelMap[p.Spec.Display.Name],
 	}, nil
 }
 

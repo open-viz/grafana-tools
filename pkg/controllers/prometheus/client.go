@@ -45,6 +45,11 @@ type GrafanaDatasourceResponse struct {
 	mona.GrafanaContext `json:",inline,omitempty"`
 }
 
+type PersesDatasourceResponse struct {
+	Perses             mona.PersesConfig `json:"perses"`
+	mona.PersesContext `json:",inline,omitempty"`
+}
+
 type Client struct {
 	baseURL string
 	token   string
@@ -87,6 +92,9 @@ func NewClient(baseURL, token string, caCert []byte) (*Client, error) {
 const (
 	registerAPIPath   = "api/v1/trickster/register"
 	unregisterAPIPath = "api/v1/trickster/unregister"
+
+	persesRegisterAPIPath   = "api/v1/trickster/perses/register"
+	persesUnregisterAPIPath = "api/v1/trickster/register"
 )
 
 func (c *Client) registerAPIEndpoint() (string, error) {
@@ -104,6 +112,15 @@ func (c *Client) unregisterAPIEndpoint() (string, error) {
 		return "", err
 	}
 	u.Path = path.Join(u.Path, unregisterAPIPath)
+	return u.String(), nil
+}
+
+func (c *Client) persesRegisterAPIEndpoint() (string, error) {
+	u, err := info.APIServerAddress(c.baseURL)
+	if err != nil {
+		return "", err
+	}
+	u.Path = path.Join(u.Path, persesRegisterAPIPath)
 	return u.String(), nil
 }
 
@@ -169,6 +186,76 @@ func (c *Client) Register(ctx mona.PrometheusContext, cfg mona.PrometheusConfig)
 	}
 
 	var ds GrafanaDatasourceResponse
+	err = json.Unmarshal(body, &ds)
+	if err != nil {
+		return nil, err
+	}
+	return &ds, nil
+}
+
+func (c *Client) RegisterPerses(ctx mona.PrometheusContext, cfg mona.PrometheusConfig) (*PersesDatasourceResponse, error) {
+	opts := struct {
+		mona.PrometheusContext `json:",inline,omitempty"`
+		Prometheus             mona.PrometheusConfig `json:"prometheus"`
+	}{
+		PrometheusContext: ctx,
+		Prometheus:        cfg,
+	}
+	data, err := json.Marshal(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	url, err := c.persesRegisterAPIEndpoint()
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	// add authorization header to the req
+	if c.token != "" {
+		req.Header.Add("Authorization", "Bearer "+c.token)
+	}
+	if klog.V(8).Enabled() {
+		command, _ := http2curl.GetCurlCommand(req)
+		klog.V(8).Infoln(command.String())
+	}
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		var ce *tls.CertificateVerificationError
+		if errors.As(err, &ce) {
+			klog.ErrorS(err, "UnverifiedCertificates")
+			for _, cert := range ce.UnverifiedCertificates {
+				klog.Errorln(string(encodeCertPEM(cert)))
+			}
+		}
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, apierrors.NewGenericServerResponse(
+			resp.StatusCode,
+			http.MethodPost,
+			schema.GroupResource{Group: openviz.GroupName, Resource: openvizapi.ResourceGrafanaDatasources},
+			"",
+			string(body),
+			0,
+			false,
+		)
+	}
+
+	var ds PersesDatasourceResponse
 	err = json.Unmarshal(body, &ds)
 	if err != nil {
 		return nil, err

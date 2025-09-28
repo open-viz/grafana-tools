@@ -30,6 +30,7 @@ const (
 	DefaultPrometheusKey     = GroupName + "/is-default-prometheus"
 	DefaultAlertmanagerKey   = GroupName + "/is-default-alertmanager"
 	DefaultGrafanaKey        = GroupName + "/is-default-grafana"
+	DefaultPersesKey         = GroupName + "/is-default-perses"
 	PrometheusKey            = GroupName + "/prometheus"
 	PrometheusValueAuto      = "auto"
 	PrometheusValueFederated = "federated"

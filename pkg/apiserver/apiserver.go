@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"os"
 
+	v1 "github.com/perses/perses/pkg/model/api/v1"
 	openvizinstall "go.openviz.dev/apimachinery/apis/openviz/install"
 	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 	"go.openviz.dev/apimachinery/apis/ui"
@@ -300,6 +301,47 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 			return nil
 		}
 		return []string{board.Title}
+	}); err != nil {
+		return nil, err
+	}
+
+	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &appcatalogapi.AppBinding{}, mona.DefaultPersesKey, func(rawObj client.Object) []string {
+		app := rawObj.(*appcatalogapi.AppBinding)
+		if v, ok := app.Annotations[mona.DefaultPersesKey]; ok && v == "true" {
+			return []string{"true"}
+		}
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &openvizapi.PersesDashboard{}, mona.DefaultPersesKey, func(rawObj client.Object) []string {
+		dashboard := rawObj.(*openvizapi.PersesDashboard)
+		if dashboard.Spec.PersesRef == nil {
+			return []string{"true"}
+		} else {
+			var app appcatalogapi.AppBinding
+			if err := ctrlClient.Get(ctx, dashboard.Spec.PersesRef.ObjectKey(), &app); err == nil {
+				if v, ok := app.Annotations[mona.DefaultPersesKey]; ok && v == "true" {
+					return []string{"true"}
+				}
+			}
+		}
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &openvizapi.PersesDashboard{}, openvizapi.PersesDashboardTitleKey, func(rawObj client.Object) []string {
+		dashboard := rawObj.(*openvizapi.PersesDashboard)
+		if dashboard.Spec.Model == nil {
+			return nil
+		}
+		var persesDashboard v1.Dashboard
+		if err := json.Unmarshal(dashboard.Spec.Model.Raw, &persesDashboard); err != nil {
+			klog.ErrorS(err, "failed to unmarshal spec.model in GrafanaDashboard", "name", dashboard.Name, "namespace", dashboard.Namespace)
+			return nil
+		}
+		return []string{persesDashboard.Spec.Display.Name}
 	}); err != nil {
 		return nil, err
 	}

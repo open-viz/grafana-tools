@@ -168,6 +168,17 @@ func (s *GrafanaOperatorOptions) Run(ctx context.Context) error {
 		os.Exit(1)
 	}
 
+	if err = mgr.GetFieldIndexer().IndexField(context.Background(), &appcatalogapi.AppBinding{}, mona.DefaultPersesKey, func(rawObj client.Object) []string {
+		app := rawObj.(*appcatalogapi.AppBinding)
+		if v, ok := app.Annotations[mona.DefaultPersesKey]; ok && v == "true" {
+			return []string{"true"}
+		}
+		return nil
+	}); err != nil {
+		klog.Error(err, "unable to set up AppBinding Indexer", "field", mona.DefaultPersesKey)
+		os.Exit(1)
+	}
+
 	if err = (&openviz.GrafanaDashboardReconciler{
 		Client:               mgr.GetClient(),
 		Scheme:               mgr.GetScheme(),
@@ -175,6 +186,15 @@ func (s *GrafanaOperatorOptions) Run(ctx context.Context) error {
 		RequeueAfterDuration: s.RequeueAfterDuration,
 	}).SetupWithManager(mgr); err != nil {
 		klog.Error(err, "unable to create controller", "controller", "GrafanaDashboard")
+		os.Exit(1)
+	}
+	if err = (&openviz.PersesDashboardReconciler{
+		Client:               mgr.GetClient(),
+		Scheme:               mgr.GetScheme(),
+		Recorder:             mgr.GetEventRecorderFor("perses-dashboard-controller"),
+		RequeueAfterDuration: s.RequeueAfterDuration,
+	}).SetupWithManager(mgr); err != nil {
+		klog.Error(err, "unable to create controller", "controller", "PersesDashboard")
 		os.Exit(1)
 	}
 	if err = (&openviz.GrafanaDatasourceReconciler{

@@ -76,7 +76,6 @@ func GetGrafanaConfig(ab *appcatalog.AppBinding, authSecret *core.Secret) (*Conf
 	if err != nil {
 		return nil, err
 	}
-
 	var auth *sdk.AuthConfig
 	if authSecret != nil {
 		if token, ok := authSecret.Data["token"]; ok {

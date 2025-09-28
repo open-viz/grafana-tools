@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 
+	v1 "github.com/perses/perses/pkg/model/api/v1"
 	"go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 	"go.openviz.dev/grafana-tools/pkg/controllers/clientorg"
@@ -85,6 +86,7 @@ const (
 	// cr created via monitoring-operator chart
 	crClientOrgMonitoring = "appscode:client-org:monitoring"
 	abClientOrgGrafana    = "grafana"
+	abClientOrgPerses     = "perses"
 )
 
 func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -292,6 +294,23 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 			return ctrl.Result{}, err
 		}
 
+		persesResp, err := r.bc.RegisterPerses(mona.PrometheusContext{
+			HubUID:      r.hubUID,
+			ClusterUID:  r.clusterUID,
+			ProjectId:   "",
+			Default:     false,
+			IssueToken:  true,
+			ClientOrgID: clientOrgId,
+		}, pcfg)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+
+		err = r.CreatePersesAppBinding(monNamespace.Name, persesResp)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+
 		rbvt, err := cu.CreateOrPatch(context.TODO(), r.kc, &monNamespace, applyMarkers)
 		if err != nil {
 			return ctrl.Result{}, err
@@ -377,6 +396,75 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		}
 	}
 
+	var persesDashboardList v1alpha1.PersesDashboardList
+	if err := r.kc.List(ctx, &persesDashboardList); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	for _, dashboard := range persesDashboardList.Items {
+		if dashboard.Spec.Model == nil {
+			return ctrl.Result{}, apierrors.NewBadRequest(fmt.Sprintf("PersesDashboard %s/%s is missing a model", dashboard.Namespace, dashboard.Name))
+		}
+		var board v1.Dashboard
+		err = json.Unmarshal(dashboard.Spec.Model.Raw, &board)
+		if err != nil {
+			return ctrl.Result{}, fmt.Errorf("failed to unmarshal model for GrafanaDashboard %s/%s, reason: %v", dashboard.Namespace, dashboard.Name, err)
+		}
+
+		board.Spec.Display.Name = clustermeta.ClientDashboardTitle(board.Spec.Display.Name)
+		boardBytes, err := json.Marshal(board)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+
+		if _, found := dashboard.Annotations[srcRefKey]; found && bytes.Equal(dashboard.Spec.Model.Raw, boardBytes) {
+			continue
+		}
+
+		copiedDashboard := &v1alpha1.PersesDashboard{}
+		err = r.kc.Get(context.TODO(), types.NamespacedName{
+			Namespace: monNamespace.Name,
+			Name:      dashboard.Name,
+		}, copiedDashboard)
+		if err != nil {
+			if !apierrors.IsNotFound(err) {
+				return ctrl.Result{}, err
+			}
+			copiedDashboard = dashboard.DeepCopy()
+			copiedDashboard.Namespace = monNamespace.Name
+		} else {
+			copiedDashboard.Spec = *dashboard.Spec.DeepCopy()
+		}
+
+		opresult, err := cu.CreateOrPatch(ctx, r.kc, copiedDashboard, func(obj client.Object, createOp bool) client.Object {
+			if createOp {
+				copiedDashboard.ResourceVersion = ""
+			}
+
+			if copiedDashboard.Annotations == nil {
+				copiedDashboard.Annotations = map[string]string{}
+			}
+			copiedDashboard.Annotations[srcRefKey] = client.ObjectKeyFromObject(&dashboard).String()
+			copiedDashboard.Annotations[srcHashKey] = meta.ObjectHash(&dashboard)
+
+			// use client Grafana appbinding
+			copiedDashboard.Spec.PersesRef = &kmapi.ObjectReference{
+				Namespace: monNamespace.Name,
+				Name:      abClientOrgPerses,
+			}
+			copiedDashboard.Spec.Model = &runtime.RawExtension{
+				Raw: boardBytes,
+			}
+
+			return copiedDashboard
+		})
+		if err != nil {
+			errList = append(errList, err)
+		} else if opresult != kutil.VerbUnchanged {
+			log.Info(fmt.Sprintf("%s PersesDashboard %s/%s", opresult, copiedDashboard.Namespace, copiedDashboard.Name))
+		}
+	}
+
 	return ctrl.Result{}, errors.NewAggregate(errList)
 }
 
@@ -419,8 +507,10 @@ func (r *ClientOrgReconciler) CreateGrafanaAppBinding(monNamespace string, resp 
 			//CABundle:              nil,
 			//ServerName:            "",
 		}
-		obj.Spec.Secret = &core.LocalObjectReference{
-			Name: ab.Name + "-auth",
+		obj.Spec.Secret = &appcatalog.TypedLocalObjectReference{
+			Name:     ab.Name + "-auth",
+			APIGroup: "",
+			Kind:     "Secret",
 		}
 
 		// TODO: handle TLS config returned in resp
@@ -468,6 +558,109 @@ func (r *ClientOrgReconciler) CreateGrafanaAppBinding(monNamespace string, resp 
 
 			obj.StringData = map[string]string{
 				"token": resp.Grafana.BearerToken,
+			}
+
+			return obj
+		})
+		if e2 == nil {
+			klog.Infof("%s Grafana auth secret %s/%s", svt, authSecret.Namespace, authSecret.Name)
+		}
+	}
+
+	return err
+}
+
+func (r *ClientOrgReconciler) CreatePersesAppBinding(monNamespace string, resp *prometheus.PersesDatasourceResponse) error {
+	ab := appcatalog.AppBinding{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      abClientOrgPerses,
+			Namespace: monNamespace,
+		},
+	}
+
+	abvt, err := cu.CreateOrPatch(context.TODO(), r.kc, &ab, func(in client.Object, createOp bool) client.Object {
+		obj := in.(*appcatalog.AppBinding)
+
+		//ref := metav1.NewControllerRef(prom, schema.GroupVersionKind{
+		//	Group:   monitoring.GroupName,
+		//	Version: monitoringv1.Version,
+		//	Kind:    "Prometheus",
+		//})
+		//obj.OwnerReferences = []metav1.OwnerReference{*ref}
+		//
+		//if obj.Annotations == nil {
+		//	obj.Annotations = make(map[string]string)
+		//}
+		//obj.Annotations["monitoring.appscode.com/is-default-grafana"] = "true"
+
+		obj.Spec.Type = "Perses"
+		obj.Spec.AppRef = nil
+		obj.Spec.ClientConfig = appcatalog.ClientConfig{
+			URL: ptr.To(resp.Perses.URL),
+			//Service: &appcatalog.ServiceReference{
+			//	Scheme:    "http",
+			//	Namespace: svc.Namespace,
+			//	Name:      svc.Name,
+			//	Port:      0,
+			//	Path:      "",
+			//	Query:     "",
+			//},
+			//InsecureSkipTLSVerify: false,
+			//CABundle:              nil,
+			//ServerName:            "",
+		}
+		obj.Spec.Secret = &appcatalog.TypedLocalObjectReference{
+			Name:     ab.Name + "-auth",
+			APIGroup: "",
+			Kind:     "Secret",
+		}
+
+		// TODO: handle TLS config returned in resp
+		if caCert := r.bc.CACert(); len(caCert) > 0 {
+			obj.Spec.ClientConfig.CABundle = caCert
+		}
+
+		params := openvizapi.PersesConfiguration{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "PersesConfiguration",
+				APIVersion: openvizapi.SchemeGroupVersion.String(),
+			},
+			Datasource:  resp.Datasource,
+			FolderName:  resp.FolderName,
+			ProjectName: resp.ProjectName,
+		}
+		paramBytes, err := json.Marshal(params)
+		if err != nil {
+			panic(err)
+		}
+		obj.Spec.Parameters = &runtime.RawExtension{
+			Raw: paramBytes,
+		}
+
+		return obj
+	})
+	if err == nil {
+		klog.Infof("%s AppBinding %s/%s", abvt, ab.Namespace, ab.Name)
+
+		authSecret := core.Secret{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      ab.Name + "-auth",
+				Namespace: monNamespace,
+			},
+		}
+
+		svt, e2 := cu.CreateOrPatch(context.TODO(), r.kc, &authSecret, func(in client.Object, createOp bool) client.Object {
+			obj := in.(*core.Secret)
+
+			ref := metav1.NewControllerRef(&ab, schema.GroupVersionKind{
+				Group:   appcatalog.SchemeGroupVersion.Group,
+				Version: appcatalog.SchemeGroupVersion.Version,
+				Kind:    "AppBinding",
+			})
+			obj.OwnerReferences = []metav1.OwnerReference{*ref}
+
+			obj.StringData = map[string]string{
+				"token": resp.Perses.BearerToken,
 			}
 
 			return obj

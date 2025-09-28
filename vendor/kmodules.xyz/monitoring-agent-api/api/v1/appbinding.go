@@ -16,6 +16,10 @@ limitations under the License.
 
 package v1
 
+import (
+	kmapi "kmodules.xyz/client-go/api/v1"
+)
+
 type GrafanaConfig struct {
 	URL         string        `json:"url"`
 	Service     ServiceSpec   `json:"service"`
@@ -23,6 +27,15 @@ type GrafanaConfig struct {
 	BearerToken string        `json:"bearerToken"`
 	TLS         TLSConfig     `json:"tls"`
 	Dashboard   DashboardSpec `json:"dashboard"`
+}
+
+type PersesConfig struct {
+	URL         string              `json:"url"`
+	Service     ServiceSpec         `json:"service"`
+	BasicAuth   BasicAuth           `json:"basicAuth"`
+	BearerToken string              `json:"bearerToken"`
+	TLS         TLSConfig           `json:"tls"`
+	Dashboard   PersesDashboardSpec `json:"dashboard"`
 }
 
 type PrometheusConfig struct {
@@ -45,6 +58,12 @@ type ServiceSpec struct {
 type DashboardSpec struct {
 	Datasource string `json:"datasource"`
 	FolderID   int    `json:"folderID"`
+}
+
+type PersesDashboardSpec struct {
+	ProjectName string `json:"projectName"`
+	FolderName  string `json:"folderName"`
+	Datasource  string `json:"datasource"`
 }
 
 type BasicAuth struct {
@@ -72,4 +91,53 @@ type PrometheusContext struct {
 type GrafanaContext struct {
 	FolderID   *int64 `json:"folderID,omitempty"`
 	Datasource string `json:"datasource,omitempty"`
+}
+
+type PersesContext struct {
+	ProjectName string `json:"projectName,omitempty"`
+	FolderName  string `json:"folderName,omitempty"`
+	Datasource  string `json:"datasource,omitempty"`
+}
+
+type Prometheus struct {
+	AppBindingRef   *kmapi.ObjectReference `json:"appBindingRef,omitempty"`
+	*ConnectionSpec `json:",inline,omitempty"`
+}
+
+// ConnectionSpec is the spec for app
+type ConnectionSpec struct {
+	// ClientConfig defines how to communicate with the app.
+	// Required
+	ClientConfig `json:",inline"`
+
+	// Secret is the name of the secret to create in the AppBinding's
+	// namespace that will hold the credentials associated with the AppBinding.
+	AuthSecret *kmapi.ObjectReference `json:"authSecret,omitempty"`
+
+	// TLSSecret is the name of the secret that will hold
+	// the client certificate and private key associated with the AppBinding.
+	TLSSecret *kmapi.ObjectReference `json:"tlsSecret,omitempty"`
+}
+
+// ClientConfig contains the information to make a connection with an app
+type ClientConfig struct {
+	// `url` gives the location of the app, in standard URL form
+	// (`[scheme://]host:port/path`). Exactly one of `url` or `service`
+	// must be specified.
+	// +optional
+	URL string `json:"url"`
+
+	// InsecureSkipTLSVerify disables TLS certificate verification when communicating with this app.
+	// This is strongly discouraged.  You should use the CABundle instead.
+	InsecureSkipTLSVerify bool `json:"insecureSkipTLSVerify,omitempty"`
+
+	// CABundle is a PEM encoded CA bundle which will be used to validate the serving certificate of this app.
+	// +optional
+	CABundle []byte `json:"caBundle,omitempty"`
+
+	// ServerName is used to verify the hostname on the returned
+	// certificates unless InsecureSkipVerify is given. It is also included
+	// in the client's handshake to support virtual hosting unless it is
+	// an IP address.
+	ServerName string `json:"serverName,omitempty"`
 }
