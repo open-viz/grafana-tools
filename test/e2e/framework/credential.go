@@ -56,8 +56,10 @@ func (f *Framework) getAppBinding() (*appcatalogapi.AppBinding, error) {
 			Namespace: f.namespace,
 		},
 		Spec: appcatalogapi.AppBindingSpec{
-			Secret: &core.LocalObjectReference{
-				Name: f.name,
+			Secret: &appcatalogapi.TypedLocalObjectReference{
+				Name:     f.name,
+				APIGroup: "",
+				Kind:     "Secret",
 			},
 			ClientConfig: appcatalogapi.ClientConfig{
 				// URL: pointer.StringP(apiURL),

@@ -63,6 +63,7 @@ const (
 	presetsMonitoring    = "monitoring-presets"
 	appBindingPrometheus = "default-prometheus"
 	appBindingGrafana    = "default-grafana"
+	appBindingPerses     = "default-perses"
 )
 
 var (
@@ -425,6 +426,29 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, pr
 			return err
 		}
 		klog.Infof("%s rolebinding %s/%s with %s annotation", rbvt, rb.Namespace, rb.Name, RegisteredKey)
+
+		persesResp, err := r.bc.RegisterPerses(mona.PrometheusContext{
+			HubUID:     r.hubUID,
+			ClusterUID: r.clusterUID,
+			ProjectId:  projectId,
+			Default:    isDefault,
+		}, pcfg)
+		if err != nil {
+			return err
+		}
+
+		if isDefault {
+			_, err := r.CreatePrometheusAppBinding(prom, svc)
+			if err != nil {
+				return err
+			}
+
+			err = r.CreatePersesAppBinding(prom, persesResp)
+			if err != nil {
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -696,8 +720,10 @@ func (r *PrometheusReconciler) CreateGrafanaAppBinding(prom *monitoringv1.Promet
 			//CABundle:              nil,
 			//ServerName:            "",
 		}
-		obj.Spec.Secret = &core.LocalObjectReference{
-			Name: ab.Name + "-auth",
+		obj.Spec.Secret = &appcatalog.TypedLocalObjectReference{
+			Name:     ab.Name + "-auth",
+			APIGroup: "",
+			Kind:     "Secret",
 		}
 
 		// TODO: handle TLS config returned in resp
@@ -745,6 +771,109 @@ func (r *PrometheusReconciler) CreateGrafanaAppBinding(prom *monitoringv1.Promet
 
 			obj.StringData = map[string]string{
 				"token": resp.Grafana.BearerToken,
+			}
+
+			return obj
+		})
+		if e2 == nil {
+			klog.Infof("%s Grafana auth secret %s/%s", svt, authSecret.Namespace, authSecret.Name)
+		}
+	}
+
+	return err
+}
+
+func (r *PrometheusReconciler) CreatePersesAppBinding(prom *monitoringv1.Prometheus, resp *PersesDatasourceResponse) error {
+	ab := appcatalog.AppBinding{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      appBindingPerses,
+			Namespace: prom.Namespace,
+		},
+	}
+
+	abvt, err := cu.CreateOrPatch(context.TODO(), r.kc, &ab, func(in client.Object, createOp bool) client.Object {
+		obj := in.(*appcatalog.AppBinding)
+
+		ref := metav1.NewControllerRef(prom, schema.GroupVersionKind{
+			Group:   monitoring.GroupName,
+			Version: monitoringv1.Version,
+			Kind:    "Prometheus",
+		})
+		obj.OwnerReferences = []metav1.OwnerReference{*ref}
+
+		if obj.Annotations == nil {
+			obj.Annotations = make(map[string]string)
+		}
+		obj.Annotations["monitoring.appscode.com/is-default-perses"] = "true"
+
+		obj.Spec.Type = "Perses"
+		obj.Spec.AppRef = nil
+		obj.Spec.ClientConfig = appcatalog.ClientConfig{
+			URL: ptr.To(resp.Perses.URL),
+			//Service: &appcatalog.ServiceReference{
+			//	Scheme:    "http",
+			//	Namespace: svc.Namespace,
+			//	Name:      svc.Name,
+			//	Port:      0,
+			//	Path:      "",
+			//	Query:     "",
+			//},
+			//InsecureSkipTLSVerify: false,
+			//CABundle:              nil,
+			//ServerName:            "",
+		}
+		obj.Spec.Secret = &appcatalog.TypedLocalObjectReference{
+			Name:     ab.Name + "-auth",
+			APIGroup: "",
+			Kind:     "Secret",
+		}
+
+		// TODO: handle TLS config returned in resp
+		if caCert := r.bc.CACert(); len(caCert) > 0 {
+			obj.Spec.ClientConfig.CABundle = caCert
+		}
+
+		params := openvizapi.PersesConfiguration{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "PersesConfiguration",
+				APIVersion: openvizapi.SchemeGroupVersion.String(),
+			},
+			Datasource:  resp.Datasource,
+			FolderName:  resp.FolderName,
+			ProjectName: resp.ProjectName,
+		}
+		paramBytes, err := json.Marshal(params)
+		if err != nil {
+			panic(err)
+		}
+		obj.Spec.Parameters = &runtime.RawExtension{
+			Raw: paramBytes,
+		}
+
+		return obj
+	})
+	if err == nil {
+		klog.Infof("%s AppBinding %s/%s", abvt, ab.Namespace, ab.Name)
+
+		authSecret := core.Secret{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      ab.Name + "-auth",
+				Namespace: prom.Namespace,
+			},
+		}
+
+		svt, e2 := cu.CreateOrPatch(context.TODO(), r.kc, &authSecret, func(in client.Object, createOp bool) client.Object {
+			obj := in.(*core.Secret)
+
+			ref := metav1.NewControllerRef(&ab, schema.GroupVersionKind{
+				Group:   appcatalog.SchemeGroupVersion.Group,
+				Version: appcatalog.SchemeGroupVersion.Version,
+				Kind:    "AppBinding",
+			})
+			obj.OwnerReferences = []metav1.OwnerReference{*ref}
+
+			obj.StringData = map[string]string{
+				"token": resp.Perses.BearerToken,
 			}
 
 			return obj

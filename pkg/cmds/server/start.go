@@ -30,7 +30,7 @@ import (
 	"k8s.io/apiserver/pkg/endpoints/openapi"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	genericoptions "k8s.io/apiserver/pkg/server/options"
-	utilversion "k8s.io/component-base/version"
+	basecompatibility "k8s.io/component-base/compatibility"
 	"kmodules.xyz/client-go/tools/clientcmd"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -97,7 +97,7 @@ func (o *MonitoringOperatorOptions) Config() (*apiserver.Config, error) {
 	// Fixes https://github.com/Azure/AKS/issues/522
 	clientcmd.Fix(serverConfig.ClientConfig)
 
-	serverConfig.EffectiveVersion = utilversion.NewEffectiveVersion("v1.0.0")
+	serverConfig.EffectiveVersion = basecompatibility.NewEffectiveVersionFromString("v1.0.0", "", "")
 
 	serverConfig.OpenAPIConfig = genericapiserver.DefaultOpenAPIConfig(
 		uiapi.GetOpenAPIDefinitions,
