@@ -29,6 +29,15 @@ type GrafanaConfig struct {
 	Dashboard   DashboardSpec `json:"dashboard"`
 }
 
+type PersesConfig struct {
+	URL         string              `json:"url"`
+	Service     ServiceSpec         `json:"service"`
+	BasicAuth   BasicAuth           `json:"basicAuth"`
+	BearerToken string              `json:"bearerToken"`
+	TLS         TLSConfig           `json:"tls"`
+	Dashboard   PersesDashboardSpec `json:"dashboard"`
+}
+
 type PrometheusConfig struct {
 	URL         string      `json:"url"`
 	Service     ServiceSpec `json:"service"`
@@ -49,6 +58,12 @@ type ServiceSpec struct {
 type DashboardSpec struct {
 	Datasource string `json:"datasource"`
 	FolderID   int    `json:"folderID"`
+}
+
+type PersesDashboardSpec struct {
+	ProjectName string `json:"projectName"`
+	FolderName  string `json:"folderName"`
+	Datasource  string `json:"datasource"`
 }
 
 type BasicAuth struct {
@@ -76,6 +91,12 @@ type PrometheusContext struct {
 type GrafanaContext struct {
 	FolderID   *int64 `json:"folderID,omitempty"`
 	Datasource string `json:"datasource,omitempty"`
+}
+
+type PersesContext struct {
+	ProjectName string `json:"projectName,omitempty"`
+	FolderName  string `json:"folderName,omitempty"`
+	Datasource  string `json:"datasource,omitempty"`
 }
 
 type Prometheus struct {

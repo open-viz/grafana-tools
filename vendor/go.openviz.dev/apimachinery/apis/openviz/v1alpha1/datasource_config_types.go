@@ -20,6 +20,7 @@ import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 const (
 	ResourceKindGrafanaConfiguration = "GrafanaConfiguration"
+	ResourceKindPersesConfiguration  = "PersesConfiguration"
 )
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -35,4 +36,22 @@ type GrafanaConfiguration struct {
 	// FolderID defines the Grafana folder id.
 	// +optional
 	FolderID *int64 `json:"folderID,omitempty"`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// PersesConfiguration defines configuration for a Perses AppBinding
+type PersesConfiguration struct {
+	metav1.TypeMeta `json:",inline,omitempty"`
+
+	// Datasource defines the Perses datasource name.
+	// +optional
+	Datasource string `json:"datasource,omitempty"`
+
+	// FolderName defines the Perses folder name.
+	// +optional
+	FolderName string `json:"folderName,omitempty"`
+
+	// +optional
+	ProjectName string `json:"projectName,omitempty"`
 }
