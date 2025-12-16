@@ -17,7 +17,7 @@ limitations under the License.
 package controllers
 
 import (
-	api "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
+	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/klog/v2"
@@ -28,8 +28,8 @@ import (
 func EnsureCustomResourceDefinitions(client crd_cs.Interface) error {
 	klog.Infoln("Ensuring CustomResourceDefinition...")
 	crds := []*apiextensions.CustomResourceDefinition{
-		api.GrafanaDashboard{}.CustomResourceDefinition(),
-		api.GrafanaDatasource{}.CustomResourceDefinition(),
+		openvizapi.GrafanaDashboard{}.CustomResourceDefinition(),
+		openvizapi.GrafanaDatasource{}.CustomResourceDefinition(),
 		appcatalogapi.AppBinding{}.CustomResourceDefinition(),
 	}
 	return apiextensions.RegisterCRDs(client, crds)

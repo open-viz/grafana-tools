@@ -96,8 +96,8 @@ func main() {
 			Version string
 			RootCmd bool
 		}{
-			strings.Replace(base, "_", "-", -1),
-			cases.Title(language.English).String(strings.Replace(base, "_", " ", -1)),
+			strings.ReplaceAll(base, "_", "-"),
+			cases.Title(language.English).String(strings.ReplaceAll(base, "_", " ")),
 			version,
 			!strings.ContainsRune(base, '_'),
 		}

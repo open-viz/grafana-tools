@@ -62,13 +62,13 @@ func (r *GrafanaDatasourceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	key := req.NamespacedName
 
 	ds := &openvizapi.GrafanaDatasource{}
-	if err := r.Client.Get(ctx, key, ds); err != nil {
-		klog.Infof("Grafana Datasource %q doesn't exist anymore", req.NamespacedName.String())
+	if err := r.Get(ctx, key, ds); err != nil {
+		klog.Infof("Grafana Datasource %q doesn't exist anymore", req.String())
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
 	// Add or remove finalizer based on deletion timestamp
-	if ds.ObjectMeta.DeletionTimestamp.IsZero() {
+	if ds.DeletionTimestamp.IsZero() {
 		if !containsString(ds.GetFinalizers(), GrafanaDatasourceFinalizer) {
 			_, err := kmc.CreateOrPatch(ctx, r.Client, ds, func(obj client.Object, createOp bool) client.Object {
 				controllerutil.AddFinalizer(obj, GrafanaDatasourceFinalizer)
@@ -197,7 +197,7 @@ func (r *GrafanaDatasourceReconciler) createDatasource(ctx context.Context, gc *
 		return in
 	})
 	if err != nil {
-		return fmt.Errorf("failed to update GrafanaDatasource phase to %q\n", openvizapi.GrafanaPhaseCurrent)
+		return fmt.Errorf("failed to update GrafanaDatasource phase to %q", openvizapi.GrafanaPhaseCurrent)
 	}
 	return nil
 }
@@ -216,7 +216,7 @@ func (r *GrafanaDatasourceReconciler) updateDatasource(ctx context.Context, gc *
 		return in
 	})
 	if err != nil {
-		return fmt.Errorf("failed to update GrafanaDatasource phase to %q\n", openvizapi.GrafanaPhaseCurrent)
+		return fmt.Errorf("failed to update GrafanaDatasource phase to %q", openvizapi.GrafanaPhaseCurrent)
 	}
 	return nil
 }

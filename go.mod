@@ -1,8 +1,6 @@
 module go.openviz.dev/grafana-tools
 
-go 1.23.0
-
-toolchain go1.24.1
+go 1.24.0
 
 require (
 	github.com/go-resty/resty/v2 v2.16.2
@@ -17,10 +15,10 @@ require (
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.6
 	github.com/zeebo/xxh3 v1.0.2
-	go.bytebuilders.dev/license-verifier v0.14.9
-	go.openviz.dev/apimachinery v0.0.8
+	go.bytebuilders.dev/license-verifier v0.14.10
+	go.openviz.dev/apimachinery v0.0.9
 	go.openviz.dev/grafana-sdk v0.0.5
-	golang.org/x/text v0.23.0
+	golang.org/x/text v0.31.0
 	gomodules.xyz/logs v0.0.7
 	gomodules.xyz/pointer v0.1.0
 	gomodules.xyz/runtime v0.3.0
@@ -36,7 +34,7 @@ require (
 	k8s.io/kube-aggregator v0.32.2
 	k8s.io/utils v0.0.0-20241210054802-24370beab758
 	kmodules.xyz/authorizer v0.32.0
-	kmodules.xyz/client-go v0.32.6
+	kmodules.xyz/client-go v0.32.11
 	kmodules.xyz/custom-resources v0.32.0
 	kmodules.xyz/monitoring-agent-api v0.32.0
 	moul.io/http2curl/v2 v2.3.1-0.20221024080105-10c404f653f7
@@ -138,15 +136,15 @@ require (
 	go.opentelemetry.io/proto/otlp v1.3.1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	golang.org/x/crypto v0.36.0 // indirect
+	golang.org/x/crypto v0.45.0 // indirect
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
-	golang.org/x/net v0.38.0 // indirect
+	golang.org/x/net v0.47.0 // indirect
 	golang.org/x/oauth2 v0.27.0 // indirect
-	golang.org/x/sync v0.12.0 // indirect
-	golang.org/x/sys v0.31.0 // indirect
-	golang.org/x/term v0.30.0 // indirect
+	golang.org/x/sync v0.18.0 // indirect
+	golang.org/x/sys v0.38.0 // indirect
+	golang.org/x/term v0.37.0 // indirect
 	golang.org/x/time v0.10.0 // indirect
-	golang.org/x/tools v0.30.0 // indirect
+	golang.org/x/tools v0.38.0 // indirect
 	gomodules.xyz/clock v0.0.0-20200817085942-06523dba733f // indirect
 	gomodules.xyz/flags v0.1.3 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.5.0 // indirect

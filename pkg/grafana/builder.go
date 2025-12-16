@@ -76,13 +76,13 @@ func (r *ClientBuilder) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 
 	app := &appcatalog.AppBinding{}
 	if err := r.mgr.GetClient().Get(ctx, key, app); err != nil {
-		klog.Infof("AppBinding %q doesn't exist anymore", req.NamespacedName.String())
+		klog.Infof("AppBinding %q doesn't exist anymore", req.String())
 		r.unset()
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
 	// Add or remove finalizer based on deletion timestamp
-	if app.ObjectMeta.DeletionTimestamp != nil {
+	if app.DeletionTimestamp != nil {
 		r.unset()
 		return ctrl.Result{}, nil
 	}
