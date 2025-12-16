@@ -21,7 +21,6 @@ import (
 	"context"
 	"fmt"
 
-	"go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 	"go.openviz.dev/grafana-tools/pkg/controllers/clientorg"
 	"go.openviz.dev/grafana-tools/pkg/controllers/prometheus"
@@ -299,7 +298,7 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		klog.Infof("%s namespace %s with %s annotation", rbvt, monNamespace.Name, prometheus.RegisteredKey)
 	}
 
-	var dashboardList v1alpha1.GrafanaDashboardList
+	var dashboardList openvizapi.GrafanaDashboardList
 	if err := r.kc.List(ctx, &dashboardList); err != nil {
 		return ctrl.Result{}, err
 	}
@@ -333,7 +332,7 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 			continue
 		}
 
-		copiedDashboard := &v1alpha1.GrafanaDashboard{}
+		copiedDashboard := &openvizapi.GrafanaDashboard{}
 		err = r.kc.Get(context.TODO(), types.NamespacedName{
 			Namespace: monNamespace.Name,
 			Name:      dashboard.Name,

@@ -75,13 +75,13 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	key := req.NamespacedName
 
 	obj := &openvizapi.GrafanaDashboard{}
-	if err := r.Client.Get(ctx, key, obj); err != nil {
-		klog.Infof("Grafana Dashboard %q doesn't exist anymore", req.NamespacedName.String())
+	if err := r.Get(ctx, key, obj); err != nil {
+		klog.Infof("Grafana Dashboard %q doesn't exist anymore", req.String())
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 	obj = obj.DeepCopy()
 
-	if obj.ObjectMeta.DeletionTimestamp != nil {
+	if obj.DeletionTimestamp != nil {
 		// Change the Phase to Terminating if not
 		if obj.Status.Phase != openvizapi.GrafanaPhaseTerminating {
 			_, err := kmc.PatchStatus(ctx, r.Client, obj, func(obj client.Object) client.Object {
@@ -160,7 +160,7 @@ func (r *GrafanaDashboardReconciler) handleSetDashboardError(ctx context.Context
 func (r *GrafanaDashboardReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	appHandler := handler.EnqueueRequestsFromMapFunc(func(ctx context.Context, a client.Object) []reconcile.Request {
 		var dashboardList openvizapi.GrafanaDashboardList
-		err := r.Client.List(ctx, &dashboardList)
+		err := r.List(ctx, &dashboardList)
 		if err != nil {
 			return nil
 		}
@@ -361,7 +361,7 @@ func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, obj *open
 
 // Helper function to add dashboard id of the created dashboard in dashboard model json while updating
 func addDashboardID(model []byte, id int64, uid string) ([]byte, error) {
-	val := make(map[string]interface{})
+	val := make(map[string]any)
 	err := json.Unmarshal(model, &val)
 	if err != nil {
 		return nil, err
@@ -372,10 +372,10 @@ func addDashboardID(model []byte, id int64, uid string) ([]byte, error) {
 }
 
 // Helper function to replace the datasource name in dashboard panels
-func getUpdatedPanels(panels []interface{}, ds string) []interface{} {
-	updatedPanels := make([]interface{}, 0)
+func getUpdatedPanels(panels []any, ds string) []any {
+	updatedPanels := make([]any, 0)
 	for _, p := range panels {
-		panel, ok := p.(map[string]interface{})
+		panel, ok := p.(map[string]any)
 		if !ok {
 			continue
 		}
@@ -383,7 +383,7 @@ func getUpdatedPanels(panels []interface{}, ds string) []interface{} {
 
 		collapsed, found := panel["collapsed"].(bool)
 		if found && collapsed {
-			nestedPanels, ok := panel["panels"].([]interface{})
+			nestedPanels, ok := panel["panels"].([]any)
 			if ok {
 				updatedNestedPanels := getUpdatedPanels(nestedPanels, ds)
 				panel["panels"] = updatedNestedPanels
@@ -396,29 +396,29 @@ func getUpdatedPanels(panels []interface{}, ds string) []interface{} {
 
 // Helper function to replace datasource of the given dashboard model
 func replaceDatasource(model []byte, ds string) ([]byte, error) {
-	val := make(map[string]interface{})
+	val := make(map[string]any)
 	err := json.Unmarshal(model, &val)
 	if err != nil {
 		return nil, err
 	}
-	panels, ok := val["panels"].([]interface{})
+	panels, ok := val["panels"].([]any)
 	if !ok {
 		return model, nil
 	}
 	val["panels"] = getUpdatedPanels(panels, ds)
 
-	templateList, ok := val["templating"].(map[string]interface{})
+	templateList, ok := val["templating"].(map[string]any)
 	if !ok {
 		return json.Marshal(val)
 	}
-	templateVars, ok := templateList["list"].([]interface{})
+	templateVars, ok := templateList["list"].([]any)
 	if !ok {
 		return json.Marshal(val)
 	}
 
-	var newVars []interface{}
+	var newVars []any
 	for _, v := range templateVars {
-		vr, ok := v.(map[string]interface{})
+		vr, ok := v.(map[string]any)
 		if !ok {
 			continue
 		}

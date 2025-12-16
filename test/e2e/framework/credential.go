@@ -89,7 +89,7 @@ func (f *Framework) CreateDefaultAppBinding() error {
 	if err != nil {
 		return err
 	}
-	ab.ObjectMeta.Annotations = map[string]string{
+	ab.Annotations = map[string]string{
 		mona.DefaultGrafanaKey: "true",
 	}
 	return f.cc.Create(context.TODO(), ab)

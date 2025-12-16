@@ -314,7 +314,7 @@ func (r *Storage) getDashboardLink(
 
 		for _, p := range board.Panels {
 			if p.Type == "row" {
-				for _, p2 := range p.RowPanel.Panels {
+				for _, p2 := range p.Panels {
 					if panel, err := toEmbeddedPanel(&p2, grafanaHost, d, refreshInterval, timeRange, req, panelMap); err != nil {
 						return nil, err
 					} else if panel != nil {
