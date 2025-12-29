@@ -696,8 +696,10 @@ func (r *PrometheusReconciler) CreateGrafanaAppBinding(prom *monitoringv1.Promet
 			//CABundle:              nil,
 			//ServerName:            "",
 		}
-		obj.Spec.Secret = &core.LocalObjectReference{
-			Name: ab.Name + "-auth",
+		obj.Spec.Secret = &appcatalog.TypedLocalObjectReference{
+			APIGroup: "",
+			Kind:     "Secret",
+			Name:     ab.Name + "-auth",
 		}
 
 		// TODO: handle TLS config returned in resp

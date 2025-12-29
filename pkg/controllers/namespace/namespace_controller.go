@@ -418,8 +418,10 @@ func (r *ClientOrgReconciler) CreateGrafanaAppBinding(monNamespace string, resp 
 			//CABundle:              nil,
 			//ServerName:            "",
 		}
-		obj.Spec.Secret = &core.LocalObjectReference{
-			Name: ab.Name + "-auth",
+		obj.Spec.Secret = &appcatalog.TypedLocalObjectReference{
+			APIGroup: "",
+			Kind:     "Secret",
+			Name:     ab.Name + "-auth",
 		}
 
 		// TODO: handle TLS config returned in resp
