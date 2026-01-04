@@ -17,7 +17,7 @@ require (
 	github.com/zeebo/xxh3 v1.0.2
 	go.bytebuilders.dev/license-verifier v0.14.10
 	go.openviz.dev/apimachinery v0.0.10
-	go.openviz.dev/grafana-sdk v0.0.5
+	go.openviz.dev/grafana-sdk v0.0.6
 	golang.org/x/text v0.32.0
 	gomodules.xyz/logs v0.0.7
 	gomodules.xyz/pointer v0.1.0
