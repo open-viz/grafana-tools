@@ -496,8 +496,8 @@ go.openviz.dev/apimachinery/apis/ui/fuzzer
 go.openviz.dev/apimachinery/apis/ui/install
 go.openviz.dev/apimachinery/apis/ui/v1alpha1
 go.openviz.dev/apimachinery/crds
-# go.openviz.dev/grafana-sdk v0.0.5
-## explicit; go 1.22.0
+# go.openviz.dev/grafana-sdk v0.0.6
+## explicit; go 1.24.0
 go.openviz.dev/grafana-sdk
 # go.uber.org/multierr v1.11.0
 ## explicit; go 1.19

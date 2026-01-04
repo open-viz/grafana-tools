@@ -484,8 +484,8 @@ go.opentelemetry.io/proto/otlp v1.5.0 h1:xJvq7gMzB31/d406fB8U5CBdyQGw4P399D1aQWU
 go.opentelemetry.io/proto/otlp v1.5.0/go.mod h1:keN8WnHxOy8PG0rQZjJJ5A2ebUoafqWp0eVQ4yIXvJ4=
 go.openviz.dev/apimachinery v0.0.10 h1:PpcsyhKBoRlXXPzF+rqNH2SmeGcw1aZE7fSx4OYmnvQ=
 go.openviz.dev/apimachinery v0.0.10/go.mod h1:wedtjePuJwrb5toFwnqC8madvw8MTFQe7oheR70gs18=
-go.openviz.dev/grafana-sdk v0.0.5 h1:87qihU9GvzaJN/uuhWnBzlUsQs+OtjLgfhEr1WbKvPY=
-go.openviz.dev/grafana-sdk v0.0.5/go.mod h1:yP3DAgyHO1Y1VcvuotEvYmHpDWyFHSOI5dEfVuKh9aE=
+go.openviz.dev/grafana-sdk v0.0.6 h1:/mOZIAEPEIt0tlqGChqhE6iDSmBTTWR77suDs0Jd16Q=
+go.openviz.dev/grafana-sdk v0.0.6/go.mod h1:SC+Takjpl4Eo41txfpUjzT1nIWxNo8olnmiow4mVa1Q=
 go.uber.org/atomic v1.4.0/go.mod h1:gD2HeocX3+yG+ygLZcrzQJaqmWj9AIm7n08wl/qW/PE=
 go.uber.org/goleak v1.3.0 h1:2K3zAYmnTNqV73imy9J1T3WC+gmCePx2hEGkimedGto=
 go.uber.org/goleak v1.3.0/go.mod h1:CoHD4mav9JJNrW/WLlf7HGZPjdw8EucARQHekz1X6bE=

@@ -85,21 +85,21 @@ type HealthResponse struct {
 // Datasource as described in the doc
 // http://docs.grafana.org/reference/http_api/#get-all-datasources
 type Datasource struct {
-	ID                uint        `json:"id"`
-	OrgID             uint        `json:"orgId"`
-	Name              string      `json:"name"`
-	Type              string      `json:"type"`
-	Access            string      `json:"access"` // direct or proxy
-	URL               string      `json:"url"`
-	Password          *string     `json:"password,omitempty"`
-	User              *string     `json:"user,omitempty"`
-	Database          *string     `json:"database,omitempty"`
-	BasicAuth         *bool       `json:"basicAuth,omitempty"`
-	BasicAuthUser     *string     `json:"basicAuthUser,omitempty"`
-	BasicAuthPassword *string     `json:"basicAuthPassword,omitempty"`
-	IsDefault         bool        `json:"isDefault"`
-	JSONData          interface{} `json:"jsonData"`
-	SecureJSONData    interface{} `json:"secureJsonData"`
+	ID                uint    `json:"id"`
+	OrgID             uint    `json:"orgId"`
+	Name              string  `json:"name"`
+	Type              string  `json:"type"`
+	Access            string  `json:"access"` // direct or proxy
+	URL               string  `json:"url"`
+	Password          *string `json:"password,omitempty"`
+	User              *string `json:"user,omitempty"`
+	Database          *string `json:"database,omitempty"`
+	BasicAuth         *bool   `json:"basicAuth,omitempty"`
+	BasicAuthUser     *string `json:"basicAuthUser,omitempty"`
+	BasicAuthPassword *string `json:"basicAuthPassword,omitempty"`
+	IsDefault         bool    `json:"isDefault"`
+	JSONData          any     `json:"jsonData"`
+	SecureJSONData    any     `json:"secureJsonData"`
 }
 
 // NewClient initializes client for interacting with an instance of Grafana server;
@@ -203,7 +203,7 @@ func (c *Client) GetHealth(ctx context.Context) (*HealthResponse, error) {
 	return health, nil
 }
 
-func (c *Client) do(ctx context.Context, method string, url string, body interface{}) (*resty.Response, error) {
+func (c *Client) do(ctx context.Context, method string, url string, body any) (*resty.Response, error) {
 	req := c.client.R().SetContext(ctx).SetBody(body)
 	if c.auth != nil {
 		if c.auth.BasicAuth != nil {
