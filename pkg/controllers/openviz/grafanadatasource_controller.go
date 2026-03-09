@@ -19,6 +19,7 @@ package openviz
 import (
 	"context"
 	"fmt"
+	"slices"
 
 	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 	sdk "go.openviz.dev/grafana-sdk"
@@ -69,7 +70,7 @@ func (r *GrafanaDatasourceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
 	// Add or remove finalizer based on deletion timestamp
 	if ds.DeletionTimestamp.IsZero() {
-		if !containsString(ds.GetFinalizers(), GrafanaDatasourceFinalizer) {
+		if !slices.Contains(ds.GetFinalizers(), GrafanaDatasourceFinalizer) {
 			_, err := kmc.CreateOrPatch(ctx, r.Client, ds, func(obj client.Object, createOp bool) client.Object {
 				controllerutil.AddFinalizer(obj, GrafanaDatasourceFinalizer)
 				return obj
@@ -81,7 +82,7 @@ func (r *GrafanaDatasourceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 			return ctrl.Result{}, nil
 		}
 	} else {
-		if containsString(ds.GetFinalizers(), GrafanaDatasourceFinalizer) {
+		if slices.Contains(ds.GetFinalizers(), GrafanaDatasourceFinalizer) {
 			_, err := kmc.PatchStatus(ctx, r.Client, ds, func(obj client.Object) client.Object {
 				in := obj.(*openvizapi.GrafanaDatasource)
 				in.Status.Phase = openvizapi.GrafanaPhaseTerminating

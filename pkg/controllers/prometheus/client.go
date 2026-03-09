@@ -42,7 +42,7 @@ import (
 
 type GrafanaDatasourceResponse struct {
 	Grafana             mona.GrafanaConfig `json:"grafana"`
-	mona.GrafanaContext `json:",inline,omitempty"`
+	mona.GrafanaContext `json:",inline"`
 }
 
 type Client struct {
@@ -109,7 +109,7 @@ func (c *Client) unregisterAPIEndpoint() (string, error) {
 
 func (c *Client) Register(ctx mona.PrometheusContext, cfg mona.PrometheusConfig) (*GrafanaDatasourceResponse, error) {
 	opts := struct {
-		mona.PrometheusContext `json:",inline,omitempty"`
+		mona.PrometheusContext `json:",inline"`
 		Prometheus             mona.PrometheusConfig `json:"prometheus"`
 	}{
 		PrometheusContext: ctx,

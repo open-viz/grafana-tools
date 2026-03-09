@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"slices"
 	"sort"
 	"strings"
 
@@ -469,7 +470,7 @@ func (r *FederationReconciler) ServiceMonitorsForService(ctx context.Context, ob
 	var req []reconcile.Request
 	for _, svcMon := range list.Items {
 		nsMatches := svcMon.Spec.NamespaceSelector.Any ||
-			contains(svcMon.Spec.NamespaceSelector.MatchNames, obj.GetNamespace())
+			slices.Contains(svcMon.Spec.NamespaceSelector.MatchNames, obj.GetNamespace())
 		if !nsMatches {
 			continue
 		}
@@ -500,15 +501,6 @@ func ServiceMonitorsForPrometheus(kc client.Client, labels map[string]string) fu
 		}
 		return req
 	}
-}
-
-func contains(arr []string, x string) bool {
-	for _, s := range arr {
-		if s == x {
-			return true
-		}
-	}
-	return false
 }
 
 // SetupWithManager sets up the controller with the Manager.
