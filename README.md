@@ -33,6 +33,14 @@ Apply:
 oc apply -f cluster-monitoring-config.yaml
 ```
 
+Verify user workload monitoring components are running:
+
+```bash
+oc -n openshift-user-workload-monitoring get pod
+```
+
+Expected components include `prometheus-operator`, `prometheus-user-workload`, and `thanos-ruler-user-workload`.
+
 ### 2) Configure User Workload Stack (`user-workload-monitoring-config`)
 
 ```yaml
@@ -101,3 +109,39 @@ oc -n openshift-user-workload-monitoring adm policy add-role-to-user \
   user-workload-monitoring-config-edit <username> \
   --role-namespace openshift-user-workload-monitoring
 ```
+
+### 4) Optional Alert Routing Setup For User Projects
+
+Enable one of the following patterns:
+
+- Platform Alertmanager integration (`cluster-monitoring-config`):
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-monitoring-config
+  namespace: openshift-monitoring
+data:
+  config.yaml: |
+    enableUserWorkload: true
+    alertmanagerMain:
+      enableUserAlertmanagerConfig: true
+```
+
+- Dedicated user Alertmanager (`user-workload-monitoring-config`):
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-workload-monitoring-config
+  namespace: openshift-user-workload-monitoring
+data:
+  config.yaml: |
+    alertmanager:
+      enabled: true
+      enableAlertmanagerConfig: true
+```
+
+Then bind `alert-routing-edit` in each user project namespace where users should manage `AlertmanagerConfig` resources.
