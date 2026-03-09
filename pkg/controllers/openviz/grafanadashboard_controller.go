@@ -23,6 +23,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"slices"
 	"sync"
 	"time"
 
@@ -108,7 +109,7 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}
 
 	// Add finalizer if not set
-	if !containsString(obj.GetFinalizers(), GrafanaDashboardFinalizer) {
+	if !slices.Contains(obj.GetFinalizers(), GrafanaDashboardFinalizer) {
 		_, err := kmc.CreateOrPatch(ctx, r.Client, obj, func(obj client.Object, createOp bool) client.Object {
 			controllerutil.AddFinalizer(obj, GrafanaDashboardFinalizer)
 			return obj
