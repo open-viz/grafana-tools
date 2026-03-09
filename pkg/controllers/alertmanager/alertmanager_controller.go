@@ -46,6 +46,9 @@ const (
 	inboxAPIServiceGroup = "inbox.monitoring.appscode.com"
 	amcfgInboxAgent      = "inbox-agent"
 	amcfgLabelKey        = "app.kubernetes.io/name"
+
+	OpenShiftUserWorkloadNamespace    = "openshift-user-workload-monitoring"
+	OpenShiftUserWorkloadAlertmanager = "alertmanager-user-workload"
 )
 
 // AlertmanagerReconciler reconciles an Alertmanager object
@@ -88,6 +91,20 @@ func (r *AlertmanagerReconciler) Reconcile(ctx context.Context, req ctrl.Request
 
 	if ready, err := r.d.Ready(); !ready {
 		return ctrl.Result{}, err
+	}
+
+	key := req.NamespacedName
+	isDefault := r.d.IsDefault(key)
+	if r.d.OpenShiftManaged() {
+		if am.Namespace == OpenShiftUserWorkloadNamespace && am.Name == OpenShiftUserWorkloadAlertmanager {
+			isDefault = true
+		} else {
+			// On OpenShift, only reconcile user-workload Alertmanager for this controller.
+			return ctrl.Result{}, nil
+		}
+		if !isDefault {
+			return ctrl.Result{}, nil
+		}
 	}
 
 	if am.DeletionTimestamp != nil {

@@ -38,6 +38,7 @@ var GVKAlertmanager = schema.GroupVersionKind{
 type AlertmanagerDetector interface {
 	Ready() (bool, error)
 	RancherManaged() bool
+	OpenShiftManaged() bool
 	Federated() bool
 	IsDefault(key types.NamespacedName) bool
 }
@@ -49,6 +50,7 @@ func NewAlertmanagerDetector(kc client.Client) AlertmanagerDetector {
 type lazyAlertmanager struct {
 	kc        client.Client
 	delegated AlertmanagerDetector
+	openShift bool
 	mu        sync.Mutex
 }
 
@@ -64,6 +66,8 @@ func (l *lazyAlertmanager) detect() error {
 	if len(list.Items) == 0 {
 		return errUnknown
 	}
+
+	l.openShift = clustermeta.IsOpenShiftManaged(l.kc.RESTMapper())
 
 	if clustermeta.IsRancherManaged(l.kc.RESTMapper()) {
 		for _, obj := range list.Items {
@@ -112,6 +116,15 @@ func (l *lazyAlertmanager) Federated() bool {
 	return l.delegated.Federated()
 }
 
+func (l *lazyAlertmanager) OpenShiftManaged() bool {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if l.delegated == nil {
+		panic("NotReady")
+	}
+	return l.openShift
+}
+
 func (l *lazyAlertmanager) IsDefault(key types.NamespacedName) bool {
 	l.mu.Lock()
 	defer l.mu.Unlock()
@@ -131,6 +144,10 @@ func (f federatedAlertmanager) Ready() (bool, error) {
 
 func (f federatedAlertmanager) RancherManaged() bool {
 	return true
+}
+
+func (f federatedAlertmanager) OpenShiftManaged() bool {
+	return false
 }
 
 func (f federatedAlertmanager) Federated() bool {
@@ -155,6 +172,10 @@ func (s standaloneAlertmanager) Ready() (bool, error) {
 
 func (s standaloneAlertmanager) RancherManaged() bool {
 	return s.rancher
+}
+
+func (s standaloneAlertmanager) OpenShiftManaged() bool {
+	return false
 }
 
 func (s standaloneAlertmanager) Federated() bool {
