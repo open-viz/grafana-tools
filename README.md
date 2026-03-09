@@ -8,6 +8,12 @@
 
 Use the following manifests to enable user workload monitoring and apply a minimal namespace-scoped RBAC policy.
 
+Important notes:
+
+- Remove any custom Prometheus instances before enabling `enableUserWorkload: true`.
+- The `user-workload-monitoring-config` `ConfigMap` is typically created automatically after user workload monitoring is enabled.
+- Every save to `user-workload-monitoring-config` can trigger a rollout of user workload monitoring components.
+
 ### 1) Enable User Workload Monitoring (`cluster-monitoring-config`)
 
 ```yaml
@@ -48,7 +54,7 @@ data:
           memory: 2Gi
       volumeClaimTemplate:
         spec:
-          storageClassName: gp3-csi
+          storageClassName: <your-storage-class>
           resources:
             requests:
               storage: 50Gi
@@ -64,23 +70,13 @@ oc apply -f user-workload-monitoring-config.yaml
 
 ### 3) Minimal Namespace RBAC For Team Monitoring Objects
 
-This policy allows a team group to manage `ServiceMonitor`, `PodMonitor`, and `PrometheusRule` only in its own namespace.
+OpenShift provides built-in monitoring cluster roles. For project-scoped monitoring object management, bind `monitoring-edit` in the target project namespace.
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: user-workload-monitoring-editor
-  namespace: my-team
-rules:
-  - apiGroups: ["monitoring.coreos.com"]
-    resources: ["servicemonitors", "podmonitors", "prometheusrules"]
-    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
----
-apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: user-workload-monitoring-editor
+  name: monitoring-edit
   namespace: my-team
 subjects:
   - kind: Group
@@ -88,12 +84,20 @@ subjects:
     apiGroup: rbac.authorization.k8s.io
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: user-workload-monitoring-editor
+  kind: ClusterRole
+  name: monitoring-edit
 ```
 
 Apply:
 
 ```bash
 oc apply -f my-team-monitoring-rbac.yaml
+```
+
+Optional: allow a non-admin user to tune user workload monitoring config in `openshift-user-workload-monitoring`:
+
+```bash
+oc -n openshift-user-workload-monitoring adm policy add-role-to-user \
+  user-workload-monitoring-config-edit <username> \
+  --role-namespace openshift-user-workload-monitoring
 ```
