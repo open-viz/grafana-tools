@@ -39,6 +39,7 @@ var GVKPrometheus = schema.GroupVersionKind{
 type PrometheusDetector interface {
 	Ready() (bool, error)
 	RancherManaged() bool
+	OpenShiftManaged() bool
 	Federated() bool
 	IsDefault(key types.NamespacedName) bool
 }
@@ -52,6 +53,7 @@ var errUnknown = errors.New("unknown")
 type lazyPrometheus struct {
 	kc        client.Client
 	delegated PrometheusDetector
+	openShift bool
 	mu        sync.Mutex
 }
 
@@ -67,6 +69,8 @@ func (l *lazyPrometheus) detect() error {
 	if len(list.Items) == 0 {
 		return errUnknown
 	}
+
+	l.openShift = clustermeta.IsOpenShiftManaged(l.kc.RESTMapper())
 
 	if clustermeta.IsRancherManaged(l.kc.RESTMapper()) {
 		for _, obj := range list.Items {
@@ -115,6 +119,15 @@ func (l *lazyPrometheus) Federated() bool {
 	return l.delegated.Federated()
 }
 
+func (l *lazyPrometheus) OpenShiftManaged() bool {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if l.delegated == nil {
+		panic("NotReady")
+	}
+	return l.openShift
+}
+
 func (l *lazyPrometheus) IsDefault(key types.NamespacedName) bool {
 	l.mu.Lock()
 	defer l.mu.Unlock()
@@ -134,6 +147,10 @@ func (f federatedPrometheus) Ready() (bool, error) {
 
 func (f federatedPrometheus) RancherManaged() bool {
 	return true
+}
+
+func (f federatedPrometheus) OpenShiftManaged() bool {
+	return false
 }
 
 func (f federatedPrometheus) Federated() bool {
@@ -158,6 +175,10 @@ func (s standalonePrometheus) Ready() (bool, error) {
 
 func (s standalonePrometheus) RancherManaged() bool {
 	return s.rancher
+}
+
+func (s standalonePrometheus) OpenShiftManaged() bool {
+	return false
 }
 
 func (s standalonePrometheus) Federated() bool {

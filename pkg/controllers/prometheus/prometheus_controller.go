@@ -58,6 +58,9 @@ const (
 	ServiceAccountTrickster = "trickster"
 	CRTrickster             = "appscode:trickster:proxy"
 
+	OpenShiftUserWorkloadNamespace  = "openshift-user-workload-monitoring"
+	OpenShiftUserWorkloadPrometheus = "user-workload"
+
 	RegisteredKey        = mona.GroupName + "/registered"
 	tokenIDKey           = mona.GroupName + "/token-id"
 	presetsMonitoring    = "monitoring-presets"
@@ -128,6 +131,12 @@ func (r *PrometheusReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	key := req.NamespacedName
 	isDefault := r.d.IsDefault(key)
+	if r.d.OpenShiftManaged() &&
+		prom.Namespace == OpenShiftUserWorkloadNamespace &&
+		prom.Name == OpenShiftUserWorkloadPrometheus {
+		// On OpenShift, user-workload Prometheus is the tenant-facing stack.
+		isDefault = true
+	}
 
 	if prom.DeletionTimestamp != nil {
 		err := r.CleanupPreset(&prom, isDefault)
@@ -136,7 +145,7 @@ func (r *PrometheusReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 
 		var projectId string
-		if !isDefault {
+		if r.d.Federated() && !isDefault {
 			_, projectId, err = r.NamespaceForProjectSettings(&prom)
 			if err != nil {
 				return ctrl.Result{}, err
@@ -392,7 +401,7 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, pr
 		(rb.Annotations[RegisteredKey] != state ||
 			(rancherToken != nil && rb.Annotations[tokenIDKey] != rancherToken.TokenID)) {
 		var projectId string
-		if !isDefault {
+		if r.d.Federated() && !isDefault {
 			_, projectId, err = r.NamespaceForProjectSettings(prom)
 			if err != nil {
 				return err
@@ -431,6 +440,11 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, pr
 }
 
 func (r *PrometheusReconciler) CreatePreset(p *monitoringv1.Prometheus, isDefault bool) error {
+	if r.d.OpenShiftManaged() && !isDefault {
+		// Avoid overwriting cluster-scoped preset from OpenShift's non user-workload Prometheus.
+		return nil
+	}
+
 	presets := r.GeneratePresetForPrometheus(*p, isDefault)
 	presetBytes, err := json.Marshal(presets)
 	if err != nil {
@@ -573,7 +587,9 @@ func (r *PrometheusReconciler) GeneratePresetForPrometheus(p monitoringv1.Promet
 		klog.Warningf("Prometheus %s/%s uses match expressions in ServiceMonitorSelector", p.Namespace, p.Name)
 	}
 	if len(svcmonLabels) == 0 {
-		if isDefault && r.d.RancherManaged() {
+		if r.d.OpenShiftManaged() {
+			svcmonLabels = map[string]string{}
+		} else if isDefault && r.d.RancherManaged() {
 			svcmonLabels = defaultRancherMonitoringLabels
 		} else {
 			svcmonLabels = defaultPrometheusStackLabels
@@ -587,7 +603,9 @@ func (r *PrometheusReconciler) GeneratePresetForPrometheus(p monitoringv1.Promet
 		klog.Warningf("Prometheus %s/%s uses match expressions in RuleSelector", p.Namespace, p.Name)
 	}
 	if len(ruleLabels) == 0 {
-		if isDefault && r.d.RancherManaged() {
+		if r.d.OpenShiftManaged() {
+			ruleLabels = map[string]string{}
+		} else if isDefault && r.d.RancherManaged() {
 			ruleLabels = defaultRancherMonitoringLabels
 		} else {
 			ruleLabels = defaultPrometheusStackLabels
