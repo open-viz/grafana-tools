@@ -20,6 +20,8 @@ import (
 	"context"
 	"sort"
 
+	"go.openviz.dev/grafana-tools/pkg/detector"
+
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -44,13 +46,15 @@ type AutoReconciler struct {
 	cfg    *rest.Config
 	kc     client.Client
 	scheme *runtime.Scheme
+	d      detector.PrometheusDetector
 }
 
-func NewAutoReconciler(cfg *rest.Config, kc client.Client) *AutoReconciler {
+func NewAutoReconciler(cfg *rest.Config, kc client.Client, d detector.PrometheusDetector) *AutoReconciler {
 	return &AutoReconciler{
 		cfg:    cfg,
 		kc:     kc,
 		scheme: kc.Scheme(),
+		d:      d,
 	}
 }
 
@@ -73,6 +77,10 @@ func (r *AutoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		// requeue (we'll need to wait for a new notification), and we can get them
 		// on deleted requests.
 		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	if ready, err := r.d.Ready(); !ready {
+		return ctrl.Result{}, err
 	}
 
 	// has federate label
@@ -101,9 +109,13 @@ func (r *AutoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		return prometheuses[i].Name < prometheuses[j].Name
 	})
 
+	// non rancher
 	if !clustermeta.IsRancherManaged(r.kc.RESTMapper()) {
-		// non rancher
-		err := r.updateServiceMonitorLabels(&prometheuses[0], &svcMon)
+		prom, ok := detector.DefaultPrometheus(r.kc.RESTMapper(), r.d, prometheuses)
+		if !ok {
+			return ctrl.Result{}, nil
+		}
+		err := r.updateServiceMonitorLabels(prom, &svcMon)
 		if err != nil {
 			log.Error(err, "failed to apply label")
 		}

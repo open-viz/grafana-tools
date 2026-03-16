@@ -54,7 +54,6 @@ import (
 )
 
 const (
-	PortPrometheus          = "http-web"
 	ServiceAccountTrickster = "trickster"
 	CRTrickster             = "appscode:trickster:proxy"
 
@@ -129,6 +128,11 @@ func (r *PrometheusReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	key := req.NamespacedName
 	isDefault := r.d.IsDefault(key)
 
+	// do nothing for cluster prometheus in OpenShift
+	if r.d.OpenShiftManaged() && !isDefault {
+		return ctrl.Result{}, nil
+	}
+
 	if prom.DeletionTimestamp != nil {
 		err := r.CleanupPreset(&prom, isDefault)
 		if err != nil {
@@ -185,9 +189,9 @@ func (r *PrometheusReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	return ctrl.Result{}, nil
 }
 
-func (r *PrometheusReconciler) findServiceForPrometheus(key types.NamespacedName) (*core.Service, error) {
+func (r *PrometheusReconciler) findServiceForPrometheus(prom types.NamespacedName) (*core.Service, error) {
 	var svc core.Service
-	err := r.kc.Get(context.TODO(), key, &svc)
+	err := r.kc.Get(context.TODO(), r.d.ServiceKey(prom), &svc)
 	if err != nil {
 		return nil, err
 	}
@@ -197,7 +201,7 @@ func (r *PrometheusReconciler) findServiceForPrometheus(key types.NamespacedName
 func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, prom *monitoringv1.Prometheus, isDefault bool) error {
 	key := client.ObjectKeyFromObject(prom)
 
-	svc, err := r.findServiceForPrometheus(key)
+	svcProm, err := r.findServiceForPrometheus(key)
 	if err != nil {
 		return err
 	}
@@ -260,43 +264,45 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, pr
 			Name: CRTrickster,
 		},
 	}
-	crvt, err := cu.CreateOrPatch(context.TODO(), r.kc, &cr, func(in client.Object, createOp bool) client.Object {
-		obj := in.(*rbac.ClusterRole)
+	if !r.d.OpenShiftManaged() {
+		crvt, err := cu.CreateOrPatch(context.TODO(), r.kc, &cr, func(in client.Object, createOp bool) client.Object {
+			obj := in.(*rbac.ClusterRole)
 
-		obj.Rules = []rbac.PolicyRule{
-			{
-				APIGroups: []string{""},
-				Resources: []string{"services/proxy"},
-				Verbs:     []string{"*"},
-			},
+			obj.Rules = []rbac.PolicyRule{
+				{
+					APIGroups: []string{""},
+					Resources: []string{"services/proxy"},
+					Verbs:     []string{"*"},
+				},
+			}
+
+			return obj
+		})
+		if err != nil {
+			return err
 		}
-
-		return obj
-	})
-	if err != nil {
-		return err
+		klog.Infof("%s ClusterRole %s", crvt, cr.Name)
 	}
-	klog.Infof("%s ClusterRole %s", crvt, cr.Name)
 
 	rb := rbac.RoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      CRTrickster,
-			Namespace: key.Namespace,
+			Namespace: svcProm.Namespace,
 		},
 	}
 	rbvt, err := cu.CreateOrPatch(context.TODO(), r.kc, &rb, func(in client.Object, createOp bool) client.Object {
 		obj := in.(*rbac.RoleBinding)
-		ref := metav1.NewControllerRef(prom, schema.GroupVersionKind{
-			Group:   monitoring.GroupName,
-			Version: monitoringv1.Version,
-			Kind:    "Prometheus",
+		ref := metav1.NewControllerRef(svcProm, schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "Service",
 		})
 		obj.OwnerReferences = []metav1.OwnerReference{*ref}
 
 		obj.RoleRef = rbac.RoleRef{
 			APIGroup: rbac.GroupName,
 			Kind:     "ClusterRole",
-			Name:     cr.Name,
+			Name:     If(r.d.OpenShiftManaged(), "cluster-monitoring-view", cr.Name),
 		}
 
 		if rancherToken != nil {
@@ -338,20 +344,10 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, pr
 		return err
 	}
 
+	pcfgSvc := r.d.Service(key, svcProm)
+
 	var pcfg mona.PrometheusConfig
-	pcfg.Service = mona.ServiceSpec{
-		Scheme:    "http",
-		Name:      svc.Name,
-		Namespace: svc.Namespace,
-		Port:      "",
-		Path:      "",
-		Query:     "",
-	}
-	for _, p := range svc.Spec.Ports {
-		if p.Name == PortPrometheus {
-			pcfg.Service.Port = fmt.Sprintf("%d", p.Port)
-		}
-	}
+	pcfg.Service = pcfgSvc
 	// pcfg.URL = fmt.Sprintf("%s/api/v1/namespaces/%s/services/%s:%s:%s/proxy/", r.cfg.Host, pcfg.Service.Namespace, pcfg.Service.Scheme, pcfg.Service.Name, pcfg.Service.Port)
 
 	// remove basic auth and client cert auth
@@ -364,6 +360,17 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, pr
 	pcfg.TLS.Cert = ""
 	pcfg.TLS.Key = ""
 	pcfg.TLS.Ca = caCrt
+
+	if r.d.OpenShiftManaged() {
+		domain, err := clustermeta.GetOpenShiftAppsDomain(r.kc)
+		if err != nil {
+			return err
+		}
+		pcfg.URL = fmt.Sprintf("https://%s-%s.%s", svcProm.Name, svcProm.Namespace, domain)
+		pcfg.Service = mona.ServiceSpec{}
+		pcfg.TLS.Ca = "" // OpenShift's default router uses a well-known CA, so no need to provide CA bundle
+		pcfg.TLS.InsecureSkipTLSVerify = false
+	}
 
 	applyMarkers := func(in client.Object, createOp bool) client.Object {
 		obj := in.(*rbac.RoleBinding)
@@ -409,7 +416,7 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, pr
 		}
 
 		if isDefault {
-			_, err := r.CreatePrometheusAppBinding(prom, svc)
+			_, err := r.CreatePrometheusAppBinding(prom, &pcfgSvc)
 			if err != nil {
 				return err
 			}
@@ -598,13 +605,27 @@ func (r *PrometheusReconciler) GeneratePresetForPrometheus(p monitoringv1.Promet
 	return preset
 }
 
-func (r *PrometheusReconciler) CreatePrometheusAppBinding(prom *monitoringv1.Prometheus, svc *core.Service) (kutil.VerbType, error) {
+func (r *PrometheusReconciler) CreatePrometheusAppBinding(prom *monitoringv1.Prometheus, svc *mona.ServiceSpec) (kutil.VerbType, error) {
 	ab := appcatalog.AppBinding{
 		TypeMeta: metav1.TypeMeta{},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      appBindingPrometheus,
 			Namespace: prom.Namespace,
 		},
+	}
+
+	sref, err := svc.ToServiceReference()
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
+
+	var caBundle []byte
+	// Try to get OpenShift CA bundle from kube-public/openshift-service-ca.crt
+	if r.d.OpenShiftManaged() {
+		caBundle, err = clustermeta.GetOpenShiftServiceSigner(r.kc)
+		if err != nil {
+			return kutil.VerbUnchanged, err
+		}
 	}
 
 	vt, err := cu.CreateOrPatch(context.TODO(), r.kc, &ab, func(in client.Object, createOp bool) client.Object {
@@ -631,22 +652,15 @@ func (r *PrometheusReconciler) CreatePrometheusAppBinding(prom *monitoringv1.Pro
 		}
 		obj.Spec.ClientConfig = appcatalog.ClientConfig{
 			// URL:                   nil,
-			Service: &appcatalog.ServiceReference{
-				Scheme:    "http",
-				Namespace: svc.Namespace,
-				Name:      svc.Name,
-				Port:      0,
-				Path:      "",
-				Query:     "",
-			},
+			Service: sref,
 			// InsecureSkipTLSVerify: false,
 			// CABundle:              nil,
 			// ServerName:            "",
 		}
-		for _, p := range svc.Spec.Ports {
-			if p.Name == PortPrometheus {
-				obj.Spec.ClientConfig.Service.Port = p.Port
-			}
+		if r.d.OpenShiftManaged() {
+			obj.Spec.ClientConfig.CABundle = caBundle
+			obj.Spec.ClientConfig.ServerName = fmt.Sprintf("%s.%s.svc", svc.Name, svc.Namespace)
+			obj.Spec.ClientConfig.InsecureSkipTLSVerify = false
 		}
 
 		return obj
@@ -786,4 +800,11 @@ func (r *PrometheusReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		})))
 	}
 	return bldr.Complete(r)
+}
+
+func If[T any](condition bool, trueVal, falseVal T) T {
+	if condition {
+		return trueVal
+	}
+	return falseVal
 }

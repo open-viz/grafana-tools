@@ -114,9 +114,13 @@ func (r *FederationReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, err
 	}
 
+	// non rancher
 	if !r.d.Federated() {
-		// non rancher
-		err := r.updateServiceMonitorLabels(&prometheuses[0], &svcMon)
+		prom, ok := detector.DefaultPrometheus(r.kc.RESTMapper(), r.d, prometheuses)
+		if !ok {
+			return ctrl.Result{}, nil
+		}
+		err := r.updateServiceMonitorLabels(prom, &svcMon)
 		if err != nil {
 			log.Error(err, "failed to apply label")
 		}
