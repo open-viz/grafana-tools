@@ -3,3 +3,8 @@
 [![Twitter](https://img.shields.io/twitter/follow/OpenViz.svg?style=social&logo=twitter&label=Follow)](https://twitter.com/intent/follow?screen_name=OpenViz)
 
 # Grafana Operator
+
+## Documentation
+
+- [Controller and Reconciler Behavior](pkg/controllers/README.md)
+- [Design Notes](DESIGN.md)

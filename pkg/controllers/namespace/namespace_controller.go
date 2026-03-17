@@ -19,6 +19,7 @@ package namespace
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 
 	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
@@ -35,7 +36,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/errors"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/ptr"
@@ -106,7 +107,7 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return ctrl.Result{}, err
 	}
 	if r.d.RancherManaged() && r.d.Federated() {
-		return ctrl.Result{}, fmt.Errorf("client organization mode is not supported when federated prometheus is used in a Rancher managed cluster")
+		return ctrl.Result{}, fmt.Errorf("client organization mode is not supported when federated Prometheus is used in a Rancher managed cluster")
 	}
 
 	if ns.DeletionTimestamp != nil {
@@ -193,57 +194,32 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	klog.Infof("%s role binding %s/%s", rbvt, rb.Namespace, rb.Name)
 
 	// confirm trickter rb registered
-	var rbList rbac.RoleBindingList
-	if err := r.kc.List(ctx, &rbList); err != nil {
-		return ctrl.Result{}, err
-	}
-	var rbKey types.NamespacedName
-	for _, rb := range rbList.Items {
-		if rb.Name != prometheus.CRTrickster {
-			continue
-		}
-		if rb.Annotations[prometheus.RegisteredKey] == "" {
-			continue
-		}
-		rbKey = types.NamespacedName{
-			Namespace: rb.Namespace,
-			Name:      rb.Name,
-		}
-		break
-	}
-	if rbKey.Namespace == "" {
-		return ctrl.Result{}, fmt.Errorf("rolebinding %s is not registered yet", prometheus.CRTrickster)
-	}
-
 	var promList monitoringv1.PrometheusList
-	if err := r.kc.List(ctx, &promList, client.InNamespace(rbKey.Namespace)); err != nil {
+	if err := r.kc.List(ctx, &promList); err != nil {
 		return ctrl.Result{}, err
-	} else if len(promList.Items) == 0 {
-		return ctrl.Result{}, fmt.Errorf("prometheus not found in namespace %s", rbKey.Namespace)
-	} else if len(promList.Items) > 1 {
-		return ctrl.Result{}, fmt.Errorf("more than one prometheus found in namespace %s", rbKey.Namespace)
 	}
+	prom, ok := detector.DefaultPrometheus(r.kc.RESTMapper(), r.d, promList.Items)
+	if !ok {
+		return ctrl.Result{}, errors.New("failed to detect default Prometheus")
+	}
+	promKey := client.ObjectKeyFromObject(prom)
 
-	var promService core.Service
-	err = r.kc.Get(context.TODO(), client.ObjectKeyFromObject(&promList.Items[0]), &promService)
+	var svcProm core.Service
+	err = r.kc.Get(context.TODO(), r.d.ServiceKey(promKey), &svcProm)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 
+	var rbProm rbac.RoleBinding
+	if err := r.kc.Get(ctx, client.ObjectKey{Name: prometheus.CRTrickster, Namespace: svcProm.Namespace}, &rbProm); err != nil {
+		return ctrl.Result{}, err
+	}
+	if rbProm.Annotations[prometheus.RegisteredKey] == "" {
+		return ctrl.Result{}, fmt.Errorf("rolebinding %s/%s is not registered yet", rbProm.Namespace, rbProm.Name)
+	}
+
 	var pcfg mona.PrometheusConfig
-	pcfg.Service = mona.ServiceSpec{
-		Scheme:    "http",
-		Name:      promService.Name,
-		Namespace: promService.Namespace,
-		Port:      "",
-		Path:      "",
-		Query:     "",
-	}
-	for _, p := range promService.Spec.Ports {
-		if p.Name == prometheus.PortPrometheus {
-			pcfg.Service.Port = fmt.Sprintf("%d", p.Port)
-		}
-	}
+	pcfg.Service = r.d.Service(promKey, &svcProm)
 	// pcfg.URL = fmt.Sprintf("%s/api/v1/namespaces/%s/services/%s:%s:%s/proxy/", r.cfg.Host, pcfg.Service.Namespace, pcfg.Service.Scheme, pcfg.Service.Name, pcfg.Service.Port)
 
 	// remove basic auth and client cert auth
@@ -256,6 +232,17 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	pcfg.TLS.Cert = ""
 	pcfg.TLS.Key = ""
 	pcfg.TLS.Ca = "" // set in b3
+
+	if r.d.OpenShiftManaged() {
+		domain, err := clustermeta.GetOpenShiftAppsDomain(r.kc)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		pcfg.URL = fmt.Sprintf("https://%s-%s.%s", svcProm.Name, svcProm.Namespace, domain)
+		pcfg.Service = mona.ServiceSpec{}
+		pcfg.TLS.Ca = "" // OpenShift's default router uses a well-known CA, so no need to provide CA bundle
+		pcfg.TLS.InsecureSkipTLSVerify = false
+	}
 
 	cm, err := clustermeta.ClusterMetadata(r.kc)
 	if err != nil {
@@ -376,7 +363,7 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		}
 	}
 
-	return ctrl.Result{}, errors.NewAggregate(errList)
+	return ctrl.Result{}, utilerrors.NewAggregate(errList)
 }
 
 func (r *ClientOrgReconciler) CreateGrafanaAppBinding(monNamespace string, resp *prometheus.GrafanaDatasourceResponse) error {

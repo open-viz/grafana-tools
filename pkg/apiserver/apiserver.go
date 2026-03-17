@@ -247,6 +247,7 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 		if err = servicemonitorcontroller.NewAutoReconciler(
 			c.ExtraConfig.ClientConfig,
 			mgr.GetClient(),
+			promDetector,
 		).SetupWithManager(mgr); err != nil {
 			klog.Error(err, "unable to create controller", "auto controller", "ServiceMonitor")
 			os.Exit(1)
