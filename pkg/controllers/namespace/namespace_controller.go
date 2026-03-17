@@ -193,7 +193,7 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	}
 	klog.Infof("%s role binding %s/%s", rbvt, rb.Namespace, rb.Name)
 
-	// confirm trickter rb registered
+	// confirm trickster rb registered
 	var promList monitoringv1.PrometheusList
 	if err := r.kc.List(ctx, &promList); err != nil {
 		return ctrl.Result{}, err
@@ -226,7 +226,7 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	//if rancherToken != nil {
 	//	pcfg.BearerToken = rancherToken.Token
 	//} else {
-	pcfg.BearerToken = "" // set in b3
+	pcfg.BearerToken = "" // set in b3, except for OpenShift
 	// }
 	pcfg.BasicAuth = mona.BasicAuth{}
 	pcfg.TLS.Cert = ""
@@ -242,6 +242,15 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		pcfg.Service = mona.ServiceSpec{}
 		pcfg.TLS.Ca = "" // OpenShift's default router uses a well-known CA, so no need to provide CA bundle
 		pcfg.TLS.InsecureSkipTLSVerify = false
+
+		s, err := cu.GetServiceAccountTokenSecret(r.kc, client.ObjectKey{
+			Name:      prometheus.ServiceAccountTrickster,
+			Namespace: promKey.Namespace,
+		})
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		pcfg.BearerToken = string(s.Data["token"])
 	}
 
 	cm, err := clustermeta.ClusterMetadata(r.kc)
