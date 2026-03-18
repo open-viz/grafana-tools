@@ -313,7 +313,7 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, pr
 				},
 			}
 		} else {
-			if clustermeta.IsACEManagedSpoke(r.kc) {
+			if clustermeta.IsACEManagedSpoke(r.kc) && !r.d.OpenShiftManaged() {
 				obj.Subjects = []rbac.Subject{
 					{
 						Kind:      "ServiceAccount",
