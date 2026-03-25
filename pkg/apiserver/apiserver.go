@@ -27,6 +27,7 @@ import (
 	"go.openviz.dev/apimachinery/apis/ui"
 	uiinstall "go.openviz.dev/apimachinery/apis/ui/install"
 	uiapi "go.openviz.dev/apimachinery/apis/ui/v1alpha1"
+	"go.openviz.dev/grafana-tools/pkg/config"
 	alertmanagercontroller "go.openviz.dev/grafana-tools/pkg/controllers/alertmanager"
 	namespacecontroller "go.openviz.dev/grafana-tools/pkg/controllers/namespace"
 	prometheuscontroller "go.openviz.dev/grafana-tools/pkg/controllers/prometheus"
@@ -106,6 +107,7 @@ type ExtraConfig struct {
 	CACert            []byte
 	HubUID            string
 	RancherAuthSecret string
+	Alertmanager      config.AlertmanagerConfig
 }
 
 // Config defines the config for the apiserver
@@ -234,6 +236,7 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 			mgr.GetClient(),
 			cid,
 			amgrDetector,
+			c.ExtraConfig.Alertmanager,
 		).SetupWithManager(mgr); err != nil {
 			klog.Error(err, "unable to create controller", "controller", "Alertmanagers")
 			os.Exit(1)
