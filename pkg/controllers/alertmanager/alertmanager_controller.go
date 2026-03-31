@@ -203,7 +203,7 @@ func (r *AlertmanagerReconciler) reconcileInboxConfig(ctx context.Context, am *m
 }
 
 func (r *AlertmanagerReconciler) reconcileEmailConfig(ctx context.Context, am *monitoringv1.Alertmanager) error {
-	if !(r.cfg.Email.Enabled && r.cfg.Email.To != "" && r.cfg.Email.From != "" && r.cfg.Email.Smarthost != "" && r.cfg.Email.AuthSecretName != "" && r.cfg.Email.AuthSecretKey != "") {
+	if !r.cfg.Email.Enabled || r.cfg.Email.To == "" || r.cfg.Email.From == "" || r.cfg.Email.Smarthost == "" || r.cfg.Email.AuthSecretName == "" || r.cfg.Email.AuthSecretKey == "" {
 		return r.deleteConfig(ctx, am.Namespace, emailConfigName)
 	}
 
@@ -245,7 +245,7 @@ func (r *AlertmanagerReconciler) reconcileEmailConfig(ctx context.Context, am *m
 }
 
 func (r *AlertmanagerReconciler) reconcileWebhookConfig(ctx context.Context, am *monitoringv1.Alertmanager) error {
-	if !(r.cfg.Webhook.Enabled && r.cfg.Webhook.URLSecretName != "" && r.cfg.Webhook.URLSecretKey != "") {
+	if !r.cfg.Webhook.Enabled || r.cfg.Webhook.URLSecretName == "" || r.cfg.Webhook.URLSecretKey == "" {
 		return r.deleteConfig(ctx, am.Namespace, webhookConfigName)
 	}
 
