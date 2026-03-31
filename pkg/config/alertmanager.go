@@ -1,6 +1,9 @@
 package config
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 type AlertmanagerConfig struct {
 	Email   AlertmanagerEmailConfig   `json:"email" yaml:"email"`
@@ -39,15 +42,19 @@ func DefaultAlertmanagerConfig() AlertmanagerConfig {
 }
 
 func (c AlertmanagerConfig) Validate() error {
+	var errs []error
 	if c.Email.Enabled {
 		if c.Email.To == "" || c.Email.From == "" || c.Email.Smarthost == "" || c.Email.AuthSecretName == "" || c.Email.AuthSecretKey == "" {
-			return fmt.Errorf("email notification requires to, from, smarthost, authSecretName, and authSecretKey")
+			errs = append(errs, fmt.Errorf("email notification requires to, from, smarthost, authSecretName, and authSecretKey"))
 		}
 	}
 	if c.Webhook.Enabled {
 		if c.Webhook.URLSecretName == "" || c.Webhook.URLSecretKey == "" {
-			return fmt.Errorf("webhook notification requires urlSecretName and urlSecretKey")
+			errs = append(errs, fmt.Errorf("webhook notification requires urlSecretName and urlSecretKey"))
 		}
+	}
+	if len(errs) > 0 {
+		return errors.Join(errs...)
 	}
 	return nil
 }
