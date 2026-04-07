@@ -203,7 +203,7 @@ func (r *AlertmanagerReconciler) reconcileInboxConfig(ctx context.Context, am *m
 }
 
 func (r *AlertmanagerReconciler) reconcileEmailConfig(ctx context.Context, am *monitoringv1.Alertmanager) error {
-	if !r.cfg.Email.Enabled || r.cfg.Email.To == "" || r.cfg.Email.From == "" || r.cfg.Email.Smarthost == "" || r.cfg.Email.AuthSecretName == "" || r.cfg.Email.AuthSecretKey == "" {
+	if !r.cfg.Email.Enabled || r.cfg.Email.To == "" || r.cfg.Email.From == "" || r.cfg.Email.Smarthost == "" || r.cfg.Email.Secret.Name == "" || r.cfg.Email.Secret.Key == "" {
 		return r.deleteConfig(ctx, am.Namespace, emailConfigName)
 	}
 
@@ -221,7 +221,7 @@ func (r *AlertmanagerReconciler) reconcileEmailConfig(ctx context.Context, am *m
 				From:         r.cfg.Email.From,
 				Smarthost:    r.cfg.Email.Smarthost,
 				AuthUsername: r.cfg.Email.AuthUsername,
-				AuthPassword: &core.SecretKeySelector{LocalObjectReference: core.LocalObjectReference{Name: r.cfg.Email.AuthSecretName}, Key: r.cfg.Email.AuthSecretKey},
+				AuthPassword: &core.SecretKeySelector{LocalObjectReference: core.LocalObjectReference{Name: r.cfg.Email.Secret.Name}, Key: r.cfg.Email.Secret.Key},
 				RequireTLS:   ptr.To(r.cfg.Email.RequireTLS),
 				SendResolved: ptr.To(r.cfg.Email.SendResolved),
 			}},
@@ -245,7 +245,7 @@ func (r *AlertmanagerReconciler) reconcileEmailConfig(ctx context.Context, am *m
 }
 
 func (r *AlertmanagerReconciler) reconcileWebhookConfig(ctx context.Context, am *monitoringv1.Alertmanager) error {
-	if !r.cfg.Webhook.Enabled || r.cfg.Webhook.URLSecretName == "" || r.cfg.Webhook.URLSecretKey == "" {
+	if !r.cfg.Webhook.Enabled || r.cfg.Webhook.Secret.Name == "" || r.cfg.Webhook.Secret.Key == "" {
 		return r.deleteConfig(ctx, am.Namespace, webhookConfigName)
 	}
 
@@ -259,7 +259,7 @@ func (r *AlertmanagerReconciler) reconcileWebhookConfig(ctx context.Context, am 
 		obj.Spec.Receivers = []monitoringv1alpha1.Receiver{{
 			Name: webhookReceiverName,
 			WebhookConfigs: []monitoringv1alpha1.WebhookConfig{{
-				URLSecret:    &core.SecretKeySelector{LocalObjectReference: core.LocalObjectReference{Name: r.cfg.Webhook.URLSecretName}, Key: r.cfg.Webhook.URLSecretKey},
+				URLSecret:    &core.SecretKeySelector{LocalObjectReference: core.LocalObjectReference{Name: r.cfg.Webhook.Secret.Name}, Key: r.cfg.Webhook.Secret.Key},
 				SendResolved: ptr.To(r.cfg.Webhook.SendResolved),
 				MaxAlerts:    0,
 			}},
