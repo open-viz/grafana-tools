@@ -48,7 +48,6 @@ const (
 	amcfgName               = "alertmanager-config"
 	amcfgSelectorLabelKey   = "monitoring.appscode.com/alertmanager-config-generator"
 	amcfgSelectorLabelValue = "monitoring-operator"
-	amcfgReceiverName       = "alertmanager-receiver"
 )
 
 // AlertmanagerReconciler reconciles an Alertmanager object
@@ -144,7 +143,6 @@ func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context
 	}
 
 	receiver := &amcfgSpec.Receivers[0]
-	receiver.Name = amcfgReceiverName
 	if apisvc != nil {
 		receiver.WebhookConfigs = append(receiver.WebhookConfigs, monitoringv1alpha1.WebhookConfig{
 			SendResolved: ptr.To(true),
@@ -170,13 +168,13 @@ func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context
 			obj.Labels = make(map[string]string)
 		}
 		obj.Labels[amcfgSelectorLabelKey] = amcfgSelectorLabelValue
-		obj.Spec = amcfgSpec
+		obj.Spec.Receivers = []monitoringv1alpha1.Receiver{*receiver}
 
 		obj.Spec.Route = &monitoringv1alpha1.Route{
 			GroupBy:        []string{"job"},
 			GroupWait:      "10s",
 			GroupInterval:  "1m",
-			Receiver:       amcfgReceiverName,
+			Receiver:       receiver.Name,
 			RepeatInterval: "1h",
 			Continue:       true,
 		}
@@ -192,20 +190,17 @@ func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context
 }
 
 func validateConfig(spec monitoringv1alpha1.AlertmanagerConfigSpec) error {
+	if len(spec.Receivers) != 1 {
+		return fmt.Errorf("exactly one receiver is required")
+	}
 	if spec.Route != nil {
 		return fmt.Errorf("alertmanager config route is managed by the controller")
-	}
-	if len(spec.Receivers) > 1 {
-		return fmt.Errorf("only a single receiver is supported")
-	}
-	if len(spec.Receivers) == 0 {
-		return nil
 	}
 
 	var errs []error
 	r := spec.Receivers[0]
-	if r.Name != "" && r.Name != amcfgReceiverName {
-		errs = append(errs, fmt.Errorf("receiver name must be %q", amcfgReceiverName))
+	if r.Name == "" {
+		errs = append(errs, fmt.Errorf("receiver name must be specified"))
 	}
 
 	for i, cfg := range r.EmailConfigs {
