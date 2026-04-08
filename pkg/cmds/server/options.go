@@ -20,9 +20,9 @@ import (
 	"os"
 
 	"go.openviz.dev/grafana-tools/pkg/apiserver"
-	"go.openviz.dev/grafana-tools/pkg/config"
 
 	"github.com/pkg/errors"
+	monitoringv1alpha1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1alpha1"
 	"github.com/spf13/pflag"
 	"sigs.k8s.io/yaml"
 )
@@ -69,12 +69,9 @@ func (s *ExtraOptions) ApplyTo(cfg *apiserver.ExtraConfig) error {
 		if err != nil {
 			return errors.Wrapf(err, "failed to read alertmanager config file %s", s.AlertmanagerConfigFile)
 		}
-		amcfg := config.DefaultAlertmanagerConfig()
+		var amcfg monitoringv1alpha1.AlertmanagerConfigSpec
 		if err := yaml.UnmarshalStrict(data, &amcfg); err != nil {
 			return errors.Wrapf(err, "failed to parse alertmanager config file %s", s.AlertmanagerConfigFile)
-		}
-		if err := amcfg.Validate(); err != nil {
-			return errors.Wrapf(err, "invalid alertmanager config file %s", s.AlertmanagerConfigFile)
 		}
 		cfg.Alertmanager = amcfg
 	}

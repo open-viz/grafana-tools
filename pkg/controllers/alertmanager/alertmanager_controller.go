@@ -18,14 +18,13 @@ package alertmanager
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
-	"go.openviz.dev/grafana-tools/pkg/config"
 	"go.openviz.dev/grafana-tools/pkg/detector"
 
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	monitoringv1alpha1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1alpha1"
-	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/klog/v2"
@@ -58,10 +57,10 @@ type AlertmanagerReconciler struct {
 	scheme     *runtime.Scheme
 	clusterUID string
 	d          detector.AlertmanagerDetector
-	cfg        config.AlertmanagerConfig
+	cfg        monitoringv1alpha1.AlertmanagerConfigSpec
 }
 
-func NewReconciler(kc client.Client, clusterUID string, d detector.AlertmanagerDetector, cfg config.AlertmanagerConfig) *AlertmanagerReconciler {
+func NewReconciler(kc client.Client, clusterUID string, d detector.AlertmanagerDetector, cfg monitoringv1alpha1.AlertmanagerConfigSpec) *AlertmanagerReconciler {
 	return &AlertmanagerReconciler{
 		kc:         kc,
 		scheme:     kc.Scheme(),
@@ -137,29 +136,17 @@ func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context
 		},
 	}
 
-	var emailConfigs []monitoringv1alpha1.EmailConfig
-	if r.cfg.Email.Enabled && r.cfg.Email.To != "" && r.cfg.Email.From != "" && r.cfg.Email.Smarthost != "" && r.cfg.Email.Secret.Name != "" && r.cfg.Email.Secret.Key != "" {
-		emailConfigs = append(emailConfigs, monitoringv1alpha1.EmailConfig{
-			To:           r.cfg.Email.To,
-			From:         r.cfg.Email.From,
-			Smarthost:    r.cfg.Email.Smarthost,
-			AuthUsername: r.cfg.Email.AuthUsername,
-			AuthPassword: &core.SecretKeySelector{LocalObjectReference: core.LocalObjectReference{Name: r.cfg.Email.Secret.Name}, Key: r.cfg.Email.Secret.Key},
-			RequireTLS:   ptr.To(r.cfg.Email.RequireTLS),
-			SendResolved: ptr.To(r.cfg.Email.SendResolved),
-		})
+	var amcfgSpec monitoringv1alpha1.AlertmanagerConfigSpec
+	r.cfg.DeepCopyInto(&amcfgSpec)
+
+	if err := validateConfig(amcfgSpec); err != nil {
+		return err
 	}
 
-	var webhookConfigs []monitoringv1alpha1.WebhookConfig
-	if r.cfg.Webhook.Enabled && r.cfg.Webhook.Secret.Name != "" && r.cfg.Webhook.Secret.Key != "" {
-		webhookConfigs = append(webhookConfigs, monitoringv1alpha1.WebhookConfig{
-			URLSecret:    &core.SecretKeySelector{LocalObjectReference: core.LocalObjectReference{Name: r.cfg.Webhook.Secret.Name}, Key: r.cfg.Webhook.Secret.Key},
-			SendResolved: ptr.To(r.cfg.Webhook.SendResolved),
-			MaxAlerts:    0,
-		})
-	}
+	receiver := &amcfgSpec.Receivers[0]
+	receiver.Name = amcfgReceiverName
 	if apisvc != nil {
-		webhookConfigs = append(webhookConfigs, monitoringv1alpha1.WebhookConfig{
+		receiver.WebhookConfigs = append(receiver.WebhookConfigs, monitoringv1alpha1.WebhookConfig{
 			SendResolved: ptr.To(true),
 			URL:          ptr.To(fmt.Sprintf("https://%s.%s.svc:443/alerts", apisvc.Spec.Service.Name, apisvc.Spec.Service.Namespace)),
 			HTTPConfig: &monitoringv1alpha1.HTTPConfig{
@@ -171,7 +158,7 @@ func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context
 		})
 	}
 
-	if len(emailConfigs) == 0 && len(webhookConfigs) == 0 {
+	if len(receiver.EmailConfigs) == 0 && len(receiver.WebhookConfigs) == 0 {
 		klog.Info("No valid email or webhook configuration found, deleting AlertmanagerConfig if exists")
 		return r.deleteConfig(ctx, cr.Namespace, cr.Name)
 	}
@@ -183,14 +170,7 @@ func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context
 			obj.Labels = make(map[string]string)
 		}
 		obj.Labels[amcfgSelectorLabelKey] = amcfgSelectorLabelValue
-
-		obj.Spec.Receivers = []monitoringv1alpha1.Receiver{
-			{
-				Name:           amcfgReceiverName,
-				EmailConfigs:   emailConfigs,
-				WebhookConfigs: webhookConfigs,
-			},
-		}
+		obj.Spec = amcfgSpec
 
 		obj.Spec.Route = &monitoringv1alpha1.Route{
 			GroupBy:        []string{"job"},
@@ -209,6 +189,40 @@ func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context
 	klog.Infof("%s AlertmanagerConfig %s", crvt, cr.Name)
 
 	return nil
+}
+
+func validateConfig(spec monitoringv1alpha1.AlertmanagerConfigSpec) error {
+	if spec.Route != nil {
+		return fmt.Errorf("alertmanager config route is managed by the controller")
+	}
+	if len(spec.Receivers) > 1 {
+		return fmt.Errorf("only a single receiver is supported")
+	}
+	if len(spec.Receivers) == 0 {
+		return nil
+	}
+
+	var errs []error
+	r := spec.Receivers[0]
+	if r.Name != "" && r.Name != amcfgReceiverName {
+		errs = append(errs, fmt.Errorf("receiver name must be %q", amcfgReceiverName))
+	}
+
+	for i, cfg := range r.EmailConfigs {
+		if cfg.To == "" || cfg.From == "" || cfg.Smarthost == "" || cfg.AuthPassword == nil || cfg.AuthPassword.Name == "" || cfg.AuthPassword.Key == "" {
+			errs = append(errs, fmt.Errorf("emailConfigs[%d] requires to, from, smarthost, and authPassword.name/key", i))
+		}
+	}
+	for i, cfg := range r.WebhookConfigs {
+		if cfg.URL == nil && cfg.URLSecret == nil {
+			errs = append(errs, fmt.Errorf("webhookConfigs[%d] requires url or urlSecret", i))
+		}
+		if cfg.URLSecret != nil && (cfg.URLSecret.Name == "" || cfg.URLSecret.Key == "") {
+			errs = append(errs, fmt.Errorf("webhookConfigs[%d].urlSecret requires name and key", i))
+		}
+	}
+
+	return errors.Join(errs...)
 }
 
 func (r *AlertmanagerReconciler) deleteConfig(ctx context.Context, namespace, name string) error {
