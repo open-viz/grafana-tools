@@ -106,6 +106,7 @@ type ExtraConfig struct {
 	CACert            []byte
 	HubUID            string
 	RancherAuthSecret string
+	Alertmanager      monitoringv1alpha1.AlertmanagerConfigSpec
 }
 
 // Config defines the config for the apiserver
@@ -234,6 +235,7 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 			mgr.GetClient(),
 			cid,
 			amgrDetector,
+			c.ExtraConfig.Alertmanager,
 		).SetupWithManager(mgr); err != nil {
 			klog.Error(err, "unable to create controller", "controller", "Alertmanagers")
 			os.Exit(1)

@@ -18,6 +18,7 @@ package alertmanager
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"go.openviz.dev/grafana-tools/pkg/detector"
@@ -43,9 +44,10 @@ import (
 // Grant permission to alertmanager to call webhook
 
 const (
-	inboxAPIServiceGroup = "inbox.monitoring.appscode.com"
-	amcfgInboxAgent      = "inbox-agent"
-	amcfgLabelKey        = "app.kubernetes.io/name"
+	inboxAPIServiceGroup    = "inbox.monitoring.appscode.com"
+	amcfgName               = "alertmanager-config"
+	amcfgSelectorLabelKey   = "monitoring.appscode.com/alertmanager-config-generator"
+	amcfgSelectorLabelValue = "monitoring-operator"
 )
 
 // AlertmanagerReconciler reconciles an Alertmanager object
@@ -54,14 +56,16 @@ type AlertmanagerReconciler struct {
 	scheme     *runtime.Scheme
 	clusterUID string
 	d          detector.AlertmanagerDetector
+	cfg        monitoringv1alpha1.AlertmanagerConfigSpec
 }
 
-func NewReconciler(kc client.Client, clusterUID string, d detector.AlertmanagerDetector) *AlertmanagerReconciler {
+func NewReconciler(kc client.Client, clusterUID string, d detector.AlertmanagerDetector, cfg monitoringv1alpha1.AlertmanagerConfigSpec) *AlertmanagerReconciler {
 	return &AlertmanagerReconciler{
 		kc:         kc,
 		scheme:     kc.Scheme(),
 		clusterUID: clusterUID,
 		d:          d,
+		cfg:        cfg,
 	}
 }
 
@@ -95,7 +99,7 @@ func (r *AlertmanagerReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	apisvc, err := r.GetInboxAPIService(ctx)
-	if err != nil || apisvc == nil {
+	if err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -107,7 +111,7 @@ func (r *AlertmanagerReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	if am.Spec.AlertmanagerConfigSelector.MatchLabels == nil {
 		am.Spec.AlertmanagerConfigSelector.MatchLabels = make(map[string]string)
 	}
-	am.Spec.AlertmanagerConfigSelector.MatchLabels[amcfgLabelKey] = amcfgInboxAgent
+	am.Spec.AlertmanagerConfigSelector.MatchLabels[amcfgSelectorLabelKey] = amcfgSelectorLabelValue
 	am.Spec.AlertmanagerConfigMatcherStrategy.Type = monitoringv1.NoneConfigMatcherStrategyType
 
 	if err := r.kc.Patch(ctx, &am, client.MergeFrom(original)); err != nil {
@@ -126,43 +130,53 @@ func (r *AlertmanagerReconciler) Reconcile(ctx context.Context, req ctrl.Request
 func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context, am *monitoringv1.Alertmanager, apisvc *apiregistrationv1.APIService) error {
 	cr := monitoringv1alpha1.AlertmanagerConfig{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      amcfgInboxAgent,
+			Name:      amcfgName,
 			Namespace: am.Namespace,
 		},
 	}
+
+	var amcfgSpec monitoringv1alpha1.AlertmanagerConfigSpec
+	r.cfg.DeepCopyInto(&amcfgSpec)
+
+	if err := validateConfig(amcfgSpec); err != nil {
+		return err
+	}
+
+	receiver := &amcfgSpec.Receivers[0]
+	if apisvc != nil {
+		receiver.WebhookConfigs = append(receiver.WebhookConfigs, monitoringv1alpha1.WebhookConfig{
+			SendResolved: ptr.To(true),
+			URL:          ptr.To(fmt.Sprintf("https://%s.%s.svc:443/alerts", apisvc.Spec.Service.Name, apisvc.Spec.Service.Namespace)),
+			HTTPConfig: &monitoringv1alpha1.HTTPConfig{
+				TLSConfig: &monitoringv1.SafeTLSConfig{
+					InsecureSkipVerify: ptr.To(true),
+				},
+			},
+			MaxAlerts: 0,
+		})
+	}
+
+	if len(receiver.EmailConfigs) == 0 && len(receiver.WebhookConfigs) == 0 {
+		klog.Info("No valid email or webhook configuration found, deleting AlertmanagerConfig if exists")
+		return r.deleteConfig(ctx, cr.Namespace, cr.Name)
+	}
+
 	crvt, err := cu.CreateOrPatch(ctx, r.kc, &cr, func(in client.Object, createOp bool) client.Object {
 		obj := in.(*monitoringv1alpha1.AlertmanagerConfig)
 
 		if obj.Labels == nil {
 			obj.Labels = make(map[string]string)
 		}
-		obj.Labels[amcfgLabelKey] = amcfgInboxAgent
-
-		obj.Spec.Receivers = []monitoringv1alpha1.Receiver{
-			{
-				Name: "webhook",
-				WebhookConfigs: []monitoringv1alpha1.WebhookConfig{
-					{
-						SendResolved: ptr.To(true),
-						URL:          ptr.To(fmt.Sprintf("https://%s.%s.svc:443/alerts", apisvc.Spec.Service.Name, apisvc.Spec.Service.Namespace)),
-						HTTPConfig: &monitoringv1alpha1.HTTPConfig{
-							TLSConfig: &monitoringv1.SafeTLSConfig{
-								InsecureSkipVerify: ptr.To(true),
-							},
-						},
-						MaxAlerts: 0,
-					},
-				},
-			},
-		}
+		obj.Labels[amcfgSelectorLabelKey] = amcfgSelectorLabelValue
+		obj.Spec.Receivers = []monitoringv1alpha1.Receiver{*receiver}
 
 		obj.Spec.Route = &monitoringv1alpha1.Route{
 			GroupBy:        []string{"job"},
 			GroupWait:      "10s",
 			GroupInterval:  "1m",
-			Receiver:       "webhook",
+			Receiver:       receiver.Name,
 			RepeatInterval: "1h",
-			Matchers:       []monitoringv1alpha1.Matcher{},
+			Continue:       true,
 		}
 
 		return obj
@@ -173,6 +187,42 @@ func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context
 	klog.Infof("%s AlertmanagerConfig %s", crvt, cr.Name)
 
 	return nil
+}
+
+func validateConfig(spec monitoringv1alpha1.AlertmanagerConfigSpec) error {
+	if len(spec.Receivers) != 1 {
+		return fmt.Errorf("exactly one receiver is required")
+	}
+	if spec.Route != nil {
+		return fmt.Errorf("alertmanager config route is managed by the controller")
+	}
+
+	var errs []error
+	r := spec.Receivers[0]
+	if r.Name == "" {
+		errs = append(errs, fmt.Errorf("receiver name must be specified"))
+	}
+
+	for i, cfg := range r.EmailConfigs {
+		if cfg.To == "" || cfg.From == "" || cfg.Smarthost == "" || cfg.AuthPassword == nil || cfg.AuthPassword.Name == "" || cfg.AuthPassword.Key == "" {
+			errs = append(errs, fmt.Errorf("emailConfigs[%d] requires to, from, smarthost, and authPassword.name/key", i))
+		}
+	}
+	for i, cfg := range r.WebhookConfigs {
+		if cfg.URL == nil && cfg.URLSecret == nil {
+			errs = append(errs, fmt.Errorf("webhookConfigs[%d] requires url or urlSecret", i))
+		}
+		if cfg.URLSecret != nil && (cfg.URLSecret.Name == "" || cfg.URLSecret.Key == "") {
+			errs = append(errs, fmt.Errorf("webhookConfigs[%d].urlSecret requires name and key", i))
+		}
+	}
+
+	return errors.Join(errs...)
+}
+
+func (r *AlertmanagerReconciler) deleteConfig(ctx context.Context, namespace, name string) error {
+	obj := &monitoringv1alpha1.AlertmanagerConfig{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: namespace}}
+	return client.IgnoreNotFound(r.kc.Delete(ctx, obj))
 }
 
 func (r *AlertmanagerReconciler) GetInboxAPIService(ctx context.Context) (*apiregistrationv1.APIService, error) {

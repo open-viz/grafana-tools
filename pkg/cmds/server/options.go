@@ -22,7 +22,9 @@ import (
 	"go.openviz.dev/grafana-tools/pkg/apiserver"
 
 	"github.com/pkg/errors"
+	monitoringv1alpha1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1alpha1"
 	"github.com/spf13/pflag"
+	"sigs.k8s.io/yaml"
 )
 
 type ExtraOptions struct {
@@ -35,7 +37,8 @@ type ExtraOptions struct {
 
 	HubUID string
 
-	RancherAuthSecret string
+	RancherAuthSecret      string
+	AlertmanagerConfigFile string
 }
 
 func NewExtraOptions() *ExtraOptions {
@@ -53,6 +56,7 @@ func (s *ExtraOptions) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&s.CAFile, "platform-ca-file", s.Token, "Path to platform CA cert file")
 	fs.StringVar(&s.HubUID, "hubUID", s.Token, "Cluster UID of ocm Hub")
 	fs.StringVar(&s.RancherAuthSecret, "rancher-auth-secret", s.RancherAuthSecret, "Name of Rancher auth secret")
+	fs.StringVar(&s.AlertmanagerConfigFile, "alertmanager-config-file", s.AlertmanagerConfigFile, "Path to alertmanager controller config file")
 }
 
 func (s *ExtraOptions) ApplyTo(cfg *apiserver.ExtraConfig) error {
@@ -60,6 +64,17 @@ func (s *ExtraOptions) ApplyTo(cfg *apiserver.ExtraConfig) error {
 	cfg.Token = s.Token
 	cfg.HubUID = s.HubUID
 	cfg.RancherAuthSecret = s.RancherAuthSecret
+	if s.AlertmanagerConfigFile != "" {
+		data, err := os.ReadFile(s.AlertmanagerConfigFile)
+		if err != nil {
+			return errors.Wrapf(err, "failed to read alertmanager config file %s", s.AlertmanagerConfigFile)
+		}
+		var amcfg monitoringv1alpha1.AlertmanagerConfigSpec
+		if err := yaml.UnmarshalStrict(data, &amcfg); err != nil {
+			return errors.Wrapf(err, "failed to parse alertmanager config file %s", s.AlertmanagerConfigFile)
+		}
+		cfg.Alertmanager = amcfg
+	}
 	if s.CAFile != "" {
 		caCert, err := os.ReadFile(s.CAFile)
 		if err != nil {
