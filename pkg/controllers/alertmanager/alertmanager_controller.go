@@ -46,14 +46,10 @@ import (
 
 const (
 	inboxAPIServiceGroup    = "inbox.monitoring.appscode.com"
-	amcfgInboxAgent         = "inbox-agent"
-	amcfgSelectorLabelKey   = "monitoring.appscode.com/alertmanager-config-set"
-	amcfgSelectorLabelValue = "core"
-	inboxReceiverName       = "inbox-webhook"
-	emailConfigName         = "installer-email"
-	emailReceiverName       = "installer-email"
-	webhookConfigName       = "installer-webhook"
-	webhookReceiverName     = "installer-webhook"
+	amcfgName               = "alertmanager-config"
+	amcfgSelectorLabelKey   = "monitoring.appscode.com/alertmanager-config-generator"
+	amcfgSelectorLabelValue = "monitoring-operator"
+	amcfgReceiverName       = "alertmanager-receiver"
 )
 
 // AlertmanagerReconciler reconciles an Alertmanager object
@@ -134,28 +130,52 @@ func (r *AlertmanagerReconciler) Reconcile(ctx context.Context, req ctrl.Request
 }
 
 func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context, am *monitoringv1.Alertmanager, apisvc *apiregistrationv1.APIService) error {
-	if err := r.reconcileInboxConfig(ctx, am, apisvc); err != nil {
-		return err
-	}
-	if err := r.reconcileEmailConfig(ctx, am); err != nil {
-		return err
-	}
-	if err := r.reconcileWebhookConfig(ctx, am); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (r *AlertmanagerReconciler) reconcileInboxConfig(ctx context.Context, am *monitoringv1.Alertmanager, apisvc *apiregistrationv1.APIService) error {
-	if apisvc == nil {
-		return nil
-	}
 	cr := monitoringv1alpha1.AlertmanagerConfig{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      amcfgInboxAgent,
+			Name:      amcfgName,
 			Namespace: am.Namespace,
 		},
 	}
+
+	var emailConfigs []monitoringv1alpha1.EmailConfig
+	if r.cfg.Email.Enabled && r.cfg.Email.To != "" && r.cfg.Email.From != "" && r.cfg.Email.Smarthost != "" && r.cfg.Email.Secret.Name != "" && r.cfg.Email.Secret.Key != "" {
+		emailConfigs = append(emailConfigs, monitoringv1alpha1.EmailConfig{
+			To:           r.cfg.Email.To,
+			From:         r.cfg.Email.From,
+			Smarthost:    r.cfg.Email.Smarthost,
+			AuthUsername: r.cfg.Email.AuthUsername,
+			AuthPassword: &core.SecretKeySelector{LocalObjectReference: core.LocalObjectReference{Name: r.cfg.Email.Secret.Name}, Key: r.cfg.Email.Secret.Key},
+			RequireTLS:   ptr.To(r.cfg.Email.RequireTLS),
+			SendResolved: ptr.To(r.cfg.Email.SendResolved),
+		})
+	}
+
+	var webhookConfigs []monitoringv1alpha1.WebhookConfig
+	if r.cfg.Webhook.Enabled && r.cfg.Webhook.Secret.Name != "" && r.cfg.Webhook.Secret.Key != "" {
+		webhookConfigs = append(webhookConfigs, monitoringv1alpha1.WebhookConfig{
+			URLSecret:    &core.SecretKeySelector{LocalObjectReference: core.LocalObjectReference{Name: r.cfg.Webhook.Secret.Name}, Key: r.cfg.Webhook.Secret.Key},
+			SendResolved: ptr.To(r.cfg.Webhook.SendResolved),
+			MaxAlerts:    0,
+		})
+	}
+	if apisvc != nil {
+		webhookConfigs = append(webhookConfigs, monitoringv1alpha1.WebhookConfig{
+			SendResolved: ptr.To(true),
+			URL:          ptr.To(fmt.Sprintf("https://%s.%s.svc:443/alerts", apisvc.Spec.Service.Name, apisvc.Spec.Service.Namespace)),
+			HTTPConfig: &monitoringv1alpha1.HTTPConfig{
+				TLSConfig: &monitoringv1.SafeTLSConfig{
+					InsecureSkipVerify: ptr.To(true),
+				},
+			},
+			MaxAlerts: 0,
+		})
+	}
+
+	if len(emailConfigs) == 0 && len(webhookConfigs) == 0 {
+		klog.Info("No valid email or webhook configuration found, deleting AlertmanagerConfig if exists")
+		return r.deleteConfig(ctx, cr.Namespace, cr.Name)
+	}
+
 	crvt, err := cu.CreateOrPatch(ctx, r.kc, &cr, func(in client.Object, createOp bool) client.Object {
 		obj := in.(*monitoringv1alpha1.AlertmanagerConfig)
 
@@ -166,19 +186,9 @@ func (r *AlertmanagerReconciler) reconcileInboxConfig(ctx context.Context, am *m
 
 		obj.Spec.Receivers = []monitoringv1alpha1.Receiver{
 			{
-				Name: inboxReceiverName,
-				WebhookConfigs: []monitoringv1alpha1.WebhookConfig{
-					{
-						SendResolved: ptr.To(true),
-						URL:          ptr.To(fmt.Sprintf("https://%s.%s.svc:443/alerts", apisvc.Spec.Service.Name, apisvc.Spec.Service.Namespace)),
-						HTTPConfig: &monitoringv1alpha1.HTTPConfig{
-							TLSConfig: &monitoringv1.SafeTLSConfig{
-								InsecureSkipVerify: ptr.To(true),
-							},
-						},
-						MaxAlerts: 0,
-					},
-				},
+				Name:           amcfgReceiverName,
+				EmailConfigs:   emailConfigs,
+				WebhookConfigs: webhookConfigs,
 			},
 		}
 
@@ -186,10 +196,9 @@ func (r *AlertmanagerReconciler) reconcileInboxConfig(ctx context.Context, am *m
 			GroupBy:        []string{"job"},
 			GroupWait:      "10s",
 			GroupInterval:  "1m",
-			Receiver:       inboxReceiverName,
+			Receiver:       amcfgReceiverName,
 			RepeatInterval: "1h",
 			Continue:       true,
-			Matchers:       []monitoringv1alpha1.Matcher{},
 		}
 
 		return obj
@@ -199,86 +208,6 @@ func (r *AlertmanagerReconciler) reconcileInboxConfig(ctx context.Context, am *m
 	}
 	klog.Infof("%s AlertmanagerConfig %s", crvt, cr.Name)
 
-	return nil
-}
-
-func (r *AlertmanagerReconciler) reconcileEmailConfig(ctx context.Context, am *monitoringv1.Alertmanager) error {
-	if !r.cfg.Email.Enabled || r.cfg.Email.To == "" || r.cfg.Email.From == "" || r.cfg.Email.Smarthost == "" || r.cfg.Email.Secret.Name == "" || r.cfg.Email.Secret.Key == "" {
-		return r.deleteConfig(ctx, am.Namespace, emailConfigName)
-	}
-
-	cr := monitoringv1alpha1.AlertmanagerConfig{ObjectMeta: metav1.ObjectMeta{Name: emailConfigName, Namespace: am.Namespace}}
-	crvt, err := cu.CreateOrPatch(ctx, r.kc, &cr, func(in client.Object, createOp bool) client.Object {
-		obj := in.(*monitoringv1alpha1.AlertmanagerConfig)
-		if obj.Labels == nil {
-			obj.Labels = make(map[string]string)
-		}
-		obj.Labels[amcfgSelectorLabelKey] = amcfgSelectorLabelValue
-		obj.Spec.Receivers = []monitoringv1alpha1.Receiver{{
-			Name: emailReceiverName,
-			EmailConfigs: []monitoringv1alpha1.EmailConfig{{
-				To:           r.cfg.Email.To,
-				From:         r.cfg.Email.From,
-				Smarthost:    r.cfg.Email.Smarthost,
-				AuthUsername: r.cfg.Email.AuthUsername,
-				AuthPassword: &core.SecretKeySelector{LocalObjectReference: core.LocalObjectReference{Name: r.cfg.Email.Secret.Name}, Key: r.cfg.Email.Secret.Key},
-				RequireTLS:   ptr.To(r.cfg.Email.RequireTLS),
-				SendResolved: ptr.To(r.cfg.Email.SendResolved),
-			}},
-		}}
-		obj.Spec.Route = &monitoringv1alpha1.Route{
-			GroupBy:        []string{"job"},
-			GroupWait:      "10s",
-			GroupInterval:  "1m",
-			Receiver:       emailReceiverName,
-			RepeatInterval: "1h",
-			Continue:       true,
-			Matchers:       []monitoringv1alpha1.Matcher{},
-		}
-		return obj
-	})
-	if err != nil {
-		return err
-	}
-	klog.Infof("%s AlertmanagerConfig %s", crvt, cr.Name)
-	return nil
-}
-
-func (r *AlertmanagerReconciler) reconcileWebhookConfig(ctx context.Context, am *monitoringv1.Alertmanager) error {
-	if !r.cfg.Webhook.Enabled || r.cfg.Webhook.Secret.Name == "" || r.cfg.Webhook.Secret.Key == "" {
-		return r.deleteConfig(ctx, am.Namespace, webhookConfigName)
-	}
-
-	cr := monitoringv1alpha1.AlertmanagerConfig{ObjectMeta: metav1.ObjectMeta{Name: webhookConfigName, Namespace: am.Namespace}}
-	crvt, err := cu.CreateOrPatch(ctx, r.kc, &cr, func(in client.Object, createOp bool) client.Object {
-		obj := in.(*monitoringv1alpha1.AlertmanagerConfig)
-		if obj.Labels == nil {
-			obj.Labels = make(map[string]string)
-		}
-		obj.Labels[amcfgSelectorLabelKey] = amcfgSelectorLabelValue
-		obj.Spec.Receivers = []monitoringv1alpha1.Receiver{{
-			Name: webhookReceiverName,
-			WebhookConfigs: []monitoringv1alpha1.WebhookConfig{{
-				URLSecret:    &core.SecretKeySelector{LocalObjectReference: core.LocalObjectReference{Name: r.cfg.Webhook.Secret.Name}, Key: r.cfg.Webhook.Secret.Key},
-				SendResolved: ptr.To(r.cfg.Webhook.SendResolved),
-				MaxAlerts:    0,
-			}},
-		}}
-		obj.Spec.Route = &monitoringv1alpha1.Route{
-			GroupBy:        []string{"job"},
-			GroupWait:      "10s",
-			GroupInterval:  "1m",
-			Receiver:       webhookReceiverName,
-			RepeatInterval: "1h",
-			Continue:       true,
-			Matchers:       []monitoringv1alpha1.Matcher{},
-		}
-		return obj
-	})
-	if err != nil {
-		return err
-	}
-	klog.Infof("%s AlertmanagerConfig %s", crvt, cr.Name)
 	return nil
 }
 
