@@ -171,7 +171,7 @@ func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context
 		obj.Spec.Receivers = []monitoringv1alpha1.Receiver{*receiver}
 
 		obj.Spec.Route = &monitoringv1alpha1.Route{
-			GroupBy:        []string{"job"},
+			GroupBy:        []string{"alertname", "namespace", "job", "k8s_kind", "k8s_resource"},
 			GroupWait:      "10s",
 			GroupInterval:  "1m",
 			Receiver:       receiver.Name,
