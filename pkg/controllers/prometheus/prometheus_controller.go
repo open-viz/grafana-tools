@@ -62,6 +62,9 @@ const (
 	presetsMonitoring    = "monitoring-presets"
 	appBindingPrometheus = "default-prometheus"
 	appBindingGrafana    = "default-grafana"
+
+	clusterLabelKey    = "cluster"
+	clusterUIDLabelKey = "cluster_uid"
 )
 
 var (
@@ -170,6 +173,11 @@ func (r *PrometheusReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, nil
 	}
 
+	if err := r.ensureExternalLabels(ctx, &prom); err != nil {
+		log.Error(err, "unable to ensure Prometheus external labels")
+		return ctrl.Result{}, err
+	}
+
 	vt, err := cu.CreateOrPatch(context.TODO(), r.kc, &prom, func(in client.Object, createOp bool) client.Object {
 		obj := in.(*monitoringv1.Prometheus)
 		obj.ObjectMeta = core_util.AddFinalizer(obj.ObjectMeta, mona.PrometheusKey)
@@ -187,6 +195,21 @@ func (r *PrometheusReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	return ctrl.Result{}, nil
+}
+
+func (r *PrometheusReconciler) ensureExternalLabels(ctx context.Context, prom *monitoringv1.Prometheus) error {
+	cm, err := clustermeta.ClusterMetadata(r.kc)
+	if err != nil {
+		return err
+	}
+
+	original := prom.DeepCopy()
+	if prom.Spec.ExternalLabels == nil {
+		prom.Spec.ExternalLabels = make(map[string]string)
+	}
+	prom.Spec.ExternalLabels[clusterLabelKey] = cm.Name
+	prom.Spec.ExternalLabels[clusterUIDLabelKey] = cm.UID
+	return r.kc.Patch(ctx, prom, client.MergeFrom(original))
 }
 
 func (r *PrometheusReconciler) findServiceForPrometheus(prom types.NamespacedName) (*core.Service, error) {
