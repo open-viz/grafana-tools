@@ -203,6 +203,12 @@ func (r *PrometheusReconciler) ensureExternalLabels(ctx context.Context, prom *m
 		return err
 	}
 
+	existingName, nameExists := prom.Spec.ExternalLabels[clusterLabelKey]
+	existingUID, uidExists := prom.Spec.ExternalLabels[clusterUIDLabelKey]
+	if nameExists && existingName == cm.Name && uidExists && existingUID == cm.UID {
+		return nil
+	}
+
 	original := prom.DeepCopy()
 	if prom.Spec.ExternalLabels == nil {
 		prom.Spec.ExternalLabels = make(map[string]string)
