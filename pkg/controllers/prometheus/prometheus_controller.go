@@ -174,7 +174,7 @@ func (r *PrometheusReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	if err := r.ensureExternalLabels(ctx, &prom); err != nil {
-		log.Error(err, "unable to ensure Prometheus external labels")
+		log.Error(err, "unable to ensure Prometheus external labels. cluster info will not be injected into alerts.")
 		return ctrl.Result{}, err
 	}
 
@@ -198,9 +198,12 @@ func (r *PrometheusReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 }
 
 func (r *PrometheusReconciler) ensureExternalLabels(ctx context.Context, prom *monitoringv1.Prometheus) error {
+	log := log.FromContext(ctx)
+
 	cm, err := clustermeta.ClusterMetadata(r.kc)
 	if err != nil {
-		return err
+		log.Error(err, "failed to fetch cluster metadata configmap")
+		return nil
 	}
 
 	existingName, nameExists := prom.Spec.ExternalLabels[clusterLabelKey]
