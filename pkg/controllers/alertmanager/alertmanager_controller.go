@@ -18,6 +18,7 @@ package alertmanager
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -25,6 +26,7 @@ import (
 
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	monitoringv1alpha1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1alpha1"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/klog/v2"
@@ -161,6 +163,17 @@ func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context
 		return r.deleteConfig(ctx, cr.Namespace, cr.Name)
 	}
 
+	watchdogRoute, err := json.Marshal(monitoringv1alpha1.Route{
+		Receiver: receiver.Name,
+		Matchers: []monitoringv1alpha1.Matcher{
+			{Name: "alertname", Value: "Watchdog", MatchType: monitoringv1alpha1.MatchEqual},
+		},
+		RepeatInterval: "24h",
+	})
+	if err != nil {
+		return err
+	}
+
 	crvt, err := cu.CreateOrPatch(ctx, r.kc, &cr, func(in client.Object, createOp bool) client.Object {
 		obj := in.(*monitoringv1alpha1.AlertmanagerConfig)
 
@@ -177,6 +190,7 @@ func (r *AlertmanagerReconciler) SetupClusterForAlertmanager(ctx context.Context
 			Receiver:       receiver.Name,
 			RepeatInterval: "1h",
 			Continue:       true,
+			Routes:         []apiextensionsv1.JSON{{Raw: watchdogRoute}},
 		}
 
 		return obj
