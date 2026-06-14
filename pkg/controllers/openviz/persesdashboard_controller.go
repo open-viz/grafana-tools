@@ -30,6 +30,7 @@ import (
 	"github.com/perses/perses/pkg/model/api/v1/dashboard"
 	"github.com/perses/perses/pkg/model/api/v1/variable"
 	core "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
@@ -208,6 +209,9 @@ func (r *PersesDashboardReconciler) deleteExternalDashboard(ctx context.Context,
 	if obj.Status.Dashboard != nil && obj.Status.Dashboard.Name != "" {
 		pc, err := perses.NewPersesClient(ctx, r.Client, obj.Spec.PersesRef.WithNamespace(obj.Namespace))
 		if err != nil {
+			if apierrors.IsNotFound(err) {
+				return nil
+			}
 			return err
 		}
 

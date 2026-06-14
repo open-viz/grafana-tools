@@ -17,6 +17,7 @@ limitations under the License.
 package namespace
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -142,6 +143,9 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		// Authoritatively clean up everything this controller created in the client monitoring namespace before dropping the finalizer.
 		monNs := clientorg.MonitoringNamespace(ns.Name)
 		if err := r.kc.DeleteAllOf(ctx, &openvizapi.GrafanaDashboard{}, client.InNamespace(monNs)); err != nil && !apierrors.IsNotFound(err) {
+			return ctrl.Result{}, err
+		}
+		if err := r.kc.DeleteAllOf(ctx, &openvizapi.PersesDashboard{}, client.InNamespace(monNs)); err != nil && !apierrors.IsNotFound(err) {
 			return ctrl.Result{}, err
 		}
 		monNamespace := core.Namespace{ObjectMeta: metav1.ObjectMeta{Name: monNs}}
