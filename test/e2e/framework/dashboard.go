@@ -43,7 +43,9 @@ func (f *Framework) GetGrafanaDashboard() (*api.GrafanaDashboard, error) {
 
 func (f *Framework) CreateOrUpdateGrafanaDashboard(db *api.GrafanaDashboard) error {
 	_, err := kmc.CreateOrPatch(context.TODO(), f.cc, db, func(obj client.Object, createOp bool) client.Object {
-		return db
+		in := obj.(*api.GrafanaDashboard)
+		in.Spec = db.Spec
+		return in
 	})
 	return err
 }
