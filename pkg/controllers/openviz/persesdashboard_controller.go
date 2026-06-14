@@ -182,6 +182,9 @@ func (r *PersesDashboardReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&openvizapi.PersesDashboard{}, builder.WithPredicates(predicate.NewPredicateFuncs(func(obj client.Object) bool {
 			db := obj.(*openvizapi.PersesDashboard)
+			if db.DeletionTimestamp != nil {
+				return true
+			}
 			if !meta_util.MustAlreadyReconciled(obj) {
 				return true
 			}

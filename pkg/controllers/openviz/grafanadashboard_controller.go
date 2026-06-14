@@ -185,6 +185,9 @@ func (r *GrafanaDashboardReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&openvizapi.GrafanaDashboard{}, builder.WithPredicates(predicate.NewPredicateFuncs(func(obj client.Object) bool {
 			db := obj.(*openvizapi.GrafanaDashboard)
+			if db.DeletionTimestamp != nil {
+				return true
+			}
 			if !meta_util.MustAlreadyReconciled(obj) {
 				return true
 			}
