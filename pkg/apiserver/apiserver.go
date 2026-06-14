@@ -205,6 +205,7 @@ func (c completedConfig) New(ctx context.Context) (*UIServer, error) {
 	}, func(ctx context.Context, mgr ctrl.Manager) {
 		if err = namespacecontroller.NewReconciler(
 			mgr.GetClient(),
+			mgr.GetAPIReader(),
 			bc,
 			cid,
 			c.ExtraConfig.HubUID,
