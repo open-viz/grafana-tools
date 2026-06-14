@@ -139,24 +139,31 @@ Primary behavior:
 3. Adds finalizer `monitoring.appscode.com/prometheus`.
 4. On deletion:
    - Unregisters client-org backend context.
+   - Deletes all copied GrafanaDashboards in `<namespace>-monitoring`, then deletes the
+     monitoring namespace itself (authoritative cleanup; removing the finalizer only after
+     this succeeds avoids racing namespace GC against in-flight copy reconciles).
    - Removes finalizer.
-5. Ensures monitoring namespace `<namespace>-monitoring`.
-6. Ensures rolebinding `appscode:client-org:monitoring` in monitoring namespace.
-7. Verifies trickster registration marker exists before proceeding.
-8. Registers backend context (issue token mode), then creates/updates:
+5. Re-reads the namespace from the API server (uncached) and bails if it is terminating or
+   no longer client-org labeled, so a stale cached read can't recreate copies mid-teardown.
+6. Ensures monitoring namespace `<namespace>-monitoring`.
+7. Ensures rolebinding `appscode:client-org:monitoring` in monitoring namespace.
+8. Verifies trickster registration marker exists before proceeding.
+9. Registers backend context (issue token mode), then creates/updates:
    - AppBinding `grafana` in client monitoring namespace.
    - Secret `grafana-auth`.
-9. Copies all GrafanaDashboard objects into client monitoring namespace and transforms:
-   - dashboard title (`ClientDashboardTitle`).
-   - templating variable `namespace` as constant client namespace value.
-   - grafanaRef to local appbinding.
-   - source/hash annotations for traceability.
+10. Copies source GrafanaDashboard objects into client monitoring namespace and transforms:
+    - dashboard title (`ClientDashboardTitle`).
+    - templating variable `namespace` as constant client namespace value.
+    - grafanaRef to local appbinding.
+    - source/hash annotations for traceability.
+    - Skips objects that are already copies (carry the source annotation) or live in a
+      `-monitoring` namespace, so copies are not re-copied into an unstable loop.
 
 Watch details:
 
 - `Named("namespace")`.
 - `For(Namespace)` with client-org predicate.
-- Watches `ServiceAccount trickster` with registration label and requeues all client-org namespaces.
+- Watches `ServiceAccount trickster` with registration label and requeues all non-terminating client-org namespaces.
 
 ### ranchertoken.TokenRefresher
 

@@ -17,10 +17,10 @@ limitations under the License.
 package namespace
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 	"go.openviz.dev/grafana-tools/pkg/controllers/clientorg"
@@ -60,6 +60,7 @@ import (
 // ClientOrgReconciler reconciles a GatewayConfig object
 type ClientOrgReconciler struct {
 	kc         client.Client
+	apiReader  client.Reader
 	scheme     *runtime.Scheme
 	bc         *prometheus.Client
 	clusterUID string
@@ -67,9 +68,10 @@ type ClientOrgReconciler struct {
 	d          detector.PrometheusDetector
 }
 
-func NewReconciler(kc client.Client, bc *prometheus.Client, clusterUID, hubUID string, d detector.PrometheusDetector) *ClientOrgReconciler {
+func NewReconciler(kc client.Client, apiReader client.Reader, bc *prometheus.Client, clusterUID, hubUID string, d detector.PrometheusDetector) *ClientOrgReconciler {
 	return &ClientOrgReconciler{
 		kc:         kc,
+		apiReader:  apiReader,
 		scheme:     kc.Scheme(),
 		bc:         bc,
 		clusterUID: clusterUID,
@@ -124,6 +126,16 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 			}
 		}
 
+		// Authoritatively clean up everything this controller created in the client monitoring namespace before dropping the finalizer.
+		monNs := clientorg.MonitoringNamespace(ns.Name)
+		if err := r.kc.DeleteAllOf(ctx, &openvizapi.GrafanaDashboard{}, client.InNamespace(monNs)); err != nil && !apierrors.IsNotFound(err) {
+			return ctrl.Result{}, err
+		}
+		monNamespace := core.Namespace{ObjectMeta: metav1.ObjectMeta{Name: monNs}}
+		if err := r.kc.Delete(ctx, &monNamespace); client.IgnoreNotFound(err) != nil {
+			return ctrl.Result{}, err
+		}
+
 		vt, err := cu.CreateOrPatch(context.TODO(), r.kc, &ns, func(in client.Object, createOp bool) client.Object {
 			obj := in.(*core.Namespace)
 			obj.ObjectMeta = core_util.RemoveFinalizer(obj.ObjectMeta, mona.PrometheusKey)
@@ -134,6 +146,21 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 			return ctrl.Result{}, err
 		}
 		klog.Infof("%s Namespace %s to remove finalizer %s", vt, ns.Name, mona.PrometheusKey)
+		return ctrl.Result{}, nil
+	}
+
+	// The cached client lags the API server, and the ServiceAccount watch re-enqueues every
+	// client-org namespace on each trickster token refresh. A reconcile fired during teardown
+	// can therefore still observe a stale, live-looking namespace and recreate the copied
+	// dashboards that cleanup just removed. Re-read from the API server before (re)creating
+	// anything and bail out if the namespace is no longer an active client org.
+	var fresh core.Namespace
+	if err := r.apiReader.Get(ctx, req.NamespacedName, &fresh); err != nil {
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+	if fresh.DeletionTimestamp != nil ||
+		fresh.Labels[kmapi.ClientOrgKey] == "" ||
+		fresh.Labels[kmapi.ClientOrgKey] == "terminating" {
 		return ctrl.Result{}, nil
 	}
 
@@ -301,6 +328,9 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 
 	var errList []error
 	for _, dashboard := range dashboardList.Items {
+		if _, isCopy := dashboard.Annotations[srcRefKey]; isCopy || strings.HasSuffix(dashboard.Namespace, "-monitoring") {
+			continue
+		}
 		if dashboard.Spec.Model == nil {
 			return ctrl.Result{}, apierrors.NewBadRequest(fmt.Sprintf("GrafanaDashboard %s/%s is missing a model", dashboard.Namespace, dashboard.Name))
 		}
@@ -322,10 +352,6 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		boardBytes, err := json.Marshal(board)
 		if err != nil {
 			return ctrl.Result{}, err
-		}
-
-		if _, found := dashboard.Annotations[srcRefKey]; found && bytes.Equal(dashboard.Spec.Model.Raw, boardBytes) {
-			continue
 		}
 
 		copiedDashboard := &openvizapi.GrafanaDashboard{}
@@ -493,6 +519,9 @@ func (r *ClientOrgReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			}
 			reqs := make([]reconcile.Request, 0, len(list.Items))
 			for _, ns := range list.Items {
+				if ns.DeletionTimestamp != nil {
+					continue
+				}
 				reqs = append(reqs, reconcile.Request{
 					NamespacedName: types.NamespacedName{
 						Name: ns.Name,
