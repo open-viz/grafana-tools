@@ -22,6 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 	"go.openviz.dev/grafana-tools/pkg/controllers/clientorg"
@@ -198,12 +199,20 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 			Name: clientorg.MonitoringNamespace(ns.Name),
 		},
 	}
-	if err := r.kc.Get(ctx, client.ObjectKeyFromObject(&monNamespace), &monNamespace); apierrors.IsNotFound(err) {
+	switch err := r.kc.Get(ctx, client.ObjectKeyFromObject(&monNamespace), &monNamespace); {
+	case apierrors.IsNotFound(err):
 		if err := r.kc.Create(ctx, &monNamespace); err != nil {
 			return ctrl.Result{}, err
 		}
-	} else if err != nil {
+	case err != nil:
 		return ctrl.Result{}, err
+	case monNamespace.DeletionTimestamp != nil:
+		// The monitoring namespace is being torn down (teardown deleted it, while a
+		// stale-cache reconcile of the still-present client-org namespace re-entered
+		// this live branch). Registering backends or copying dashboards into a
+		// terminating namespace is rejected by admission and just flaps create/delete.
+		// Wait for it to fully delete, then recreate it cleanly on a later reconcile.
+		return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
 	}
 
 	// create client-org monitoring permission to generate grafana links
