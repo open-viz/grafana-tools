@@ -322,6 +322,13 @@ func updateDatasourceVariable(pDB *v1.Dashboard, ds string) error {
 			continue
 		}
 
+		// datasource only applies to Prometheus-backed list variables. Injecting it into
+		// other plugins (e.g. StaticListVariable) yields a spec that Perses rejects with
+		// "invalid variable: spec.datasource: field not allowed".
+		if spec.Plugin.Kind != "PrometheusLabelValuesVariable" && spec.Plugin.Kind != "PrometheusPromQLVariable" {
+			continue
+		}
+
 		pluginSpec, ok := spec.Plugin.Spec.(map[string]any)
 		if !ok {
 			continue
