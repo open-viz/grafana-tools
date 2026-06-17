@@ -32,6 +32,7 @@ import (
 	"go.openviz.dev/grafana-tools/pkg/grafana"
 
 	core "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -185,6 +186,9 @@ func (r *GrafanaDashboardReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&openvizapi.GrafanaDashboard{}, builder.WithPredicates(predicate.NewPredicateFuncs(func(obj client.Object) bool {
 			db := obj.(*openvizapi.GrafanaDashboard)
+			if db.DeletionTimestamp != nil {
+				return true
+			}
 			if !meta_util.MustAlreadyReconciled(obj) {
 				return true
 			}
@@ -258,6 +262,9 @@ func (r *GrafanaDashboardReconciler) deleteExternalDashboard(ctx context.Context
 	if obj.Status.Dashboard != nil && obj.Status.Dashboard.UID != nil {
 		gc, err := grafana.NewGrafanaClient(ctx, r.Client, obj.Spec.GrafanaRef.WithNamespace(obj.Namespace))
 		if err != nil {
+			if apierrors.IsNotFound(err) {
+				return nil
+			}
 			return err
 		}
 		resp, err := gc.DeleteDashboardByUID(ctx, *obj.Status.Dashboard.UID)

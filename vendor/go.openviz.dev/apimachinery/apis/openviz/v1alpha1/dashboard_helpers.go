@@ -32,7 +32,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func (GrafanaDashboard) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {
+func (_ GrafanaDashboard) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {
 	return crds.MustCustomResourceDefinition(SchemeGroupVersion.WithResource(ResourceGrafanaDashboards))
 }
 
