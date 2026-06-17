@@ -21,6 +21,7 @@ import (
 	"crypto/tls"
 	"net"
 	"net/url"
+	"time"
 
 	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 	sdk "go.openviz.dev/grafana-sdk"
@@ -31,6 +32,8 @@ import (
 	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
+
+const grafanaClientTimeout = 30 * time.Second
 
 func NewGrafanaClient(ctx context.Context, kc client.Client, ref *kmapi.ObjectReference) (*sdk.Client, error) {
 	ab, err := openvizapi.GetGrafana(ctx, kc, ref)
@@ -56,6 +59,8 @@ func newGrafanaClient(ctx context.Context, kc client.Client, ab *appcatalog.AppB
 		return nil, err
 	}
 	httpClient := resty.New()
+	// Never let a single Grafana HTTP call block a reconcile indefinitely.
+	httpClient.SetTimeout(grafanaClientTimeout)
 	if cfg.TLS != nil && len(cfg.TLS.CABundle) > 0 {
 		httpClient.SetRootCertificateFromString(string(cfg.TLS.CABundle))
 	}

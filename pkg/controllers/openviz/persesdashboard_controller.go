@@ -97,12 +97,13 @@ func (r *PersesDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 			return ctrl.Result{}, err
 		}
 
-		// Remove finalizer as the external Dashboard is successfully deleted
-		_, err := kmc.CreateOrPatch(ctx, r.Client, obj, func(obj client.Object, createOp bool) client.Object {
-			controllerutil.RemoveFinalizer(obj, PersesDashboardFinalizer)
-			return obj
-		})
-		return ctrl.Result{}, err
+		// Remove finalizer as the external Dashboard is successfully deleted.
+		// Use a plain patch (not CreateOrPatch): once the last finalizer is
+		// gone the object is removed, and a re-queued delete reconcile would
+		// otherwise Get->NotFound->Create and resurrect the PersesDashboard.
+		base := client.MergeFrom(obj.DeepCopy())
+		controllerutil.RemoveFinalizer(obj, PersesDashboardFinalizer)
+		return ctrl.Result{}, client.IgnoreNotFound(r.Patch(ctx, obj, base))
 	}
 
 	// Add finalizer if not set
@@ -249,6 +250,10 @@ func (r *PersesDashboardReconciler) setDashboard(ctx context.Context, obj *openv
 	pc, err := perses.NewPersesClient(ctx, r.Client, obj.Spec.PersesRef.WithNamespace(obj.Namespace))
 	if err != nil {
 		return r.handleSetDashboardError(ctx, obj, err, false)
+	}
+
+	if obj.Spec.Model == nil {
+		return r.handleSetDashboardError(ctx, obj, fmt.Errorf("dashboard model is empty"), false)
 	}
 
 	var pDB v1.Dashboard
