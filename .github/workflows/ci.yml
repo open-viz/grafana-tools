@@ -117,6 +117,44 @@ jobs:
           echo
           make e2e-tests
 
+      - name: Collect diagnostics on failure
+        if: failure()
+        run: |
+          for dep in grafana-operator monitoring-operator; do
+            echo "::group::$dep operator logs (current)"
+            kubectl logs -n monitoring deployment/$dep --tail=-1 || true
+            echo "::endgroup::"
+
+            echo "::group::$dep operator logs (previous)"
+            kubectl logs -n monitoring deployment/$dep --previous --tail=-1 || true
+            echo "::endgroup::"
+          done
+
+          echo "::group::operator deployments + pods (monitoring)"
+          kubectl describe deployment -n monitoring grafana-operator monitoring-operator || true
+          kubectl get pods -n monitoring -o wide || true
+          echo "::endgroup::"
+
+          echo "::group::e2e grafana server (test namespaces)"
+          for ns in $(kubectl get ns -o name | grep '/grafana-' | cut -d/ -f2); do
+            echo "--- namespace $ns ---"
+            kubectl get pods -n "$ns" -o wide || true
+            kubectl logs -n "$ns" -l app --tail=-1 --prefix || true
+          done
+          echo "::endgroup::"
+
+          echo "::group::GrafanaDashboards (all namespaces)"
+          kubectl get grafanadashboards.openviz.dev -A -o yaml || true
+          echo "::endgroup::"
+
+          echo "::group::AppBindings (all namespaces)"
+          kubectl get appbindings.appcatalog.appscode.com -A -o yaml || true
+          echo "::endgroup::"
+
+          echo "::group::cluster events"
+          kubectl get events -A --sort-by=.lastTimestamp | tail -n 100 || true
+          echo "::endgroup::"
+
   cleanup:
     name: Cleanup
     runs-on: ubuntu-24.04

@@ -101,12 +101,13 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			return ctrl.Result{}, err
 		}
 
-		// Remove finalizer as the external Dashboard is successfully deleted
-		_, err := kmc.CreateOrPatch(ctx, r.Client, obj, func(obj client.Object, createOp bool) client.Object {
-			controllerutil.RemoveFinalizer(obj, GrafanaDashboardFinalizer)
-			return obj
-		})
-		return ctrl.Result{}, err
+		// Remove finalizer as the external Dashboard is successfully deleted.
+		// Use a plain patch (not CreateOrPatch): once the last finalizer is
+		// gone the object is removed, and a re-queued delete reconcile would
+		// otherwise Get->NotFound->Create and resurrect the GrafanaDashboard.
+		base := client.MergeFrom(obj.DeepCopy())
+		controllerutil.RemoveFinalizer(obj, GrafanaDashboardFinalizer)
+		return ctrl.Result{}, client.IgnoreNotFound(r.Patch(ctx, obj, base))
 	}
 
 	// Add finalizer if not set
@@ -291,7 +292,7 @@ func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, obj *open
 		return r.handleSetDashboardError(ctx, obj, err, false)
 	}
 
-	if obj.Status.Dashboard != nil && (obj.Status.Dashboard.State == nil || *obj.Status.Dashboard.State == state) {
+	if obj.Spec.Model != nil && obj.Status.Dashboard != nil && (obj.Status.Dashboard.State == nil || *obj.Status.Dashboard.State == state) {
 		model, err := addDashboardID(obj.Spec.Model.Raw, *obj.Status.Dashboard.ID, *obj.Status.Dashboard.UID)
 		if err != nil {
 			return r.handleSetDashboardError(ctx, obj, err, false)

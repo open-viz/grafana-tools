@@ -18,6 +18,7 @@ package controllers
 
 import (
 	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
+	openvizcrds "go.openviz.dev/apimachinery/crds"
 
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/klog/v2"
@@ -30,6 +31,7 @@ func EnsureCustomResourceDefinitions(client crd_cs.Interface) error {
 	crds := []*apiextensions.CustomResourceDefinition{
 		openvizapi.GrafanaDashboard{}.CustomResourceDefinition(),
 		openvizapi.GrafanaDatasource{}.CustomResourceDefinition(),
+		openvizcrds.MustCustomResourceDefinition(openvizapi.SchemeGroupVersion.WithResource(openvizapi.ResourcePersesDashboards)),
 		appcatalogapi.AppBinding{}.CustomResourceDefinition(),
 	}
 	return apiextensions.RegisterCRDs(client, crds)
