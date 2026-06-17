@@ -9,16 +9,15 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"path"
+	"strings"
 
-	"go.openviz.dev/apimachinery/apis/openviz"
 	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 
 	v1 "github.com/perses/perses/pkg/model/api/v1"
 	"go.bytebuilders.dev/license-verifier/info"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/klog/v2"
 	"moul.io/http2curl/v2"
 )
@@ -75,18 +74,27 @@ func (c *Client) DeleteDashboardByName(ref *openvizapi.PersesDashboardReference)
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNotFound {
-		return apierrors.NewGenericServerResponse(
-			resp.StatusCode,
-			http.MethodDelete,
-			schema.GroupResource{Group: openviz.GroupName, Resource: openvizapi.ResourcePersesDashboards},
-			"",
-			"",
-			0,
-			false,
-		)
+	// Perses returns 2xx on success (204 No Content for delete) and 404 if it is already gone.
+	if resp.StatusCode/100 != 2 && resp.StatusCode != http.StatusNotFound {
+		return fmt.Errorf("failed to delete perses dashboard %q: perses server returned %d %s: %s",
+			ref.Name, resp.StatusCode, http.StatusText(resp.StatusCode), readResponseBody(resp))
 	}
 	return nil
+}
+
+// readResponseBody returns the (truncated, trimmed) response body so the actual
+// reason reported by the Perses server is surfaced to the caller instead of a
+// generic "unknown reason" message.
+func readResponseBody(resp *http.Response) string {
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 1<<16))
+	if err != nil {
+		return fmt.Sprintf("<failed to read response body: %v>", err)
+	}
+	msg := strings.TrimSpace(string(body))
+	if msg == "" {
+		return "<empty response body>"
+	}
+	return msg
 }
 
 func encodeCertPEM(cert *x509.Certificate) []byte {
@@ -137,16 +145,10 @@ func (c *Client) SetDashboard(ctx context.Context, dashboard v1.Dashboard, proje
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusConflict {
-		return apierrors.NewGenericServerResponse(
-			resp.StatusCode,
-			http.MethodPost,
-			schema.GroupResource{Group: openviz.GroupName, Resource: openvizapi.ResourcePersesDashboards},
-			"",
-			"",
-			0,
-			false,
-		)
+	// Perses returns 2xx on success and 409 Conflict when the dashboard already exists.
+	if resp.StatusCode/100 != 2 && resp.StatusCode != http.StatusConflict {
+		return fmt.Errorf("failed to create perses dashboard %q: perses server returned %d %s: %s",
+			dashboard.Metadata.Name, resp.StatusCode, http.StatusText(resp.StatusCode), readResponseBody(resp))
 	}
 
 	return nil
