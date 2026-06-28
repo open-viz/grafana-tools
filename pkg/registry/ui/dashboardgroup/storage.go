@@ -459,6 +459,16 @@ func (r *Storage) getDashboardLink(
 
 			baseURL.Path = path.Join(baseURL.Path, "projects", persesDashboard.Status.Dashboard.ProjectName, "folders", persesDashboard.Status.Dashboard.FolderName, "dashboards", persesDashboard.Status.Dashboard.Name)
 
+			pq := url.Values{}
+			pq.Add("var-datasource", persesConfig.Datasource)
+			pq.Add("start", "1h")
+			if refreshInterval == "" {
+				pq.Add("refresh", "30s")
+			} else {
+				pq.Add("refresh", refreshInterval)
+			}
+
+			baseURL.RawQuery = addVars(pq, req.Vars)
 			resp.URL = baseURL.String()
 		}
 
