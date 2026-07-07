@@ -379,24 +379,12 @@ func (r *Storage) getDashboardLink(
 	if embed {
 		resp.Panels = make([]uiapi.PanelLinkResponse, 0, len(pDashboard.Spec.Panels))
 		if persesHost != "" && persesDashboard.Status.Dashboard != nil {
-			panelMap := map[string]int{}
-			for _, p := range req.Panels {
-				panelMap[p.Title] = p.Width
+			panel, err := toEmbeddedPersesPanels(pDashboard, persesHost, persesDashboard, req, refreshInterval, persesConfig.Datasource)
+			if err != nil {
+				return nil, err
 			}
-
-			panelRespMap := map[string]*uiapi.PanelLinkResponse{}
-			for panelRef, p := range pDashboard.Spec.Panels {
-				if panel, err := toEmbeddedPersesPanel(p, persesHost, persesDashboard, req, refreshInterval, persesConfig.Datasource, panelRef, panelMap); err != nil {
-					return nil, err
-				} else if panel != nil {
-					panelRespMap[panel.Title] = panel
-				}
-			}
-			for _, panel := range req.Panels {
-				if panelRespMap[panel.Title] == nil {
-					continue
-				}
-				resp.Panels = append(resp.Panels, *panelRespMap[panel.Title])
+			if panel != nil {
+				resp.Panels = append(resp.Panels, *panel)
 			}
 			return resp, nil
 		}
@@ -546,7 +534,11 @@ func toEmbeddedPanel(p *sdk.Panel, grafanaHost string, d openvizapi.GrafanaDashb
 	}, nil
 }
 
-func toEmbeddedPersesPanel(p *v1.Panel, persesHost string, persesDashboard openvizapi.PersesDashboard, req *uiapi.DashboardRequest, refreshInterval string, datasourceName string, panelRef string, panelMap map[string]int) (*uiapi.PanelLinkResponse, error) {
+func toEmbeddedPersesPanels(pDashboard v1.Dashboard, persesHost string, persesDashboard openvizapi.PersesDashboard, req *uiapi.DashboardRequest, refreshInterval string, datasourceName string) (*uiapi.PanelLinkResponse, error) {
+	panelMap := map[string]int{}
+	for _, p := range req.Panels {
+		panelMap[p.Title] = p.Width
+	}
 	includePanel := func(title string) bool {
 		if len(panelMap) == 0 {
 			return true
@@ -555,7 +547,30 @@ func toEmbeddedPersesPanel(p *v1.Panel, persesHost string, persesDashboard openv
 		return ok
 	}
 
-	if !includePanel(p.Spec.Display.Name) {
+	// Map every included panel's ref, keyed by panel title.
+	refByTitle := map[string]string{}
+	for panelRef, p := range pDashboard.Spec.Panels {
+		if !includePanel(p.Spec.Display.Name) {
+			continue
+		}
+		refByTitle[p.Spec.Display.Name] = panelRef
+	}
+
+	// Collect the selected panel refs, preserving the order requested in req.Panels.
+	var selectedPanels []string
+	if len(req.Panels) == 0 {
+		for _, ref := range refByTitle {
+			selectedPanels = append(selectedPanels, ref)
+		}
+	} else {
+		for _, p := range req.Panels {
+			if ref, ok := refByTitle[p.Title]; ok {
+				selectedPanels = append(selectedPanels, ref)
+			}
+		}
+	}
+
+	if len(selectedPanels) == 0 {
 		return nil, nil
 	}
 
@@ -566,22 +581,15 @@ func toEmbeddedPersesPanel(p *v1.Panel, persesHost string, persesDashboard openv
 
 	// if embedded
 
-	// https://10.2.0.66/observe/projects/default/folders/ace/dashboards/vnogk2hnky?viewPanelRef=%7B%22ref%22%3A%2216%22%7D
+	// https://10.2.0.66/observe/projects/default/folders/ace/dashboards/vnogk2hnky?selectedPanels=%5B%221%22%2C%222%22%5D
 	baseURL.Path = path.Join(baseURL.Path, "projects", persesDashboard.Status.Dashboard.ProjectName, "folders", persesDashboard.Status.Dashboard.FolderName, "dashboards", persesDashboard.Status.Dashboard.Name)
-	panelRefObj := struct {
-		Ref string `json:"ref"`
-	}{
-		Ref: panelRef,
-	}
 
-	b, err := json.Marshal(panelRefObj)
+	q := url.Values{}
+	selectedPanelsJSON, err := json.Marshal(selectedPanels)
 	if err != nil {
 		return nil, err
 	}
-	// https://10.2.0.66/observe/projects/default/folders/ace/dashboards/vnogk2hnky?var-datasource=ace&var-namespace=ace&var-app=ace-db&start=1h&refresh=0s&viewPanelRef=%7B%22ref%22%3A%2216%22%7D&detailedView=1
-	q := url.Values{}
-	q.Set("viewPanelRef", string(b))
-	q.Set("detailedView", strconv.Itoa(1))
+	q.Set("selectedPanels", string(selectedPanelsJSON))
 
 	if refreshInterval == "" {
 		q.Add("refresh", "30s")
@@ -592,9 +600,8 @@ func toEmbeddedPersesPanel(p *v1.Panel, persesHost string, persesDashboard openv
 	baseURL.RawQuery = addVars(q, req.Vars)
 
 	return &uiapi.PanelLinkResponse{
-		Title: p.Spec.Display.Name,
+		Title: persesDashboard.Status.Dashboard.Name,
 		URL:   baseURL.String(),
-		Width: panelMap[p.Spec.Display.Name],
 	}, nil
 }
 
