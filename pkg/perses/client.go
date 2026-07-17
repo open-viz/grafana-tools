@@ -98,8 +98,12 @@ func newPersesClient(ctx context.Context, kc client.Client, ab *appcatalog.AppBi
 	}
 	c := &Client{
 		baseURL: cfg.Addr,
-		token:   cfg.AuthConfig.BearerToken,
-		caCert:  cfg.TLS.CABundle,
+	}
+	if cfg.AuthConfig != nil {
+		c.token = cfg.AuthConfig.BearerToken
+	}
+	if cfg.TLS != nil {
+		c.caCert = cfg.TLS.CABundle
 	}
 	if len(c.caCert) == 0 {
 		u, err := url.Parse(c.baseURL)
