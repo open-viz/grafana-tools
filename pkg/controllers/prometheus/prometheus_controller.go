@@ -469,12 +469,6 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, pr
 			}
 		}
 
-		rbvt, err = cu.CreateOrPatch(context.TODO(), r.kc, &rb, applyMarkers)
-		if err != nil {
-			return err
-		}
-		klog.Infof("%s rolebinding %s/%s with %s annotation", rbvt, rb.Namespace, rb.Name, RegisteredKey)
-
 		persesResp, err := r.bc.RegisterPerses(mona.PrometheusContext{
 			HubUID:     r.hubUID,
 			ClusterUID: r.clusterUID,
@@ -496,6 +490,15 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, pr
 				return err
 			}
 		}
+
+		// Mark the RoleBinding registered only after BOTH grafana and perses registration
+		// succeed. If set before RegisterPerses, a perses failure would leave the marker set,
+		// skipping this whole block on the next reconcile so default-perses is never created.
+		rbvt, err = cu.CreateOrPatch(context.TODO(), r.kc, &rb, applyMarkers)
+		if err != nil {
+			return err
+		}
+		klog.Infof("%s rolebinding %s/%s with %s annotation", rbvt, rb.Namespace, rb.Name, RegisteredKey)
 
 	}
 
