@@ -51,6 +51,7 @@ func isActiveClientOrg(ns *core.Namespace) bool {
 func (r *ClientOrgReconciler) handleDeletion(ctx context.Context, ns core.Namespace, clientOrgId string) (ctrl.Result, error) {
 	if r.pc != nil {
 		err := r.pc.Unregister(mona.PrometheusContext{
+			HubUID:      r.hubUID,
 			ClusterUID:  r.clusterUID,
 			ProjectId:   "",
 			Default:     false,
@@ -62,6 +63,7 @@ func (r *ClientOrgReconciler) handleDeletion(ctx context.Context, ns core.Namesp
 		}
 
 		err = r.pc.UnregisterPerses(mona.PrometheusContext{
+			HubUID:      r.hubUID,
 			ClusterUID:  r.clusterUID,
 			ProjectId:   "",
 			Default:     false,
