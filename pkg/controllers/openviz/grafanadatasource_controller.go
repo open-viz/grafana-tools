@@ -95,6 +95,7 @@ func (r *GrafanaDatasourceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 			if err := r.deleteExternalDatasource(ctx, ds); err != nil {
 				return ctrl.Result{}, err
 			}
+			klog.Infof("deleted external Grafana datasource for %s", key.String())
 
 			_, err = kmc.CreateOrPatch(ctx, r.Client, ds, func(obj client.Object, createOp bool) client.Object {
 				controllerutil.RemoveFinalizer(obj, GrafanaDatasourceFinalizer)

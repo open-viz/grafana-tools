@@ -29,6 +29,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
+	kutil "kmodules.xyz/client-go"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	cu "kmodules.xyz/client-go/client"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -57,7 +58,7 @@ func (r *ClientOrgReconciler) handleDeletion(ctx context.Context, ns core.Namesp
 			ClientOrgID: clientOrgId,
 		})
 		if err != nil {
-			return ctrl.Result{}, err
+			return ctrl.Result{}, fmt.Errorf("failed to unregister grafana backend for client-org %s: %w", clientOrgId, err)
 		}
 
 		err = r.pc.UnregisterPerses(mona.PrometheusContext{
@@ -68,8 +69,9 @@ func (r *ClientOrgReconciler) handleDeletion(ctx context.Context, ns core.Namesp
 			ClientOrgID: clientOrgId,
 		})
 		if err != nil {
-			return ctrl.Result{}, err
+			return ctrl.Result{}, fmt.Errorf("failed to unregister perses backend for client-org %s: %w", clientOrgId, err)
 		}
+		klog.Infof("unregistered grafana/perses backends for client-org %s", clientOrgId)
 	}
 
 	// Authoritatively clean up everything this controller created in the client monitoring namespace before dropping the finalizer.
@@ -94,7 +96,9 @@ func (r *ClientOrgReconciler) handleDeletion(ctx context.Context, ns core.Namesp
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	klog.Infof("%s Namespace %s to remove finalizer %s", vt, ns.Name, mona.PrometheusKey)
+	if vt != kutil.VerbUnchanged {
+		klog.Infof("%s finalizer %s on Namespace %s", vt, mona.PrometheusKey, ns.Name)
+	}
 	return ctrl.Result{}, nil
 }
 
@@ -109,7 +113,9 @@ func (r *ClientOrgReconciler) ensureFinalizer(ctx context.Context, ns *core.Name
 	if err != nil {
 		return err
 	}
-	klog.Infof("%s Namespace %s to add finalizer %s", vt, ns.Name, mona.PrometheusKey)
+	if vt != kutil.VerbUnchanged {
+		klog.Infof("%s finalizer %s on Namespace %s", vt, mona.PrometheusKey, ns.Name)
+	}
 	return nil
 }
 
@@ -135,6 +141,7 @@ func (r *ClientOrgReconciler) ensureMonitoringNamespace(ctx context.Context, ns 
 		// this live branch). Registering backends or copying dashboards into a
 		// terminating namespace is rejected by admission and just flaps create/delete.
 		// Wait for it to fully delete, then recreate it cleanly on a later reconcile.
+		klog.Infof("monitoring namespace %s is terminating, requeueing", monNamespace.Name)
 		return monNamespace, ctrl.Result{RequeueAfter: 10 * time.Second}, nil
 	}
 	return monNamespace, ctrl.Result{}, nil
@@ -171,6 +178,8 @@ func (r *ClientOrgReconciler) ensureMonitoringRoleBinding(ctx context.Context, m
 	if err != nil {
 		return err
 	}
-	klog.Infof("%s role binding %s/%s", rbvt, rb.Namespace, rb.Name)
+	if rbvt != kutil.VerbUnchanged {
+		klog.Infof("%s RoleBinding %s/%s", rbvt, rb.Namespace, rb.Name)
+	}
 	return nil
 }

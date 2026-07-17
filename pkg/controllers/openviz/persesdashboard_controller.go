@@ -96,6 +96,7 @@ func (r *PersesDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		if err := r.deleteExternalDashboard(ctx, obj); err != nil {
 			return ctrl.Result{}, err
 		}
+		klog.Infof("deleted external Perses dashboard for %s", key.String())
 
 		// Remove finalizer as the external Dashboard is successfully deleted.
 		// Use a plain patch (not CreateOrPatch): once the last finalizer is
@@ -292,6 +293,9 @@ func (r *PersesDashboardReconciler) setDashboard(ctx context.Context, obj *openv
 		in.Status.Reason = reason
 		return in
 	})
+	if err == nil {
+		klog.Infof("PersesDashboard %s/%s synced to Perses (project=%s, folder=%s)", obj.Namespace, obj.Name, dsConfig.ProjectName, dsConfig.FolderName)
+	}
 	return ctrl.Result{}, err
 }
 

@@ -28,6 +28,7 @@ import (
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/klog/v2"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	clustermeta "kmodules.xyz/client-go/cluster"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -93,6 +94,7 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	}
 
 	if ns.DeletionTimestamp != nil {
+		klog.Infof("client-org namespace %s (org %s) is terminating, unregistering backends", ns.Name, clientOrgId)
 		return r.handleDeletion(ctx, ns, clientOrgId)
 	}
 
@@ -156,7 +158,10 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		}
 	}
 
-	return ctrl.Result{}, r.copyDashboards(ctx, ns, monNamespace)
+	if err := r.copyDashboards(ctx, ns, monNamespace); err != nil {
+		return ctrl.Result{}, err
+	}
+	return ctrl.Result{}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.

@@ -33,6 +33,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/ptr"
+	kutil "kmodules.xyz/client-go"
 	cu "kmodules.xyz/client-go/client"
 	clustermeta "kmodules.xyz/client-go/cluster"
 	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
@@ -59,7 +60,9 @@ func (r *ClientOrgReconciler) setNamespaceMarker(ctx context.Context, monNamespa
 	if err != nil {
 		return err
 	}
-	klog.Infof("%s namespace %s with %s annotation", rbvt, monNamespace.Name, prometheus.RegisteredKey)
+	if rbvt != kutil.VerbUnchanged {
+		klog.Infof("%s annotation %s on Namespace %s", rbvt, prometheus.RegisteredKey, monNamespace.Name)
+	}
 	return nil
 }
 
@@ -158,8 +161,9 @@ func (r *ClientOrgReconciler) registerGrafanaBackend(monNamespace string, pcfg m
 		ClientOrgID: clientOrgId,
 	}, pcfg)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to register grafana backend for client-org %s: %w", clientOrgId, err)
 	}
+	klog.Infof("registered grafana backend for client-org %s in namespace %s", clientOrgId, monNamespace)
 	return r.CreateGrafanaAppBinding(monNamespace, resp)
 }
 
@@ -175,8 +179,9 @@ func (r *ClientOrgReconciler) registerPersesBackend(monNamespace string, pcfg mo
 		ClientOrgID: clientOrgId,
 	}, pcfg)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to register perses backend for client-org %s: %w", clientOrgId, err)
 	}
+	klog.Infof("registered perses backend for client-org %s in namespace %s", clientOrgId, monNamespace)
 	return r.CreatePersesAppBinding(monNamespace, persesResp)
 }
 
