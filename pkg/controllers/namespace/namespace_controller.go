@@ -312,56 +312,43 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	}
 	state := cm.State()
 
-	applyMarkers := func(in client.Object, createOp bool) client.Object {
-		obj := in.(*core.Namespace)
-		if obj.Annotations == nil {
-			obj.Annotations = map[string]string{}
-		}
-		obj.Annotations[prometheus.RegisteredKey] = state
-		return obj
-	}
+	if r.bc != nil {
+		var errs []error
 
-	if r.bc != nil &&
-		monNamespace.Annotations[prometheus.RegisteredKey] != state {
-		resp, err := r.bc.Register(mona.PrometheusContext{
-			HubUID:      r.hubUID,
-			ClusterUID:  r.clusterUID,
-			ProjectId:   "",
-			Default:     false,
-			IssueToken:  true,
-			ClientOrgID: clientOrgId,
-		}, pcfg)
-		if err != nil {
-			return ctrl.Result{}, err
+		// Grafana and perses backend registration are independent, self-healing steps: each
+		// re-runs when the shared marker is stale (cluster state changed) or its AppBinding is
+		// missing (external deletion, or an org first registered before perses support). Errors
+		// are aggregated so a hub failure on one does not block the other.
+		grafanaOK, persesOK := true, true
+
+		if monNamespace.Annotations[prometheus.RegisteredKey] != state ||
+			!r.appBindingExists(ctx, monNamespace.Name, abClientOrgGrafana) {
+			if err := r.registerGrafanaBackend(monNamespace.Name, pcfg, clientOrgId); err != nil {
+				errs = append(errs, err)
+				grafanaOK = false
+			}
 		}
 
-		err = r.CreateGrafanaAppBinding(monNamespace.Name, resp)
-		if err != nil {
-			return ctrl.Result{}, err
+		if monNamespace.Annotations[prometheus.RegisteredKey] != state ||
+			!r.appBindingExists(ctx, monNamespace.Name, abClientOrgPerses) {
+			if err := r.registerPersesBackend(monNamespace.Name, pcfg, clientOrgId); err != nil {
+				errs = append(errs, err)
+				persesOK = false
+			}
 		}
 
-		persesResp, err := r.bc.RegisterPerses(mona.PrometheusContext{
-			HubUID:      r.hubUID,
-			ClusterUID:  r.clusterUID,
-			ProjectId:   "",
-			Default:     false,
-			IssueToken:  true,
-			ClientOrgID: clientOrgId,
-		}, pcfg)
-		if err != nil {
-			return ctrl.Result{}, err
+		// Stamp the marker only after BOTH backends succeed. Stamping on a perses failure would
+		// leave the marker set, skipping this whole block on the next reconcile so a failed
+		// perses AppBinding is never recreated.
+		if grafanaOK && persesOK {
+			if err := r.setNamespaceMarker(ctx, &monNamespace, state); err != nil {
+				errs = append(errs, err)
+			}
 		}
 
-		err = r.CreatePersesAppBinding(monNamespace.Name, persesResp)
-		if err != nil {
-			return ctrl.Result{}, err
+		if len(errs) > 0 {
+			return ctrl.Result{}, utilerrors.NewAggregate(errs)
 		}
-
-		rbvt, err := cu.CreateOrPatch(context.TODO(), r.kc, &monNamespace, applyMarkers)
-		if err != nil {
-			return ctrl.Result{}, err
-		}
-		klog.Infof("%s namespace %s with %s annotation", rbvt, monNamespace.Name, prometheus.RegisteredKey)
 	}
 
 	var dashboardList openvizapi.GrafanaDashboardList
@@ -511,6 +498,63 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	}
 
 	return ctrl.Result{}, utilerrors.NewAggregate(errList)
+}
+
+// appBindingExists reports whether the named AppBinding is present in the given namespace.
+func (r *ClientOrgReconciler) appBindingExists(ctx context.Context, namespace, name string) bool {
+	var ab appcatalog.AppBinding
+	return r.kc.Get(ctx, types.NamespacedName{Namespace: namespace, Name: name}, &ab) == nil
+}
+
+// setNamespaceMarker stamps the shared registration marker on the namespace.
+func (r *ClientOrgReconciler) setNamespaceMarker(ctx context.Context, monNamespace *core.Namespace, state string) error {
+	rbvt, err := cu.CreateOrPatch(ctx, r.kc, monNamespace, func(in client.Object, _ bool) client.Object {
+		obj := in.(*core.Namespace)
+		if obj.Annotations == nil {
+			obj.Annotations = map[string]string{}
+		}
+		obj.Annotations[prometheus.RegisteredKey] = state
+		return obj
+	})
+	if err != nil {
+		return err
+	}
+	klog.Infof("%s namespace %s with %s annotation", rbvt, monNamespace.Name, prometheus.RegisteredKey)
+	return nil
+}
+
+// registerGrafanaBackend registers the client-org against the Grafana backend and creates its
+// AppBinding. It does not stamp the marker; the caller stamps once both backends succeed.
+func (r *ClientOrgReconciler) registerGrafanaBackend(monNamespace string, pcfg mona.PrometheusConfig, clientOrgId string) error {
+	resp, err := r.bc.Register(mona.PrometheusContext{
+		HubUID:      r.hubUID,
+		ClusterUID:  r.clusterUID,
+		ProjectId:   "",
+		Default:     false,
+		IssueToken:  true,
+		ClientOrgID: clientOrgId,
+	}, pcfg)
+	if err != nil {
+		return err
+	}
+	return r.CreateGrafanaAppBinding(monNamespace, resp)
+}
+
+// registerPersesBackend registers the client-org against the Perses backend and creates its
+// AppBinding. It does not stamp the marker; the caller stamps once both backends succeed.
+func (r *ClientOrgReconciler) registerPersesBackend(monNamespace string, pcfg mona.PrometheusConfig, clientOrgId string) error {
+	persesResp, err := r.bc.RegisterPerses(mona.PrometheusContext{
+		HubUID:      r.hubUID,
+		ClusterUID:  r.clusterUID,
+		ProjectId:   "",
+		Default:     false,
+		IssueToken:  true,
+		ClientOrgID: clientOrgId,
+	}, pcfg)
+	if err != nil {
+		return err
+	}
+	return r.CreatePersesAppBinding(monNamespace, persesResp)
 }
 
 func (r *ClientOrgReconciler) CreateGrafanaAppBinding(monNamespace string, resp *prometheus.GrafanaDatasourceResponse) error {
