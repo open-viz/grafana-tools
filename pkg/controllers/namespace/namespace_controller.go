@@ -65,6 +65,9 @@ func NewReconciler(kc client.Client, apiReader client.Reader, pc *prometheus.Cli
 const (
 	srcRefKey  = "meta.appcode.com/source"
 	srcHashKey = "meta.appcode.com/hash"
+	// cleanedUpKey marks a "terminating" client-org namespace whose backends and monitoring
+	// namespace have already been torn down, so cleanup runs once instead of on every reconcile.
+	cleanedUpKey = "meta.appcode.com/cleaned-up"
 
 	// cr created via monitoring-operator chart
 	crClientOrgMonitoring = "appscode:client-org:monitoring"
@@ -78,7 +81,7 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	if ns.Labels[kmapi.ClientOrgKey] == "" || ns.Labels[kmapi.ClientOrgKey] == "terminating" {
+	if ns.Labels[kmapi.ClientOrgKey] == "" {
 		return ctrl.Result{}, nil
 	}
 	clientOrgId := ns.Annotations[kmapi.AceOrgIDKey]
@@ -96,6 +99,20 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	if ns.DeletionTimestamp != nil {
 		klog.Infof("client-org namespace %s (org %s) is terminating, unregistering backends", ns.Name, clientOrgId)
 		return r.handleDeletion(ctx, ns, clientOrgId)
+	}
+
+	// Path-B teardown: the client-org namespace itself is not deleted, its label is flipped
+	// to "terminating". Run the same cleanup once, guarded by a marker annotation so the
+	// lingering namespace does not re-fire backend Unregister POSTs on every reconcile.
+	if ns.Labels[kmapi.ClientOrgKey] == "terminating" {
+		if ns.Annotations[cleanedUpKey] == "true" {
+			return ctrl.Result{}, nil
+		}
+		klog.Infof("client-org namespace %s (org %s) label set to terminating, unregistering backends", ns.Name, clientOrgId)
+		if _, err := r.handleDeletion(ctx, ns, clientOrgId); err != nil {
+			return ctrl.Result{}, err
+		}
+		return ctrl.Result{}, r.markCleanedUp(ctx, &ns)
 	}
 
 	// The cached client lags the API server, and the ServiceAccount watch re-enqueues every
@@ -168,7 +185,8 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 func (r *ClientOrgReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&core.Namespace{}, builder.WithPredicates(predicate.NewPredicateFuncs(func(obj client.Object) bool {
-			return obj.GetLabels()[kmapi.ClientOrgKey] == "true" &&
+			v := obj.GetLabels()[kmapi.ClientOrgKey]
+			return (v == "true" || v == "terminating") &&
 				obj.GetLabels()[kmapi.ClientOrgMonitoringKey] != "false"
 		}))).
 		Watches(&core.ServiceAccount{}, handler.EnqueueRequestsFromMapFunc(func(ctx context.Context, _ client.Object) []reconcile.Request {

@@ -102,6 +102,21 @@ func (r *ClientOrgReconciler) handleDeletion(ctx context.Context, ns core.Namesp
 	return ctrl.Result{}, nil
 }
 
+// markCleanedUp stamps the cleaned-up marker on a "terminating" client-org namespace so a
+// later reconcile of the still-present namespace skips the (already done) teardown.
+func (r *ClientOrgReconciler) markCleanedUp(ctx context.Context, ns *core.Namespace) error {
+	_, err := cu.Patch(ctx, r.kc, ns, func(in client.Object) client.Object {
+		obj := in.(*core.Namespace)
+		if obj.Annotations == nil {
+			obj.Annotations = map[string]string{}
+		}
+		obj.Annotations[cleanedUpKey] = "true"
+
+		return obj
+	})
+	return err
+}
+
 // ensureFinalizer adds the shared Prometheus finalizer to the namespace.
 func (r *ClientOrgReconciler) ensureFinalizer(ctx context.Context, ns *core.Namespace) error {
 	vt, err := cu.CreateOrPatch(ctx, r.kc, ns, func(in client.Object, createOp bool) client.Object {
