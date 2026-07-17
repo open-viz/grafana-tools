@@ -168,7 +168,9 @@ func (r *PersesDashboardReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		for _, db := range dashboardList.Items {
 			ab, err := perses.GetPerses(ctx, r.Client, db.Spec.PersesRef.WithNamespace(db.Namespace))
 			if err != nil {
-				return nil
+				// Skip only this dashboard; one unresolvable AppBinding must not suppress
+				// requeue of every other dashboard watching this AppBinding.
+				continue
 			}
 
 			if ab.Name == a.GetName() &&
