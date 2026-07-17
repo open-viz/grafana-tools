@@ -48,8 +48,8 @@ func isActiveClientOrg(ns *core.Namespace) bool {
 // everything this controller created in the client monitoring namespace, and drops the
 // finalizer so the namespace can finish terminating.
 func (r *ClientOrgReconciler) handleDeletion(ctx context.Context, ns core.Namespace, clientOrgId string) (ctrl.Result, error) {
-	if r.bc != nil {
-		err := r.bc.Unregister(mona.PrometheusContext{
+	if r.pc != nil {
+		err := r.pc.Unregister(mona.PrometheusContext{
 			ClusterUID:  r.clusterUID,
 			ProjectId:   "",
 			Default:     false,
@@ -60,7 +60,7 @@ func (r *ClientOrgReconciler) handleDeletion(ctx context.Context, ns core.Namesp
 			return ctrl.Result{}, err
 		}
 
-		err = r.bc.UnregisterPerses(mona.PrometheusContext{
+		err = r.pc.UnregisterPerses(mona.PrometheusContext{
 			ClusterUID:  r.clusterUID,
 			ProjectId:   "",
 			Default:     false,
@@ -100,7 +100,7 @@ func (r *ClientOrgReconciler) handleDeletion(ctx context.Context, ns core.Namesp
 
 // ensureFinalizer adds the shared Prometheus finalizer to the namespace.
 func (r *ClientOrgReconciler) ensureFinalizer(ctx context.Context, ns *core.Namespace) error {
-	vt, err := cu.CreateOrPatch(context.TODO(), r.kc, ns, func(in client.Object, createOp bool) client.Object {
+	vt, err := cu.CreateOrPatch(ctx, r.kc, ns, func(in client.Object, createOp bool) client.Object {
 		obj := in.(*core.Namespace)
 		obj.ObjectMeta = core_util.AddFinalizer(obj.ObjectMeta, mona.PrometheusKey)
 
@@ -149,7 +149,7 @@ func (r *ClientOrgReconciler) ensureMonitoringRoleBinding(ctx context.Context, m
 			Namespace: monNamespace.Name,
 		},
 	}
-	rbvt, err := cu.CreateOrPatch(context.TODO(), r.kc, &rb, func(in client.Object, createOp bool) client.Object {
+	rbvt, err := cu.CreateOrPatch(ctx, r.kc, &rb, func(in client.Object, createOp bool) client.Object {
 		obj := in.(*rbac.RoleBinding)
 
 		obj.RoleRef = rbac.RoleRef{

@@ -245,7 +245,7 @@ func (c *Client) RegisterPerses(ctx mona.PrometheusContext, cfg mona.PrometheusC
 		}
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() // nolint:errcheck
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {

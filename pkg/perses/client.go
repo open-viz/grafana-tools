@@ -100,7 +100,7 @@ func newPersesClient(ctx context.Context, kc client.Client, ab *appcatalog.AppBi
 		baseURL: cfg.Addr,
 	}
 	if cfg.AuthConfig != nil {
-		c.token = cfg.AuthConfig.BearerToken
+		c.token = cfg.BearerToken
 	}
 	if cfg.TLS != nil {
 		c.caCert = cfg.TLS.CABundle

@@ -72,7 +72,7 @@ func (c *Client) DeleteDashboardByName(ref *openvizapi.PersesDashboardReference)
 		}
 		return err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() // nolint:errcheck
 
 	// Perses returns 2xx on success (204 No Content for delete) and 404 if it is already gone.
 	if resp.StatusCode/100 != 2 && resp.StatusCode != http.StatusNotFound {
@@ -143,7 +143,7 @@ func (c *Client) SetDashboard(ctx context.Context, dashboard v1.Dashboard, proje
 		}
 		return err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() // nolint:errcheck
 
 	// Perses returns 2xx on success and 409 Conflict when the dashboard already exists.
 	if resp.StatusCode/100 != 2 && resp.StatusCode != http.StatusConflict {

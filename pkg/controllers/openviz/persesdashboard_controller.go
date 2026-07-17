@@ -73,13 +73,13 @@ func (r *PersesDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	key := req.NamespacedName
 
 	obj := &openvizapi.PersesDashboard{}
-	if err := r.Client.Get(ctx, key, obj); err != nil {
-		klog.Infof("Perses Dashboard %q doesn't exist anymore", req.NamespacedName.String())
+	if err := r.Get(ctx, key, obj); err != nil {
+		klog.Infof("Perses Dashboard %q doesn't exist anymore", key.String())
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 	obj = obj.DeepCopy()
 
-	if obj.ObjectMeta.DeletionTimestamp != nil {
+	if obj.DeletionTimestamp != nil {
 		// Change the Phase to Terminating if not
 		if obj.Status.Phase != openvizapi.GrafanaPhaseTerminating {
 			_, err := kmc.PatchStatus(ctx, r.Client, obj, func(obj client.Object) client.Object {
@@ -134,16 +134,13 @@ func (r *PersesDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	return r.setDashboard(ctx, obj)
 }
 
-func (r *PersesDashboardReconciler) handleSetDashboardError(ctx context.Context, obj *openvizapi.PersesDashboard, err error, updateGeneration bool) (ctrl.Result, error) {
+func (r *PersesDashboardReconciler) handleSetDashboardError(ctx context.Context, obj *openvizapi.PersesDashboard, err error) (ctrl.Result, error) {
 	reason := err.Error()
 	r.recordFailureEvent(obj, reason)
 	_, patchErr := kmc.PatchStatus(ctx, r.Client, obj, func(obj client.Object) client.Object {
 		in := obj.(*openvizapi.PersesDashboard)
 		in.Status.Phase = openvizapi.GrafanaPhaseFailed
 		in.Status.Reason = reason
-		if updateGeneration {
-			in.Status.ObservedGeneration = in.Generation
-		}
 		in.Status.Conditions = condutil.SetCondition(in.Status.Conditions, kmapi.Condition{
 			Type:    condutil.ConditionFailed,
 			Status:  metav1.ConditionTrue,
@@ -159,7 +156,7 @@ func (r *PersesDashboardReconciler) handleSetDashboardError(ctx context.Context,
 func (r *PersesDashboardReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	appHandler := handler.EnqueueRequestsFromMapFunc(func(ctx context.Context, a client.Object) []reconcile.Request {
 		var dashboardList openvizapi.PersesDashboardList
-		err := r.Client.List(ctx, &dashboardList)
+		err := r.List(ctx, &dashboardList)
 		if err != nil {
 			return nil
 		}
@@ -233,46 +230,46 @@ func (r *PersesDashboardReconciler) deleteExternalDashboard(ctx context.Context,
 func (r *PersesDashboardReconciler) setDashboard(ctx context.Context, obj *openvizapi.PersesDashboard) (ctrl.Result, error) {
 	ab, err := perses.GetPerses(ctx, r.Client, obj.Spec.PersesRef.WithNamespace(obj.Namespace))
 	if err != nil {
-		return r.handleSetDashboardError(ctx, obj, err, false)
+		return r.handleSetDashboardError(ctx, obj, err)
 	}
 
 	// Grafana state == Perses state
 	state, err := GrafanaState(ab)
 	if err != nil {
-		return r.handleSetDashboardError(ctx, obj, err, false)
+		return r.handleSetDashboardError(ctx, obj, err)
 	}
 
 	dsConfig := &openvizapi.PersesConfiguration{}
 	if ab.Spec.Parameters != nil {
 		if err := json.Unmarshal(ab.Spec.Parameters.Raw, dsConfig); err != nil {
-			return r.handleSetDashboardError(ctx, obj, fmt.Errorf("failed to unmarshal app binding parameters, reason: %v", err), false)
+			return r.handleSetDashboardError(ctx, obj, fmt.Errorf("failed to unmarshal app binding parameters, reason: %v", err))
 		}
 	}
 
 	pc, err := perses.NewPersesClient(ctx, r.Client, obj.Spec.PersesRef.WithNamespace(obj.Namespace))
 	if err != nil {
-		return r.handleSetDashboardError(ctx, obj, err, false)
+		return r.handleSetDashboardError(ctx, obj, err)
 	}
 
 	if obj.Spec.Model == nil {
-		return r.handleSetDashboardError(ctx, obj, fmt.Errorf("dashboard model is empty"), false)
+		return r.handleSetDashboardError(ctx, obj, fmt.Errorf("dashboard model is empty"))
 	}
 
 	var pDB v1.Dashboard
 	if err = json.Unmarshal(obj.Spec.Model.Raw, &pDB); err != nil {
-		return r.handleSetDashboardError(ctx, obj, err, false)
+		return r.handleSetDashboardError(ctx, obj, err)
 	}
 
 	pDB.Metadata.Project = dsConfig.ProjectName
 	pDB.Metadata.FolderName = dsConfig.FolderName
 
 	if err := updateDatasourceVariable(&pDB, dsConfig.Datasource); err != nil {
-		return r.handleSetDashboardError(ctx, obj, err, false)
+		return r.handleSetDashboardError(ctx, obj, err)
 	}
 
 	err = pc.SetDashboard(ctx, pDB, dsConfig.ProjectName, dsConfig.FolderName)
 	if err != nil {
-		return r.handleSetDashboardError(ctx, obj, err, false)
+		return r.handleSetDashboardError(ctx, obj, err)
 	}
 
 	_, err = kmc.PatchStatus(ctx, r.Client, obj, func(obj client.Object) client.Object {
