@@ -29,6 +29,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
+	kutil "kmodules.xyz/client-go"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	cu "kmodules.xyz/client-go/client"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -48,8 +49,8 @@ func isActiveClientOrg(ns *core.Namespace) bool {
 // everything this controller created in the client monitoring namespace, and drops the
 // finalizer so the namespace can finish terminating.
 func (r *ClientOrgReconciler) handleDeletion(ctx context.Context, ns core.Namespace, clientOrgId string) (ctrl.Result, error) {
-	if r.bc != nil {
-		err := r.bc.Unregister(mona.PrometheusContext{
+	if r.pc != nil {
+		err := r.pc.Unregister(mona.PrometheusContext{
 			ClusterUID:  r.clusterUID,
 			ProjectId:   "",
 			Default:     false,
@@ -57,10 +58,10 @@ func (r *ClientOrgReconciler) handleDeletion(ctx context.Context, ns core.Namesp
 			ClientOrgID: clientOrgId,
 		})
 		if err != nil {
-			return ctrl.Result{}, err
+			return ctrl.Result{}, fmt.Errorf("failed to unregister grafana backend for client-org %s: %w", clientOrgId, err)
 		}
 
-		err = r.bc.UnregisterPerses(mona.PrometheusContext{
+		err = r.pc.UnregisterPerses(mona.PrometheusContext{
 			ClusterUID:  r.clusterUID,
 			ProjectId:   "",
 			Default:     false,
@@ -68,8 +69,9 @@ func (r *ClientOrgReconciler) handleDeletion(ctx context.Context, ns core.Namesp
 			ClientOrgID: clientOrgId,
 		})
 		if err != nil {
-			return ctrl.Result{}, err
+			return ctrl.Result{}, fmt.Errorf("failed to unregister perses backend for client-org %s: %w", clientOrgId, err)
 		}
+		klog.Infof("unregistered grafana/perses backends for client-org %s", clientOrgId)
 	}
 
 	// Authoritatively clean up everything this controller created in the client monitoring namespace before dropping the finalizer.
@@ -94,13 +96,15 @@ func (r *ClientOrgReconciler) handleDeletion(ctx context.Context, ns core.Namesp
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	klog.Infof("%s Namespace %s to remove finalizer %s", vt, ns.Name, mona.PrometheusKey)
+	if vt != kutil.VerbUnchanged {
+		klog.Infof("%s finalizer %s on Namespace %s", vt, mona.PrometheusKey, ns.Name)
+	}
 	return ctrl.Result{}, nil
 }
 
 // ensureFinalizer adds the shared Prometheus finalizer to the namespace.
 func (r *ClientOrgReconciler) ensureFinalizer(ctx context.Context, ns *core.Namespace) error {
-	vt, err := cu.CreateOrPatch(context.TODO(), r.kc, ns, func(in client.Object, createOp bool) client.Object {
+	vt, err := cu.CreateOrPatch(ctx, r.kc, ns, func(in client.Object, createOp bool) client.Object {
 		obj := in.(*core.Namespace)
 		obj.ObjectMeta = core_util.AddFinalizer(obj.ObjectMeta, mona.PrometheusKey)
 
@@ -109,7 +113,9 @@ func (r *ClientOrgReconciler) ensureFinalizer(ctx context.Context, ns *core.Name
 	if err != nil {
 		return err
 	}
-	klog.Infof("%s Namespace %s to add finalizer %s", vt, ns.Name, mona.PrometheusKey)
+	if vt != kutil.VerbUnchanged {
+		klog.Infof("%s finalizer %s on Namespace %s", vt, mona.PrometheusKey, ns.Name)
+	}
 	return nil
 }
 
@@ -135,6 +141,7 @@ func (r *ClientOrgReconciler) ensureMonitoringNamespace(ctx context.Context, ns 
 		// this live branch). Registering backends or copying dashboards into a
 		// terminating namespace is rejected by admission and just flaps create/delete.
 		// Wait for it to fully delete, then recreate it cleanly on a later reconcile.
+		klog.Infof("monitoring namespace %s is terminating, requeueing", monNamespace.Name)
 		return monNamespace, ctrl.Result{RequeueAfter: 10 * time.Second}, nil
 	}
 	return monNamespace, ctrl.Result{}, nil
@@ -149,7 +156,7 @@ func (r *ClientOrgReconciler) ensureMonitoringRoleBinding(ctx context.Context, m
 			Namespace: monNamespace.Name,
 		},
 	}
-	rbvt, err := cu.CreateOrPatch(context.TODO(), r.kc, &rb, func(in client.Object, createOp bool) client.Object {
+	rbvt, err := cu.CreateOrPatch(ctx, r.kc, &rb, func(in client.Object, createOp bool) client.Object {
 		obj := in.(*rbac.RoleBinding)
 
 		obj.RoleRef = rbac.RoleRef{
@@ -171,6 +178,8 @@ func (r *ClientOrgReconciler) ensureMonitoringRoleBinding(ctx context.Context, m
 	if err != nil {
 		return err
 	}
-	klog.Infof("%s role binding %s/%s", rbvt, rb.Namespace, rb.Name)
+	if rbvt != kutil.VerbUnchanged {
+		klog.Infof("%s RoleBinding %s/%s", rbvt, rb.Namespace, rb.Name)
+	}
 	return nil
 }

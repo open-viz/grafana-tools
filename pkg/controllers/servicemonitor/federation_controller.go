@@ -194,7 +194,7 @@ func (r *FederationReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 				if err := r.copyService(&srcSvc, targetSvcMon); err != nil {
 					errList = append(errList, err)
 				}
-				var srcEP core.Endpoints
+				var srcEP core.Endpoints // nolint:staticcheck
 				err = r.kc.Get(context.TODO(), client.ObjectKeyFromObject(&srcSvc), &srcEP)
 				if err != nil {
 					errList = append(errList, err)
@@ -390,8 +390,8 @@ func UpsertServicePort(ports []core.ServicePort, x core.ServicePort) []core.Serv
 	})
 }
 
-func (r *FederationReconciler) copyEndpoints(srcSvc *core.Service, srcEP *core.Endpoints, targetSvcMon *monitoringv1.ServiceMonitor) error {
-	target := core.Endpoints{
+func (r *FederationReconciler) copyEndpoints(srcSvc *core.Service, srcEP *core.Endpoints, targetSvcMon *monitoringv1.ServiceMonitor) error { // nolint:staticcheck
+	target := core.Endpoints{ // nolint:staticcheck
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      srcEP.Name,
 			Namespace: targetSvcMon.Namespace,
@@ -399,7 +399,7 @@ func (r *FederationReconciler) copyEndpoints(srcSvc *core.Service, srcEP *core.E
 	}
 
 	vt, err := cu.CreateOrPatch(context.TODO(), r.kc, &target, func(in client.Object, createOp bool) client.Object {
-		obj := in.(*core.Endpoints)
+		obj := in.(*core.Endpoints) // nolint:staticcheck
 
 		ref := metav1.NewControllerRef(targetSvcMon, schema.GroupVersionKind{
 			Group:   monitoring.GroupName,
@@ -412,7 +412,7 @@ func (r *FederationReconciler) copyEndpoints(srcSvc *core.Service, srcEP *core.E
 
 		for i, srcSubNet := range srcEP.Subsets {
 			if i >= len(obj.Subsets) {
-				obj.Subsets = append(obj.Subsets, core.EndpointSubset{})
+				obj.Subsets = append(obj.Subsets, core.EndpointSubset{}) // nolint:staticcheck
 			}
 
 			obj.Subsets[i].Addresses = []core.EndpointAddress{

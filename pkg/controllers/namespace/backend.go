@@ -33,6 +33,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/ptr"
+	kutil "kmodules.xyz/client-go"
 	cu "kmodules.xyz/client-go/client"
 	clustermeta "kmodules.xyz/client-go/cluster"
 	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
@@ -59,7 +60,9 @@ func (r *ClientOrgReconciler) setNamespaceMarker(ctx context.Context, monNamespa
 	if err != nil {
 		return err
 	}
-	klog.Infof("%s namespace %s with %s annotation", rbvt, monNamespace.Name, prometheus.RegisteredKey)
+	if rbvt != kutil.VerbUnchanged {
+		klog.Infof("%s annotation %s on Namespace %s", rbvt, prometheus.RegisteredKey, monNamespace.Name)
+	}
 	return nil
 }
 
@@ -149,7 +152,7 @@ func (r *ClientOrgReconciler) registerBackends(ctx context.Context, monNamespace
 // registerGrafanaBackend registers the client-org against the Grafana backend and creates its
 // AppBinding. It does not stamp the marker; the caller stamps once both backends succeed.
 func (r *ClientOrgReconciler) registerGrafanaBackend(monNamespace string, pcfg mona.PrometheusConfig, clientOrgId string) error {
-	resp, err := r.bc.Register(mona.PrometheusContext{
+	resp, err := r.pc.Register(mona.PrometheusContext{
 		HubUID:      r.hubUID,
 		ClusterUID:  r.clusterUID,
 		ProjectId:   "",
@@ -158,15 +161,16 @@ func (r *ClientOrgReconciler) registerGrafanaBackend(monNamespace string, pcfg m
 		ClientOrgID: clientOrgId,
 	}, pcfg)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to register grafana backend for client-org %s: %w", clientOrgId, err)
 	}
+	klog.Infof("registered grafana backend for client-org %s in namespace %s", clientOrgId, monNamespace)
 	return r.CreateGrafanaAppBinding(monNamespace, resp)
 }
 
 // registerPersesBackend registers the client-org against the Perses backend and creates its
 // AppBinding. It does not stamp the marker; the caller stamps once both backends succeed.
 func (r *ClientOrgReconciler) registerPersesBackend(monNamespace string, pcfg mona.PrometheusConfig, clientOrgId string) error {
-	persesResp, err := r.bc.RegisterPerses(mona.PrometheusContext{
+	persesResp, err := r.pc.RegisterPerses(mona.PrometheusContext{
 		HubUID:      r.hubUID,
 		ClusterUID:  r.clusterUID,
 		ProjectId:   "",
@@ -175,8 +179,9 @@ func (r *ClientOrgReconciler) registerPersesBackend(monNamespace string, pcfg mo
 		ClientOrgID: clientOrgId,
 	}, pcfg)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to register perses backend for client-org %s: %w", clientOrgId, err)
 	}
+	klog.Infof("registered perses backend for client-org %s in namespace %s", clientOrgId, monNamespace)
 	return r.CreatePersesAppBinding(monNamespace, persesResp)
 }
 
@@ -226,7 +231,7 @@ func (r *ClientOrgReconciler) CreateGrafanaAppBinding(monNamespace string, resp 
 		}
 
 		// TODO: handle TLS config returned in resp
-		if caCert := r.bc.CACert(); len(caCert) > 0 {
+		if caCert := r.pc.CACert(); len(caCert) > 0 {
 			obj.Spec.ClientConfig.CABundle = caCert
 		}
 
@@ -328,7 +333,7 @@ func (r *ClientOrgReconciler) CreatePersesAppBinding(monNamespace string, resp *
 		}
 
 		// TODO: handle TLS config returned in resp
-		if caCert := r.bc.CACert(); len(caCert) > 0 {
+		if caCert := r.pc.CACert(); len(caCert) > 0 {
 			obj.Spec.ClientConfig.CABundle = caCert
 		}
 

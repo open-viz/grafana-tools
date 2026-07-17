@@ -100,6 +100,7 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		if err := r.deleteExternalDashboard(ctx, obj); err != nil {
 			return ctrl.Result{}, err
 		}
+		klog.Infof("deleted external Grafana dashboard for %s", key.String())
 
 		// Remove finalizer as the external Dashboard is successfully deleted.
 		// Use a plain patch (not CreateOrPatch): once the last finalizer is
@@ -365,6 +366,9 @@ func (r *GrafanaDashboardReconciler) setDashboard(ctx context.Context, obj *open
 		in.Status.Reason = reason
 		return in
 	})
+	if err == nil {
+		klog.Infof("GrafanaDashboard %s/%s synced to Grafana (uid=%s)", obj.Namespace, obj.Name, ptr.Deref(resp.UID, ""))
+	}
 	return ctrl.Result{}, err
 }
 
