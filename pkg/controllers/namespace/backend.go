@@ -18,19 +18,23 @@ package namespace
 
 import (
 	"context"
+	"fmt"
 
 	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
 	"go.openviz.dev/grafana-tools/pkg/controllers/prometheus"
 
 	core "k8s.io/api/core/v1"
+	rbac "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/ptr"
 	cu "kmodules.xyz/client-go/client"
+	clustermeta "kmodules.xyz/client-go/cluster"
 	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -57,6 +61,89 @@ func (r *ClientOrgReconciler) setNamespaceMarker(ctx context.Context, monNamespa
 	}
 	klog.Infof("%s namespace %s with %s annotation", rbvt, monNamespace.Name, prometheus.RegisteredKey)
 	return nil
+}
+
+// buildPrometheusConfig confirms the trickster RoleBinding backing promKey's Prometheus has
+// been registered, then builds the mona.PrometheusConfig used to register the grafana/perses
+// backends for the client-org.
+func (r *ClientOrgReconciler) buildPrometheusConfig(ctx context.Context, promKey client.ObjectKey, svcProm core.Service) (mona.PrometheusConfig, error) {
+	var rbProm rbac.RoleBinding
+	if err := r.kc.Get(ctx, client.ObjectKey{Name: prometheus.CRTrickster, Namespace: svcProm.Namespace}, &rbProm); err != nil {
+		return mona.PrometheusConfig{}, err
+	}
+	if rbProm.Annotations[prometheus.RegisteredKey] == "" {
+		return mona.PrometheusConfig{}, fmt.Errorf("rolebinding %s/%s is not registered yet", rbProm.Namespace, rbProm.Name)
+	}
+
+	var pcfg mona.PrometheusConfig
+	pcfg.Service = r.d.Service(promKey, &svcProm)
+
+	// remove basic auth and client cert auth
+	pcfg.BearerToken = "" // set in b3, except for OpenShift
+	pcfg.BasicAuth = mona.BasicAuth{}
+	pcfg.TLS.Cert = ""
+	pcfg.TLS.Key = ""
+	pcfg.TLS.Ca = "" // set in b3
+
+	if r.d.OpenShiftManaged() {
+		domain, err := clustermeta.GetOpenShiftAppsDomain(r.kc)
+		if err != nil {
+			return mona.PrometheusConfig{}, err
+		}
+		pcfg.URL = fmt.Sprintf("https://%s-%s.%s", svcProm.Name, svcProm.Namespace, domain)
+		pcfg.Service = mona.ServiceSpec{}
+		pcfg.TLS.Ca = "" // OpenShift's default router uses a well-known CA, so no need to provide CA bundle
+		pcfg.TLS.InsecureSkipTLSVerify = false
+
+		s, err := cu.GetServiceAccountTokenSecret(r.kc, client.ObjectKey{
+			Name:      prometheus.ServiceAccountTrickster,
+			Namespace: promKey.Namespace,
+		})
+		if err != nil {
+			return mona.PrometheusConfig{}, err
+		}
+		pcfg.BearerToken = string(s.Data["token"])
+	}
+
+	return pcfg, nil
+}
+
+// registerBackends runs the grafana/perses self-healing backend registration: each backend
+// re-registers when the shared marker is stale (cluster state changed) or its AppBinding is
+// missing (external deletion, or an org first registered before perses support). Errors are
+// aggregated so a hub failure on one backend does not block the other. The marker is stamped
+// only once both backends succeed.
+func (r *ClientOrgReconciler) registerBackends(ctx context.Context, monNamespace *core.Namespace, pcfg mona.PrometheusConfig, clientOrgId, state string) error {
+	var errs []error
+
+	grafanaOK, persesOK := true, true
+
+	if monNamespace.Annotations[prometheus.RegisteredKey] != state ||
+		!r.appBindingExists(ctx, monNamespace.Name, abClientOrgGrafana) {
+		if err := r.registerGrafanaBackend(monNamespace.Name, pcfg, clientOrgId); err != nil {
+			errs = append(errs, err)
+			grafanaOK = false
+		}
+	}
+
+	if monNamespace.Annotations[prometheus.RegisteredKey] != state ||
+		!r.appBindingExists(ctx, monNamespace.Name, abClientOrgPerses) {
+		if err := r.registerPersesBackend(monNamespace.Name, pcfg, clientOrgId); err != nil {
+			errs = append(errs, err)
+			persesOK = false
+		}
+	}
+
+	// Stamp the marker only after BOTH backends succeed. Stamping on a perses failure would
+	// leave the marker set, skipping this whole block on the next reconcile so a failed
+	// perses AppBinding is never recreated.
+	if grafanaOK && persesOK {
+		if err := r.setNamespaceMarker(ctx, monNamespace, state); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	return utilerrors.NewAggregate(errs)
 }
 
 // registerGrafanaBackend registers the client-org against the Grafana backend and creates its

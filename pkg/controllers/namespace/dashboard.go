@@ -30,6 +30,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/json"
 	kutil "kmodules.xyz/client-go"
 	kmapi "kmodules.xyz/client-go/api/v1"
@@ -39,6 +40,26 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
+
+// copyDashboards copies both grafana and perses dashboards into the client monitoring
+// namespace, aggregating the per-dashboard (soft) errors from each into a single error.
+func (r *ClientOrgReconciler) copyDashboards(ctx context.Context, ns, monNamespace core.Namespace) error {
+	var errList []error
+
+	errListGrafana, err := r.copyGrafanaDashboards(ctx, ns, monNamespace)
+	if err != nil {
+		return err
+	}
+	errList = append(errList, errListGrafana...)
+
+	errListPerses, err := r.copyPersesDashboards(ctx, monNamespace)
+	if err != nil {
+		return err
+	}
+	errList = append(errList, errListPerses...)
+
+	return utilerrors.NewAggregate(errList)
+}
 
 // copyGrafanaDashboards copies every source GrafanaDashboard into the client monitoring
 // namespace, pinning the "namespace" templating variable to the client-org namespace and
