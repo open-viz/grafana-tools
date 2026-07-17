@@ -76,16 +76,14 @@ func (r *ClientOrgReconciler) handleDeletion(ctx context.Context, ns core.Namesp
 		klog.Infof("unregistered grafana/perses backends for client-org %s", clientOrgId)
 	}
 
-	// Authoritatively clean up everything this controller created in the client monitoring namespace before dropping the finalizer.
+	// Clean up the dashboards this controller copied into the client monitoring namespace
+	// before dropping the finalizer. The monitoring namespace itself is left to its owner
+	// (the operator ServiceAccount is not granted namespace deletion).
 	monNs := clientorg.MonitoringNamespace(ns.Name)
 	if err := r.kc.DeleteAllOf(ctx, &openvizapi.GrafanaDashboard{}, client.InNamespace(monNs)); err != nil && !apierrors.IsNotFound(err) {
 		return ctrl.Result{}, err
 	}
 	if err := r.kc.DeleteAllOf(ctx, &openvizapi.PersesDashboard{}, client.InNamespace(monNs)); err != nil && !apierrors.IsNotFound(err) {
-		return ctrl.Result{}, err
-	}
-	monNamespace := core.Namespace{ObjectMeta: metav1.ObjectMeta{Name: monNs}}
-	if err := r.kc.Delete(ctx, &monNamespace); client.IgnoreNotFound(err) != nil {
 		return ctrl.Result{}, err
 	}
 
