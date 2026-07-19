@@ -41,8 +41,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-// copyDashboards copies both grafana and perses dashboards into the client monitoring
-// namespace, aggregating the per-dashboard (soft) errors from each into a single error.
 func (r *ClientOrgReconciler) copyDashboards(ctx context.Context, ns, monNamespace core.Namespace) error {
 	var errList []error
 
@@ -62,9 +60,8 @@ func (r *ClientOrgReconciler) copyDashboards(ctx context.Context, ns, monNamespa
 }
 
 // copyGrafanaDashboards copies every source GrafanaDashboard into the client monitoring
-// namespace, pinning the "namespace" templating variable to the client-org namespace and
-// re-titling for the client. The returned slice holds per-dashboard (soft) errors; a
-// non-nil error aborts the whole reconcile as before.
+// namespace, pinning the "namespace" templating variable to the client-org namespace. The
+// returned slice holds per-dashboard soft errors; a returned error aborts the reconcile.
 func (r *ClientOrgReconciler) copyGrafanaDashboards(ctx context.Context, ns, monNamespace core.Namespace) ([]error, error) {
 	log := log.FromContext(ctx)
 
@@ -127,7 +124,6 @@ func (r *ClientOrgReconciler) copyGrafanaDashboards(ctx context.Context, ns, mon
 			copiedDashboard.Annotations[srcRefKey] = client.ObjectKeyFromObject(&dashboard).String()
 			copiedDashboard.Annotations[srcHashKey] = meta.ObjectHash(&dashboard)
 
-			// use client Grafana appbinding
 			copiedDashboard.Spec.GrafanaRef = &kmapi.ObjectReference{
 				Namespace: monNamespace.Name,
 				Name:      abClientOrgGrafana,
@@ -149,8 +145,8 @@ func (r *ClientOrgReconciler) copyGrafanaDashboards(ctx context.Context, ns, mon
 }
 
 // copyPersesDashboards copies every source PersesDashboard into the client monitoring
-// namespace, re-titling for the client. The returned slice holds per-dashboard (soft)
-// errors; a non-nil error aborts the whole reconcile as before.
+// namespace. The returned slice holds per-dashboard soft errors; a returned error aborts
+// the reconcile.
 func (r *ClientOrgReconciler) copyPersesDashboards(ctx context.Context, monNamespace core.Namespace) ([]error, error) {
 	log := log.FromContext(ctx)
 
@@ -206,7 +202,6 @@ func (r *ClientOrgReconciler) copyPersesDashboards(ctx context.Context, monNames
 			copiedDashboard.Annotations[srcRefKey] = client.ObjectKeyFromObject(&dashboard).String()
 			copiedDashboard.Annotations[srcHashKey] = meta.ObjectHash(&dashboard)
 
-			// use client Grafana appbinding
 			copiedDashboard.Spec.PersesRef = &kmapi.ObjectReference{
 				Namespace: monNamespace.Name,
 				Name:      abClientOrgPerses,
