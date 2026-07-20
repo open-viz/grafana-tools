@@ -310,12 +310,13 @@ func (c *Client) Unregister(ctx mona.PrometheusContext) error {
 	defer resp.Body.Close() // nolint:errcheck
 
 	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
 		return apierrors.NewGenericServerResponse(
 			resp.StatusCode,
 			http.MethodDelete,
 			schema.GroupResource{Group: openviz.GroupName, Resource: openvizapi.ResourceGrafanaDatasources},
 			"",
-			"",
+			string(body),
 			0,
 			false,
 		)
@@ -361,12 +362,13 @@ func (c *Client) UnregisterPerses(ctx mona.PrometheusContext) error {
 	defer resp.Body.Close() // nolint:errcheck
 
 	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
 		return apierrors.NewGenericServerResponse(
 			resp.StatusCode,
 			http.MethodDelete,
 			schema.GroupResource{Group: openviz.GroupName, Resource: openvizapi.ResourceGrafanaDatasources},
 			"",
-			"",
+			string(body),
 			0,
 			false,
 		)

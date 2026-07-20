@@ -39,7 +39,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
-// ClientOrgReconciler reconciles a GatewayConfig object
 type ClientOrgReconciler struct {
 	kc         client.Client
 	apiReader  client.Reader
@@ -65,8 +64,9 @@ func NewReconciler(kc client.Client, apiReader client.Reader, pc *prometheus.Cli
 const (
 	srcRefKey  = "meta.appcode.com/source"
 	srcHashKey = "meta.appcode.com/hash"
+	// Guards the "terminating"-label teardown so it runs once, not on every reconcile.
+	cleanedUpKey = "meta.appcode.com/cleaned-up"
 
-	// cr created via monitoring-operator chart
 	crClientOrgMonitoring = "appscode:client-org:monitoring"
 	abClientOrgGrafana    = "grafana"
 	abClientOrgPerses     = "perses"
@@ -78,7 +78,7 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	if ns.Labels[kmapi.ClientOrgKey] == "" || ns.Labels[kmapi.ClientOrgKey] == "terminating" {
+	if ns.Labels[kmapi.ClientOrgKey] == "" {
 		return ctrl.Result{}, nil
 	}
 	clientOrgId := ns.Annotations[kmapi.AceOrgIDKey]
@@ -98,11 +98,23 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return r.handleDeletion(ctx, ns, clientOrgId)
 	}
 
-	// The cached client lags the API server, and the ServiceAccount watch re-enqueues every
-	// client-org namespace on each trickster token refresh. A reconcile fired during teardown
-	// can therefore still observe a stale, live-looking namespace and recreate the copied
-	// dashboards that cleanup just removed. Re-read from the API server before (re)creating
-	// anything and bail out if the namespace is no longer an active client org.
+	// Teardown can also happen by flipping the label to "terminating" instead of deleting the
+	// namespace; run the same cleanup once, guarded by cleanedUpKey.
+	if ns.Labels[kmapi.ClientOrgKey] == "terminating" {
+		if ns.Annotations[cleanedUpKey] == "true" {
+			return ctrl.Result{}, nil
+		}
+		klog.Infof("client-org namespace %s (org %s) label set to terminating, unregistering backends", ns.Name, clientOrgId)
+		if _, err := r.handleDeletion(ctx, ns, clientOrgId); err != nil {
+			return ctrl.Result{}, err
+		}
+		return ctrl.Result{}, r.markCleanedUp(ctx, &ns)
+	}
+
+	// The cache lags the API server and the ServiceAccount watch re-enqueues every client-org
+	// namespace on each trickster token refresh, so a teardown-time reconcile can observe a
+	// stale, live-looking namespace and recreate dashboards cleanup just removed. Re-read from
+	// the API server and bail if it is no longer an active client org.
 	var fresh core.Namespace
 	if err := r.apiReader.Get(ctx, req.NamespacedName, &fresh); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
@@ -127,7 +139,6 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return ctrl.Result{}, err
 	}
 
-	// confirm trickster rb registered
 	var promList monitoringv1.PrometheusList
 	if err := r.kc.List(ctx, &promList); err != nil {
 		return ctrl.Result{}, err
@@ -164,11 +175,11 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	return ctrl.Result{}, nil
 }
 
-// SetupWithManager sets up the controller with the Manager.
 func (r *ClientOrgReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&core.Namespace{}, builder.WithPredicates(predicate.NewPredicateFuncs(func(obj client.Object) bool {
-			return obj.GetLabels()[kmapi.ClientOrgKey] == "true" &&
+			v := obj.GetLabels()[kmapi.ClientOrgKey]
+			return (v == "true" || v == "terminating") &&
 				obj.GetLabels()[kmapi.ClientOrgMonitoringKey] != "false"
 		}))).
 		Watches(&core.ServiceAccount{}, handler.EnqueueRequestsFromMapFunc(func(ctx context.Context, _ client.Object) []reconcile.Request {

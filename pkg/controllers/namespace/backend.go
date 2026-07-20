@@ -41,13 +41,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// appBindingExists reports whether the named AppBinding is present in the given namespace.
 func (r *ClientOrgReconciler) appBindingExists(ctx context.Context, namespace, name string) bool {
 	var ab appcatalog.AppBinding
 	return r.kc.Get(ctx, types.NamespacedName{Namespace: namespace, Name: name}, &ab) == nil
 }
 
-// setNamespaceMarker stamps the shared registration marker on the namespace.
 func (r *ClientOrgReconciler) setNamespaceMarker(ctx context.Context, monNamespace *core.Namespace, state string) error {
 	rbvt, err := cu.CreateOrPatch(ctx, r.kc, monNamespace, func(in client.Object, _ bool) client.Object {
 		obj := in.(*core.Namespace)
@@ -66,9 +64,6 @@ func (r *ClientOrgReconciler) setNamespaceMarker(ctx context.Context, monNamespa
 	return nil
 }
 
-// buildPrometheusConfig confirms the trickster RoleBinding backing promKey's Prometheus has
-// been registered, then builds the mona.PrometheusConfig used to register the grafana/perses
-// backends for the client-org.
 func (r *ClientOrgReconciler) buildPrometheusConfig(ctx context.Context, promKey client.ObjectKey, svcProm core.Service) (mona.PrometheusConfig, error) {
 	var rbProm rbac.RoleBinding
 	if err := r.kc.Get(ctx, client.ObjectKey{Name: prometheus.CRTrickster, Namespace: svcProm.Namespace}, &rbProm); err != nil {
@@ -111,11 +106,9 @@ func (r *ClientOrgReconciler) buildPrometheusConfig(ctx context.Context, promKey
 	return pcfg, nil
 }
 
-// registerBackends runs the grafana/perses self-healing backend registration: each backend
-// re-registers when the shared marker is stale (cluster state changed) or its AppBinding is
-// missing (external deletion, or an org first registered before perses support). Errors are
-// aggregated so a hub failure on one backend does not block the other. The marker is stamped
-// only once both backends succeed.
+// registerBackends re-registers each backend when the shared marker is stale (cluster state
+// changed) or its AppBinding is missing. Errors are aggregated so a hub failure on one backend
+// does not block the other.
 func (r *ClientOrgReconciler) registerBackends(ctx context.Context, monNamespace *core.Namespace, pcfg mona.PrometheusConfig, clientOrgId, state string) error {
 	var errs []error
 
@@ -137,9 +130,8 @@ func (r *ClientOrgReconciler) registerBackends(ctx context.Context, monNamespace
 		}
 	}
 
-	// Stamp the marker only after BOTH backends succeed. Stamping on a perses failure would
-	// leave the marker set, skipping this whole block on the next reconcile so a failed
-	// perses AppBinding is never recreated.
+	// Stamp the marker only after BOTH backends succeed, otherwise a failed backend's block is
+	// skipped on the next reconcile and its AppBinding is never recreated.
 	if grafanaOK && persesOK {
 		if err := r.setNamespaceMarker(ctx, monNamespace, state); err != nil {
 			errs = append(errs, err)
@@ -149,8 +141,6 @@ func (r *ClientOrgReconciler) registerBackends(ctx context.Context, monNamespace
 	return utilerrors.NewAggregate(errs)
 }
 
-// registerGrafanaBackend registers the client-org against the Grafana backend and creates its
-// AppBinding. It does not stamp the marker; the caller stamps once both backends succeed.
 func (r *ClientOrgReconciler) registerGrafanaBackend(monNamespace string, pcfg mona.PrometheusConfig, clientOrgId string) error {
 	resp, err := r.pc.Register(mona.PrometheusContext{
 		HubUID:      r.hubUID,
@@ -167,8 +157,6 @@ func (r *ClientOrgReconciler) registerGrafanaBackend(monNamespace string, pcfg m
 	return r.CreateGrafanaAppBinding(monNamespace, resp)
 }
 
-// registerPersesBackend registers the client-org against the Perses backend and creates its
-// AppBinding. It does not stamp the marker; the caller stamps once both backends succeed.
 func (r *ClientOrgReconciler) registerPersesBackend(monNamespace string, pcfg mona.PrometheusConfig, clientOrgId string) error {
 	persesResp, err := r.pc.RegisterPerses(mona.PrometheusContext{
 		HubUID:      r.hubUID,
@@ -196,33 +184,10 @@ func (r *ClientOrgReconciler) CreateGrafanaAppBinding(monNamespace string, resp 
 	abvt, err := cu.CreateOrPatch(context.TODO(), r.kc, &ab, func(in client.Object, createOp bool) client.Object {
 		obj := in.(*appcatalog.AppBinding)
 
-		//ref := metav1.NewControllerRef(prom, schema.GroupVersionKind{
-		//	Group:   monitoring.GroupName,
-		//	Version: monitoringv1.Version,
-		//	Kind:    "Prometheus",
-		//})
-		//obj.OwnerReferences = []metav1.OwnerReference{*ref}
-		//
-		//if obj.Annotations == nil {
-		//	obj.Annotations = make(map[string]string)
-		//}
-		//obj.Annotations["monitoring.appscode.com/is-default-grafana"] = "true"
-
 		obj.Spec.Type = "Grafana"
 		obj.Spec.AppRef = nil
 		obj.Spec.ClientConfig = appcatalog.ClientConfig{
 			URL: ptr.To(resp.Grafana.URL),
-			//Service: &appcatalog.ServiceReference{
-			//	Scheme:    "http",
-			//	Namespace: svc.Namespace,
-			//	Name:      svc.Name,
-			//	Port:      0,
-			//	Path:      "",
-			//	Query:     "",
-			//},
-			//InsecureSkipTLSVerify: false,
-			//CABundle:              nil,
-			//ServerName:            "",
 		}
 		obj.Spec.Secret = &appcatalog.TypedLocalObjectReference{
 			APIGroup: "",
@@ -298,33 +263,10 @@ func (r *ClientOrgReconciler) CreatePersesAppBinding(monNamespace string, resp *
 	abvt, err := cu.CreateOrPatch(context.TODO(), r.kc, &ab, func(in client.Object, createOp bool) client.Object {
 		obj := in.(*appcatalog.AppBinding)
 
-		//ref := metav1.NewControllerRef(prom, schema.GroupVersionKind{
-		//	Group:   monitoring.GroupName,
-		//	Version: monitoringv1.Version,
-		//	Kind:    "Prometheus",
-		//})
-		//obj.OwnerReferences = []metav1.OwnerReference{*ref}
-		//
-		//if obj.Annotations == nil {
-		//	obj.Annotations = make(map[string]string)
-		//}
-		//obj.Annotations["monitoring.appscode.com/is-default-grafana"] = "true"
-
 		obj.Spec.Type = "Perses"
 		obj.Spec.AppRef = nil
 		obj.Spec.ClientConfig = appcatalog.ClientConfig{
 			URL: ptr.To(resp.Perses.URL),
-			//Service: &appcatalog.ServiceReference{
-			//	Scheme:    "http",
-			//	Namespace: svc.Namespace,
-			//	Name:      svc.Name,
-			//	Port:      0,
-			//	Path:      "",
-			//	Query:     "",
-			//},
-			//InsecureSkipTLSVerify: false,
-			//CABundle:              nil,
-			//ServerName:            "",
 		}
 		obj.Spec.Secret = &appcatalog.TypedLocalObjectReference{
 			Name:     ab.Name + "-auth",

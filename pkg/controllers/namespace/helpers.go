@@ -38,52 +38,48 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// isActiveClientOrg reports whether the namespace is still a live, non-terminating client-org.
 func isActiveClientOrg(ns *core.Namespace) bool {
 	return ns.DeletionTimestamp == nil &&
 		ns.Labels[kmapi.ClientOrgKey] != "" &&
 		ns.Labels[kmapi.ClientOrgKey] != "terminating"
 }
 
-// handleDeletion unregisters the client-org from the grafana/perses backends, deletes
-// everything this controller created in the client monitoring namespace, and drops the
-// finalizer so the namespace can finish terminating.
 func (r *ClientOrgReconciler) handleDeletion(ctx context.Context, ns core.Namespace, clientOrgId string) (ctrl.Result, error) {
+	// Unregister is best-effort: a hub failure here must not block teardown, otherwise the
+	// namespace stays stuck in terminating forever whenever the backend is unreachable. Log
+	// and continue so the local cleanup and finalizer removal below always run.
 	if r.pc != nil {
-		err := r.pc.Unregister(mona.PrometheusContext{
+		if err := r.pc.Unregister(mona.PrometheusContext{
+			HubUID:      r.hubUID,
 			ClusterUID:  r.clusterUID,
 			ProjectId:   "",
 			Default:     false,
 			IssueToken:  true,
 			ClientOrgID: clientOrgId,
-		})
-		if err != nil {
-			return ctrl.Result{}, fmt.Errorf("failed to unregister grafana backend for client-org %s: %w", clientOrgId, err)
+		}); err != nil {
+			klog.Errorf("failed to unregister grafana backend for client-org %s: %v", clientOrgId, err)
 		}
 
-		err = r.pc.UnregisterPerses(mona.PrometheusContext{
+		if err := r.pc.UnregisterPerses(mona.PrometheusContext{
+			HubUID:      r.hubUID,
 			ClusterUID:  r.clusterUID,
 			ProjectId:   "",
 			Default:     false,
 			IssueToken:  true,
 			ClientOrgID: clientOrgId,
-		})
-		if err != nil {
-			return ctrl.Result{}, fmt.Errorf("failed to unregister perses backend for client-org %s: %w", clientOrgId, err)
+		}); err != nil {
+			klog.Errorf("failed to unregister perses backend for client-org %s: %v", clientOrgId, err)
 		}
-		klog.Infof("unregistered grafana/perses backends for client-org %s", clientOrgId)
+		klog.Infof("unregister attempt for grafana/perses backends done for client-org %s", clientOrgId)
 	}
 
-	// Authoritatively clean up everything this controller created in the client monitoring namespace before dropping the finalizer.
+	// The monitoring namespace itself is left to its owner; the operator ServiceAccount is not
+	// granted namespace deletion.
 	monNs := clientorg.MonitoringNamespace(ns.Name)
 	if err := r.kc.DeleteAllOf(ctx, &openvizapi.GrafanaDashboard{}, client.InNamespace(monNs)); err != nil && !apierrors.IsNotFound(err) {
 		return ctrl.Result{}, err
 	}
 	if err := r.kc.DeleteAllOf(ctx, &openvizapi.PersesDashboard{}, client.InNamespace(monNs)); err != nil && !apierrors.IsNotFound(err) {
-		return ctrl.Result{}, err
-	}
-	monNamespace := core.Namespace{ObjectMeta: metav1.ObjectMeta{Name: monNs}}
-	if err := r.kc.Delete(ctx, &monNamespace); client.IgnoreNotFound(err) != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -102,7 +98,19 @@ func (r *ClientOrgReconciler) handleDeletion(ctx context.Context, ns core.Namesp
 	return ctrl.Result{}, nil
 }
 
-// ensureFinalizer adds the shared Prometheus finalizer to the namespace.
+func (r *ClientOrgReconciler) markCleanedUp(ctx context.Context, ns *core.Namespace) error {
+	_, err := cu.Patch(ctx, r.kc, ns, func(in client.Object) client.Object {
+		obj := in.(*core.Namespace)
+		if obj.Annotations == nil {
+			obj.Annotations = map[string]string{}
+		}
+		obj.Annotations[cleanedUpKey] = "true"
+
+		return obj
+	})
+	return err
+}
+
 func (r *ClientOrgReconciler) ensureFinalizer(ctx context.Context, ns *core.Namespace) error {
 	vt, err := cu.CreateOrPatch(ctx, r.kc, ns, func(in client.Object, createOp bool) client.Object {
 		obj := in.(*core.Namespace)
@@ -119,9 +127,6 @@ func (r *ClientOrgReconciler) ensureFinalizer(ctx context.Context, ns *core.Name
 	return nil
 }
 
-// ensureMonitoringNamespace gets or creates the client's "{client}-monitoring" namespace.
-// If that namespace is mid-teardown, it returns a non-zero RequeueAfter so the caller
-// waits for it to fully delete before recreating it.
 func (r *ClientOrgReconciler) ensureMonitoringNamespace(ctx context.Context, ns core.Namespace) (core.Namespace, ctrl.Result, error) {
 	monNamespace := core.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
@@ -136,19 +141,14 @@ func (r *ClientOrgReconciler) ensureMonitoringNamespace(ctx context.Context, ns 
 	case err != nil:
 		return monNamespace, ctrl.Result{}, err
 	case monNamespace.DeletionTimestamp != nil:
-		// The monitoring namespace is being torn down (teardown deleted it, while a
-		// stale-cache reconcile of the still-present client-org namespace re-entered
-		// this live branch). Registering backends or copying dashboards into a
-		// terminating namespace is rejected by admission and just flaps create/delete.
-		// Wait for it to fully delete, then recreate it cleanly on a later reconcile.
+		// Registering backends or copying dashboards into a terminating namespace is rejected
+		// by admission and just flaps create/delete; wait for it to fully delete first.
 		klog.Infof("monitoring namespace %s is terminating, requeueing", monNamespace.Name)
 		return monNamespace, ctrl.Result{RequeueAfter: 10 * time.Second}, nil
 	}
 	return monNamespace, ctrl.Result{}, nil
 }
 
-// ensureMonitoringRoleBinding creates/patches the RoleBinding granting the client-org's
-// group access to its monitoring namespace, used to generate grafana links.
 func (r *ClientOrgReconciler) ensureMonitoringRoleBinding(ctx context.Context, monNamespace core.Namespace, clientOrgId string) error {
 	rb := rbac.RoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
