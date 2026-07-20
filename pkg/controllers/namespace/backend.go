@@ -47,7 +47,7 @@ func (r *ClientOrgReconciler) appBindingExists(ctx context.Context, namespace, n
 }
 
 func (r *ClientOrgReconciler) setNamespaceMarker(ctx context.Context, monNamespace *core.Namespace, state string) error {
-	rbvt, err := cu.CreateOrPatch(ctx, r.kc, monNamespace, func(in client.Object, _ bool) client.Object {
+	rbvt, err := cu.Patch(ctx, r.kc, monNamespace, func(in client.Object) client.Object {
 		obj := in.(*core.Namespace)
 		if obj.Annotations == nil {
 			obj.Annotations = map[string]string{}
