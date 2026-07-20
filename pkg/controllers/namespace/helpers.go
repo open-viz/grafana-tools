@@ -83,7 +83,7 @@ func (r *ClientOrgReconciler) handleDeletion(ctx context.Context, ns core.Namesp
 		return ctrl.Result{}, err
 	}
 
-	vt, err := cu.CreateOrPatch(context.TODO(), r.kc, &ns, func(in client.Object, createOp bool) client.Object {
+	vt, err := cu.Patch(context.TODO(), r.kc, &ns, func(in client.Object) client.Object {
 		obj := in.(*core.Namespace)
 		obj.ObjectMeta = core_util.RemoveFinalizer(obj.ObjectMeta, mona.PrometheusKey)
 
@@ -112,7 +112,7 @@ func (r *ClientOrgReconciler) markCleanedUp(ctx context.Context, ns *core.Namesp
 }
 
 func (r *ClientOrgReconciler) ensureFinalizer(ctx context.Context, ns *core.Namespace) error {
-	vt, err := cu.CreateOrPatch(ctx, r.kc, ns, func(in client.Object, createOp bool) client.Object {
+	vt, err := cu.Patch(ctx, r.kc, ns, func(in client.Object) client.Object {
 		obj := in.(*core.Namespace)
 		obj.ObjectMeta = core_util.AddFinalizer(obj.ObjectMeta, mona.PrometheusKey)
 
