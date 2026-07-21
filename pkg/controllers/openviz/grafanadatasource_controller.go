@@ -62,6 +62,8 @@ func (r *GrafanaDatasourceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
 	key := req.NamespacedName
 
+	klog.V(4).Infof("reconciling GrafanaDatasource %s", key.String())
+
 	ds := &openvizapi.GrafanaDatasource{}
 	if err := r.Get(ctx, key, ds); err != nil {
 		klog.Infof("Grafana Datasource %q doesn't exist anymore", req.String())
@@ -71,6 +73,7 @@ func (r *GrafanaDatasourceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	// Add or remove finalizer based on deletion timestamp
 	if ds.DeletionTimestamp.IsZero() {
 		if !slices.Contains(ds.GetFinalizers(), GrafanaDatasourceFinalizer) {
+			klog.V(4).Infof("adding finalizer %s to GrafanaDatasource %s", GrafanaDatasourceFinalizer, key.String())
 			_, err := kmc.CreateOrPatch(ctx, r.Client, ds, func(obj client.Object, createOp bool) client.Object {
 				controllerutil.AddFinalizer(obj, GrafanaDatasourceFinalizer)
 				return obj
@@ -83,6 +86,7 @@ func (r *GrafanaDatasourceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		}
 	} else {
 		if slices.Contains(ds.GetFinalizers(), GrafanaDatasourceFinalizer) {
+			klog.V(4).Infof("GrafanaDatasource %s is being deleted, cleaning up external datasource", key.String())
 			_, err := kmc.PatchStatus(ctx, r.Client, ds, func(obj client.Object) client.Object {
 				in := obj.(*openvizapi.GrafanaDatasource)
 				in.Status.Phase = openvizapi.GrafanaPhaseTerminating
@@ -153,12 +157,14 @@ func (r *GrafanaDatasourceReconciler) createOrUpdateDatasource(ctx context.Conte
 		return err
 	}
 	if ds.Status.GrafanaDatasourceID != nil {
+		klog.V(4).Infof("updating existing Grafana datasource %q (id=%d) for %s/%s", ds.Spec.Name, dataSrc.ID, ds.Namespace, ds.Name)
 		dataSrc.ID = uint(pointer.Int64(ds.Status.GrafanaDatasourceID))
 		err := r.updateDatasource(ctx, gc, ds, dataSrc)
 		if err != nil {
 			return fmt.Errorf("failed to update Datasource, reason: %v", err)
 		}
 	} else {
+		klog.V(4).Infof("creating Grafana datasource %q for %s/%s", ds.Spec.Name, ds.Namespace, ds.Name)
 		err := r.createDatasource(ctx, gc, ds, dataSrc)
 		if err != nil {
 			return fmt.Errorf("failed to create Datasource, reason: %v", err)

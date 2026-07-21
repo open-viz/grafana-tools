@@ -73,20 +73,27 @@ const (
 )
 
 func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	klog.V(4).Infof("reconciling client-org Namespace %s", req.Name)
+
 	var ns core.Namespace
 	if err := r.kc.Get(ctx, req.NamespacedName, &ns); err != nil {
+		klog.V(4).Infof("Namespace %s not found, ignoring: %v", req.Name, err)
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
 	if ns.Labels[kmapi.ClientOrgKey] == "" {
+		klog.V(4).Infof("Namespace %s has no %s label, skipping", ns.Name, kmapi.ClientOrgKey)
 		return ctrl.Result{}, nil
 	}
 	clientOrgId := ns.Annotations[kmapi.AceOrgIDKey]
 	if clientOrgId == "" {
+		klog.V(4).Infof("Namespace %s has no %s annotation, skipping", ns.Name, kmapi.AceOrgIDKey)
 		return ctrl.Result{}, nil
 	}
+	klog.V(4).Infof("Namespace %s resolved to client-org %s (label=%q)", ns.Name, clientOrgId, ns.Labels[kmapi.ClientOrgKey])
 
 	if ready, err := r.d.Ready(); err != nil || !ready {
+		klog.V(4).Infof("Prometheus detector not ready for Namespace %s (ready=%t, err=%v), requeueing", ns.Name, ready, err)
 		return ctrl.Result{}, err
 	}
 	if r.d.RancherManaged() && r.d.Federated() {
@@ -120,6 +127,7 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 	if !isActiveClientOrg(&fresh) {
+		klog.V(4).Infof("Namespace %s is no longer an active client-org on fresh read, skipping", ns.Name)
 		return ctrl.Result{}, nil
 	}
 
@@ -134,6 +142,7 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	if result.RequeueAfter > 0 {
 		return result, nil
 	}
+	klog.V(4).Infof("using monitoring namespace %s for client-org namespace %s", monNamespace.Name, ns.Name)
 
 	if err := r.ensureMonitoringRoleBinding(ctx, monNamespace, clientOrgId); err != nil {
 		return ctrl.Result{}, err
@@ -148,6 +157,7 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return ctrl.Result{}, errors.New("failed to detect default Prometheus")
 	}
 	promKey := client.ObjectKeyFromObject(prom)
+	klog.V(4).Infof("detected default Prometheus %s for client-org namespace %s", promKey.String(), ns.Name)
 
 	var svcProm core.Service
 	if err := r.kc.Get(context.TODO(), r.d.ServiceKey(promKey), &svcProm); err != nil {
@@ -164,14 +174,19 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		if err != nil {
 			return ctrl.Result{}, err
 		}
+		klog.V(4).Infof("registering backends for client-org %s in namespace %s (state=%s)", clientOrgId, monNamespace.Name, cm.State())
 		if err := r.registerBackends(ctx, &monNamespace, pcfg, clientOrgId, cm.State()); err != nil {
 			return ctrl.Result{}, err
 		}
+	} else {
+		klog.V(4).Infof("backend client is nil, skipping backend registration for client-org %s", clientOrgId)
 	}
 
+	klog.V(4).Infof("copying dashboards for client-org namespace %s into %s", ns.Name, monNamespace.Name)
 	if err := r.copyDashboards(ctx, ns, monNamespace); err != nil {
 		return ctrl.Result{}, err
 	}
+	klog.V(4).Infof("finished reconciling client-org namespace %s", ns.Name)
 	return ctrl.Result{}, nil
 }
 

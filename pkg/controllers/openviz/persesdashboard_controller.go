@@ -80,6 +80,7 @@ func (r *PersesDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	obj = obj.DeepCopy()
 
 	if obj.DeletionTimestamp != nil {
+		klog.V(4).Infof("PersesDashboard %s is being deleted, cleaning up external dashboard", key.String())
 		// Change the Phase to Terminating if not
 		if obj.Status.Phase != openvizapi.GrafanaPhaseTerminating {
 			_, err := kmc.PatchStatus(ctx, r.Client, obj, func(obj client.Object) client.Object {
@@ -109,6 +110,7 @@ func (r *PersesDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	// Add finalizer if not set
 	if !slices.Contains(obj.GetFinalizers(), PersesDashboardFinalizer) {
+		klog.V(4).Infof("adding finalizer %s to PersesDashboard %s", PersesDashboardFinalizer, key.String())
 		_, err := kmc.CreateOrPatch(ctx, r.Client, obj, func(obj client.Object, createOp bool) client.Object {
 			controllerutil.AddFinalizer(obj, PersesDashboardFinalizer)
 			return obj
@@ -137,6 +139,7 @@ func (r *PersesDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 func (r *PersesDashboardReconciler) handleSetDashboardError(ctx context.Context, obj *openvizapi.PersesDashboard, err error) (ctrl.Result, error) {
 	reason := err.Error()
+	klog.V(4).Infof("PersesDashboard %s/%s failed: %s", obj.Namespace, obj.Name, reason)
 	r.recordFailureEvent(obj, reason)
 	_, patchErr := kmc.PatchStatus(ctx, r.Client, obj, func(obj client.Object) client.Object {
 		in := obj.(*openvizapi.PersesDashboard)
@@ -268,6 +271,7 @@ func (r *PersesDashboardReconciler) setDashboard(ctx context.Context, obj *openv
 		return r.handleSetDashboardError(ctx, obj, err)
 	}
 
+	klog.V(4).Infof("pushing PersesDashboard %s/%s to Perses (project=%s, folder=%s, datasource=%s)", obj.Namespace, obj.Name, dsConfig.ProjectName, dsConfig.FolderName, dsConfig.Datasource)
 	err = pc.SetDashboard(ctx, pDB, dsConfig.ProjectName, dsConfig.FolderName)
 	if err != nil {
 		return r.handleSetDashboardError(ctx, obj, err)

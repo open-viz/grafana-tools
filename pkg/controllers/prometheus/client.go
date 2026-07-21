@@ -150,6 +150,7 @@ func (c *Client) Register(ctx mona.PrometheusContext, cfg mona.PrometheusConfig)
 	if err != nil {
 		return nil, err
 	}
+	klog.V(4).Infof("registering grafana backend at %s (clusterUID=%s, projectId=%s, clientOrgID=%s, default=%t)", url, ctx.ClusterUID, ctx.ProjectId, ctx.ClientOrgID, ctx.Default)
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
 	if err != nil {
 		return nil, err
@@ -219,6 +220,7 @@ func (c *Client) RegisterPerses(ctx mona.PrometheusContext, cfg mona.PrometheusC
 	if err != nil {
 		return nil, err
 	}
+	klog.V(4).Infof("registering perses backend at %s (clusterUID=%s, projectId=%s, clientOrgID=%s, default=%t)", url, ctx.ClusterUID, ctx.ProjectId, ctx.ClientOrgID, ctx.Default)
 
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
 	if err != nil {

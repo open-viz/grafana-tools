@@ -76,6 +76,7 @@ func (r *ClientOrgReconciler) handleDeletion(ctx context.Context, ns core.Namesp
 	// The monitoring namespace itself is left to its owner; the operator ServiceAccount is not
 	// granted namespace deletion.
 	monNs := clientorg.MonitoringNamespace(ns.Name)
+	klog.V(4).Infof("deleting copied Grafana/Perses dashboards in monitoring namespace %s for client-org %s", monNs, clientOrgId)
 	if err := r.kc.DeleteAllOf(ctx, &openvizapi.GrafanaDashboard{}, client.InNamespace(monNs)); err != nil && !apierrors.IsNotFound(err) {
 		return ctrl.Result{}, err
 	}
@@ -135,6 +136,7 @@ func (r *ClientOrgReconciler) ensureMonitoringNamespace(ctx context.Context, ns 
 	}
 	switch err := r.kc.Get(ctx, client.ObjectKeyFromObject(&monNamespace), &monNamespace); {
 	case apierrors.IsNotFound(err):
+		klog.V(4).Infof("monitoring namespace %s not found, creating", monNamespace.Name)
 		if err := r.kc.Create(ctx, &monNamespace); err != nil {
 			return monNamespace, ctrl.Result{}, err
 		}

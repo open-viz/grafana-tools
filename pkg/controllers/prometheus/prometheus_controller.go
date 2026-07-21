@@ -125,19 +125,25 @@ func (r *PrometheusReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
+	klog.V(4).Infof("reconciling Prometheus %s/%s", prom.Namespace, prom.Name)
+
 	if ready, err := r.d.Ready(); !ready {
+		klog.V(4).Infof("Prometheus detector not ready for %s/%s (err=%v), requeueing", prom.Namespace, prom.Name, err)
 		return ctrl.Result{}, err
 	}
 
 	key := req.NamespacedName
 	isDefault := r.d.IsDefault(key)
+	klog.V(4).Infof("Prometheus %s isDefault=%t, openshift=%t, rancher=%t, federated=%t", key.String(), isDefault, r.d.OpenShiftManaged(), r.d.RancherManaged(), r.d.Federated())
 
 	// do nothing for cluster prometheus in OpenShift
 	if r.d.OpenShiftManaged() && !isDefault {
+		klog.V(4).Infof("skipping non-default Prometheus %s on OpenShift", key.String())
 		return ctrl.Result{}, nil
 	}
 
 	if prom.DeletionTimestamp != nil {
+		klog.V(4).Infof("Prometheus %s is being deleted, cleaning up presets and unregistering backends", key.String())
 		err := r.CleanupPreset(&prom, isDefault)
 		if err != nil {
 			return ctrl.Result{}, err
@@ -199,10 +205,12 @@ func (r *PrometheusReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 	klog.Infof("%s Prometheus %s/%s to add finalizer %s", vt, prom.Namespace, prom.Name, mona.PrometheusKey)
 
+	klog.V(4).Infof("setting up cluster for Prometheus %s/%s (isDefault=%t)", prom.Namespace, prom.Name, isDefault)
 	if err := r.SetupClusterForPrometheus(ctx, &prom, isDefault); err != nil {
 		log.Error(err, "unable to setup Prometheus")
 		return ctrl.Result{}, err
 	}
+	klog.V(4).Infof("finished reconciling Prometheus %s/%s", prom.Namespace, prom.Name)
 
 	return ctrl.Result{}, nil
 }
@@ -254,10 +262,13 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, pr
 	}
 	state := cm.State()
 
+	klog.V(4).Infof("setting up cluster for Prometheus %s (state=%s)", key.String(), state)
+
 	var rancherToken *rancherutil.RancherToken
 	var saToken string
 	var caCrt string
 	if r.d.RancherManaged() && r.rancherAuthSecretName != "" {
+		klog.V(4).Infof("using Rancher token auth for Prometheus %s (secret=%s)", key.String(), r.rancherAuthSecretName)
 		var rancherSecret core.Secret
 		rancherSecretKey := client.ObjectKey{Name: r.rancherAuthSecretName, Namespace: selfNamespace}
 		err = r.kc.Get(context.TODO(), rancherSecretKey, &rancherSecret)
@@ -271,6 +282,7 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, pr
 		}
 		caCrt = string(rancherSecret.Data["ca.crt"])
 	} else if !clustermeta.IsACEManagedSpoke(r.kc) || r.d.OpenShiftManaged() {
+		klog.V(4).Infof("using trickster ServiceAccount token auth for Prometheus %s", key.String())
 		sa := core.ServiceAccount{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      ServiceAccountTrickster,
@@ -440,6 +452,7 @@ func (r *PrometheusReconciler) SetupClusterForPrometheus(ctx context.Context, pr
 	} else if r.bc != nil &&
 		(rb.Annotations[RegisteredKey] != state ||
 			(rancherToken != nil && rb.Annotations[tokenIDKey] != rancherToken.TokenID)) {
+		klog.V(4).Infof("registering backends for Prometheus %s (marker=%q, want=%q, isDefault=%t)", key.String(), rb.Annotations[RegisteredKey], state, isDefault)
 		var projectId string
 		if !isDefault {
 			_, projectId, err = r.NamespaceForProjectSettings(prom)

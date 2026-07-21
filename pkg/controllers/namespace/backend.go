@@ -84,6 +84,7 @@ func (r *ClientOrgReconciler) buildPrometheusConfig(ctx context.Context, promKey
 	pcfg.TLS.Ca = "" // set in b3
 
 	if r.d.OpenShiftManaged() {
+		klog.V(4).Infof("building OpenShift route-based Prometheus config for %s/%s", svcProm.Namespace, svcProm.Name)
 		domain, err := clustermeta.GetOpenShiftAppsDomain(r.kc)
 		if err != nil {
 			return mona.PrometheusConfig{}, err
@@ -116,26 +117,35 @@ func (r *ClientOrgReconciler) registerBackends(ctx context.Context, monNamespace
 
 	if monNamespace.Annotations[prometheus.RegisteredKey] != state ||
 		!r.appBindingExists(ctx, monNamespace.Name, abClientOrgGrafana) {
+		klog.V(4).Infof("registering grafana backend for client-org %s (marker=%q, want=%q)", clientOrgId, monNamespace.Annotations[prometheus.RegisteredKey], state)
 		if err := r.registerGrafanaBackend(monNamespace.Name, pcfg, clientOrgId); err != nil {
 			errs = append(errs, err)
 			grafanaOK = false
 		}
+	} else {
+		klog.V(4).Infof("grafana backend already registered for client-org %s, skipping", clientOrgId)
 	}
 
 	if monNamespace.Annotations[prometheus.RegisteredKey] != state ||
 		!r.appBindingExists(ctx, monNamespace.Name, abClientOrgPerses) {
+		klog.V(4).Infof("registering perses backend for client-org %s (marker=%q, want=%q)", clientOrgId, monNamespace.Annotations[prometheus.RegisteredKey], state)
 		if err := r.registerPersesBackend(monNamespace.Name, pcfg, clientOrgId); err != nil {
 			errs = append(errs, err)
 			persesOK = false
 		}
+	} else {
+		klog.V(4).Infof("perses backend already registered for client-org %s, skipping", clientOrgId)
 	}
 
 	// Stamp the marker only after BOTH backends succeed, otherwise a failed backend's block is
 	// skipped on the next reconcile and its AppBinding is never recreated.
 	if grafanaOK && persesOK {
+		klog.V(4).Infof("both backends registered for client-org %s, stamping marker %s=%s", clientOrgId, prometheus.RegisteredKey, state)
 		if err := r.setNamespaceMarker(ctx, monNamespace, state); err != nil {
 			errs = append(errs, err)
 		}
+	} else {
+		klog.V(4).Infof("skipping marker stamp for client-org %s (grafanaOK=%t, persesOK=%t)", clientOrgId, grafanaOK, persesOK)
 	}
 
 	return utilerrors.NewAggregate(errs)

@@ -69,10 +69,12 @@ func (r *ClientOrgReconciler) copyGrafanaDashboards(ctx context.Context, ns, mon
 	if err := r.kc.List(ctx, &dashboardList); err != nil {
 		return nil, err
 	}
+	log.V(4).Info(fmt.Sprintf("copying GrafanaDashboards into %s: %d source candidates", monNamespace.Name, len(dashboardList.Items)))
 
 	var errList []error
 	for _, dashboard := range dashboardList.Items {
 		if _, isCopy := dashboard.Annotations[srcRefKey]; isCopy || strings.HasSuffix(dashboard.Namespace, "-monitoring") {
+			log.V(4).Info(fmt.Sprintf("skipping GrafanaDashboard %s/%s (already a copy or in monitoring namespace)", dashboard.Namespace, dashboard.Name))
 			continue
 		}
 		if dashboard.Spec.Model == nil {
@@ -154,6 +156,7 @@ func (r *ClientOrgReconciler) copyPersesDashboards(ctx context.Context, monNames
 	if err := r.kc.List(ctx, &persesDashboardList); err != nil {
 		return nil, err
 	}
+	log.V(4).Info(fmt.Sprintf("copying PersesDashboards into %s: %d source candidates", monNamespace.Name, len(persesDashboardList.Items)))
 
 	var errList []error
 	for _, dashboard := range persesDashboardList.Items {
