@@ -17,7 +17,7 @@ require (
 	github.com/spf13/pflag v1.0.7
 	github.com/zeebo/xxh3 v1.0.2
 	go.bytebuilders.dev/license-verifier v0.14.10
-	go.openviz.dev/apimachinery v0.0.10
+	go.openviz.dev/apimachinery v0.0.11-0.20260731133041-3f1859cdbfc2
 	go.openviz.dev/grafana-sdk v0.0.6
 	golang.org/x/text v0.35.0
 	gomodules.xyz/logs v0.0.7
@@ -38,7 +38,7 @@ require (
 	kmodules.xyz/authorizer v0.34.0
 	kmodules.xyz/client-go v0.34.5
 	kmodules.xyz/custom-resources v0.34.0
-	kmodules.xyz/monitoring-agent-api v0.34.3
+	kmodules.xyz/monitoring-agent-api v0.34.4-0.20260731133012-aff992a162f2
 	moul.io/http2curl/v2 v2.3.1-0.20221024080105-10c404f653f7
 	sigs.k8s.io/controller-runtime v0.22.4
 	sigs.k8s.io/yaml v1.6.0
@@ -203,8 +203,4 @@ replace (
 	github.com/google/cel-go => github.com/google/cel-go v0.22.1
 
 	github.com/perses/perses => ../../go.bytebuilders.dev/perses
-
-	go.openviz.dev/apimachinery => ../apimachinery
-
-	kmodules.xyz/monitoring-agent-api => ../../kmodules.xyz/monitoring-agent-api
 )

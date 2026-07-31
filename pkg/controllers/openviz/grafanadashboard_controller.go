@@ -456,5 +456,6 @@ func (r *GrafanaDashboardReconciler) recordFailureEvent(obj *openvizapi.GrafanaD
 		reason,
 		`Failed to complete operation for GrafanaDashboard: "%v", Reason: "%v"`,
 		obj.Name,
-		reason)
+		reason,
+	)
 }

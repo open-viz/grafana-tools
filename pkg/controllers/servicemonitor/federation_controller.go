@@ -517,11 +517,13 @@ func (r *FederationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		}))).
 		Watches(
 			&core.Service{},
-			handler.EnqueueRequestsFromMapFunc(r.ServiceMonitorsForService)).
+			handler.EnqueueRequestsFromMapFunc(r.ServiceMonitorsForService),
+		).
 		Watches(
 			&monitoringv1.Prometheus{},
 			handler.EnqueueRequestsFromMapFunc(ServiceMonitorsForPrometheus(r.kc, map[string]string{
 				mona.PrometheusKey: mona.PrometheusValueFederated,
-			}))).
+			})),
+		).
 		Complete(r)
 }

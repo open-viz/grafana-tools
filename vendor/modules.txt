@@ -521,7 +521,7 @@ go.opentelemetry.io/proto/otlp/collector/trace/v1
 go.opentelemetry.io/proto/otlp/common/v1
 go.opentelemetry.io/proto/otlp/resource/v1
 go.opentelemetry.io/proto/otlp/trace/v1
-# go.openviz.dev/apimachinery v0.0.10 => ../apimachinery
+# go.openviz.dev/apimachinery v0.0.11-0.20260731133041-3f1859cdbfc2
 ## explicit; go 1.24.0
 go.openviz.dev/apimachinery/apis/openviz
 go.openviz.dev/apimachinery/apis/openviz/install
@@ -1592,7 +1592,7 @@ kmodules.xyz/client-go/tools/clientcmd
 kmodules.xyz/custom-resources/apis/appcatalog
 kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1
 kmodules.xyz/custom-resources/crds
-# kmodules.xyz/monitoring-agent-api v0.34.3 => ../../kmodules.xyz/monitoring-agent-api
+# kmodules.xyz/monitoring-agent-api v0.34.4-0.20260731133012-aff992a162f2
 ## explicit; go 1.24.0
 kmodules.xyz/monitoring-agent-api/api/v1
 # moul.io/http2curl/v2 v2.3.1-0.20221024080105-10c404f653f7
@@ -1759,5 +1759,3 @@ x-helm.dev/apimachinery/crds
 # k8s.io/apiserver => github.com/kmodules/apiserver v0.34.4-0.20251227112449-07fa35efc6fc
 # github.com/google/cel-go => github.com/google/cel-go v0.22.1
 # github.com/perses/perses => ../../go.bytebuilders.dev/perses
-# go.openviz.dev/apimachinery => ../apimachinery
-# kmodules.xyz/monitoring-agent-api => ../../kmodules.xyz/monitoring-agent-api

@@ -230,7 +230,8 @@ func (r *GrafanaDatasourceReconciler) handleFailureEvent(ctx context.Context, ds
 		reason,
 		`Failed to complete operation for GrafanaDatasource: "%v", Reason: "%v"`,
 		ds.Name,
-		reason)
+		reason,
+	)
 	_, err := kmc.PatchStatus(ctx, r.Client, ds, func(obj client.Object) client.Object {
 		in := obj.(*openvizapi.GrafanaDatasource)
 		in.Status.Phase = openvizapi.GrafanaPhaseFailed
