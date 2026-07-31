@@ -262,7 +262,9 @@ func (r *PersesDashboardReconciler) setDashboard(ctx context.Context, obj *openv
 	}
 
 	pDB.Metadata.Project = dsConfig.ProjectName
+	pDB.Metadata.ProjectID = dsConfig.ProjectID
 	pDB.Metadata.FolderName = dsConfig.FolderName
+	pDB.Metadata.FolderID = dsConfig.FolderID
 
 	if err := updateDatasourceVariable(&pDB, dsConfig.Datasource); err != nil {
 		return r.handleSetDashboardError(ctx, obj, err)

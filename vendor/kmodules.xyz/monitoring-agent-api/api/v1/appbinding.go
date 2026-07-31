@@ -95,7 +95,9 @@ type GrafanaContext struct {
 
 type PersesContext struct {
 	ProjectName string `json:"projectName,omitempty"`
+	ProjectID   int64  `json:"projectID,omitempty"`
 	FolderName  string `json:"folderName,omitempty"`
+	FolderID    int64  `json:"folderID,omitempty"`
 	Datasource  string `json:"datasource,omitempty"`
 }
 

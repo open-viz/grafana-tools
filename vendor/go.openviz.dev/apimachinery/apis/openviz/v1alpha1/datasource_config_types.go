@@ -52,6 +52,14 @@ type PersesConfiguration struct {
 	// +optional
 	FolderName string `json:"folderName,omitempty"`
 
+	// FolderID defines the Perses folder id.
+	// +optional
+	FolderID int64 `json:"folderID,omitempty"`
+
 	// +optional
 	ProjectName string `json:"projectName,omitempty"`
+
+	// ProjectID defines the Perses project id.
+	// +optional
+	ProjectID int64 `json:"projectID,omitempty"`
 }

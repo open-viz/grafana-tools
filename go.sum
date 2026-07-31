@@ -497,6 +497,8 @@ go.opentelemetry.io/otel/trace v1.43.0 h1:BkNrHpup+4k4w+ZZ86CZoHHEkohws8AY+WTX09
 go.opentelemetry.io/otel/trace v1.43.0/go.mod h1:/QJhyVBUUswCphDVxq+8mld+AvhXZLhe+8WVFxiFff0=
 go.opentelemetry.io/proto/otlp v1.5.0 h1:xJvq7gMzB31/d406fB8U5CBdyQGw4P399D1aQWU/3i4=
 go.opentelemetry.io/proto/otlp v1.5.0/go.mod h1:keN8WnHxOy8PG0rQZjJJ5A2ebUoafqWp0eVQ4yIXvJ4=
+go.openviz.dev/apimachinery v0.0.11-0.20260731133041-3f1859cdbfc2 h1:eXtJpvZZ/mj5pbUk/8H8OW6RG0ZOFg7d+/QFlaZAm1k=
+go.openviz.dev/apimachinery v0.0.11-0.20260731133041-3f1859cdbfc2/go.mod h1:wedtjePuJwrb5toFwnqC8madvw8MTFQe7oheR70gs18=
 go.openviz.dev/grafana-sdk v0.0.6 h1:/mOZIAEPEIt0tlqGChqhE6iDSmBTTWR77suDs0Jd16Q=
 go.openviz.dev/grafana-sdk v0.0.6/go.mod h1:SC+Takjpl4Eo41txfpUjzT1nIWxNo8olnmiow4mVa1Q=
 go.uber.org/atomic v1.4.0/go.mod h1:gD2HeocX3+yG+ygLZcrzQJaqmWj9AIm7n08wl/qW/PE=
@@ -758,6 +760,8 @@ kmodules.xyz/crd-schema-fuzz v0.34.1 h1:YfrFv9LcrVW54BhFSekFAyEuWxp09wic1j8xm3c4
 kmodules.xyz/crd-schema-fuzz v0.34.1/go.mod h1:uer6PA1mrDk4SI6C+kZ2vNZFPZhHvgahuf+YRVKQiHo=
 kmodules.xyz/custom-resources v0.34.0 h1:ljkIYzIq0A3Awj87kkpuYqS9aifuyR3Hr9q2OVKoojM=
 kmodules.xyz/custom-resources v0.34.0/go.mod h1:pcA/n/CnrycjKCRNtU9Z+l5svhzFncLY2Kn9pqeXDVs=
+kmodules.xyz/monitoring-agent-api v0.34.4-0.20260731133012-aff992a162f2 h1:pC93mkC3mDWIrIUW1K7MfuknMOIoQcOK03hAp8MNDdM=
+kmodules.xyz/monitoring-agent-api v0.34.4-0.20260731133012-aff992a162f2/go.mod h1:0WtVdliczkCmjA/QyB2ZriVwABSA8Fhzt01yMEukFLY=
 moul.io/http2curl/v2 v2.3.1-0.20221024080105-10c404f653f7 h1:NykkTlRB+X40z86cLHdEmuoTxhNKhQebLT379b1EumA=
 moul.io/http2curl/v2 v2.3.1-0.20221024080105-10c404f653f7/go.mod h1:RW4hyBjTWSYDOxapodpNEtX0g5Eb16sxklBqmd2RHcE=
 rsc.io/binaryregexp v0.2.0/go.mod h1:qTv7/COck+e2FymRvadv62gMdZztPaShugOCi3I+8D8=

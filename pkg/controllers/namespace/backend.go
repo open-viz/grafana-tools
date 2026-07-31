@@ -286,7 +286,9 @@ func (r *ClientOrgReconciler) CreatePersesAppBinding(monNamespace string, resp *
 			},
 			Datasource:  resp.Datasource,
 			FolderName:  resp.FolderName,
+			FolderID:    resp.FolderID,
 			ProjectName: resp.ProjectName,
+			ProjectID:   resp.ProjectID,
 		}
 		paramBytes, err := json.Marshal(params)
 		if err != nil {
