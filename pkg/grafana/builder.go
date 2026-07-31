@@ -116,7 +116,8 @@ func (r *ClientBuilder) Setup() error {
 				return []string{"true"}
 			}
 			return nil
-		}); err != nil {
+		},
+	); err != nil {
 		return err
 	}
 

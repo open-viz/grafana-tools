@@ -235,6 +235,7 @@ func (r *AutoReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			&monitoringv1.Prometheus{},
 			handler.EnqueueRequestsFromMapFunc(ServiceMonitorsForPrometheus(r.kc, map[string]string{
 				mona.PrometheusKey: mona.PrometheusValueAuto,
-			}))).
+			})),
+		).
 		Complete(r)
 }

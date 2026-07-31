@@ -101,13 +101,15 @@ func (o *MonitoringOperatorOptions) Config() (*apiserver.Config, error) {
 
 	serverConfig.OpenAPIConfig = genericapiserver.DefaultOpenAPIConfig(
 		uiapi.GetOpenAPIDefinitions,
-		openapi.NewDefinitionNamer(apiserver.Scheme))
+		openapi.NewDefinitionNamer(apiserver.Scheme),
+	)
 	serverConfig.OpenAPIConfig.Info.Title = "monitoring-operator"
 	serverConfig.OpenAPIConfig.Info.Version = "v0.0.1"
 
 	serverConfig.OpenAPIV3Config = genericapiserver.DefaultOpenAPIV3Config(
 		uiapi.GetOpenAPIDefinitions,
-		openapi.NewDefinitionNamer(apiserver.Scheme))
+		openapi.NewDefinitionNamer(apiserver.Scheme),
+	)
 	serverConfig.OpenAPIV3Config.Info.Title = "monitoring-operator"
 	serverConfig.OpenAPIV3Config.Info.Version = "v0.0.1"
 

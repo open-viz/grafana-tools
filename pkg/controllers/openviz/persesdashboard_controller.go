@@ -306,7 +306,8 @@ func (r *PersesDashboardReconciler) recordFailureEvent(obj *openvizapi.PersesDas
 		reason,
 		`Failed to complete operation for PeresDashboard: "%v", Reason: "%v"`,
 		obj.Name,
-		reason)
+		reason,
+	)
 }
 
 func updateDatasourceVariable(pDB *v1.Dashboard, ds string) error {
