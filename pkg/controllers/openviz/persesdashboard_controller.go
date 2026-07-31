@@ -18,6 +18,8 @@ package openviz
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"slices"
@@ -202,11 +204,43 @@ func IsPersesDashboardStateChanged(db *openvizapi.PersesDashboard, ab *appcatalo
 	if db.Status.Dashboard == nil || db.Status.Dashboard.State == nil {
 		return false
 	}
-	curState, err := GrafanaState(ab)
+	curState, err := PersesState(ab)
 	if err != nil {
 		return false
 	}
 	return curState != *db.Status.Dashboard.State
+}
+
+func PersesState(ab *appcatalog.AppBinding) (string, error) {
+	stateMu.Lock()
+	defer stateMu.Unlock()
+
+	key := stateKey{uid: ab.UID, generation: ab.Generation}
+	result, ok := stateMap[key]
+	if ok {
+		return result.state, result.err
+	}
+
+	result.state, result.err = func() (string, error) {
+		dsConfig := &openvizapi.PersesConfiguration{}
+		if ab.Spec.Parameters != nil {
+			if err := json.Unmarshal(ab.Spec.Parameters.Raw, dsConfig); err != nil {
+				return "", err
+			}
+		}
+
+		u, err := ab.URL()
+		if err != nil {
+			return "", err
+		}
+
+		state := fmt.Sprintf("%s,%s,%s,%d,%s,%d", u, dsConfig.Datasource, dsConfig.ProjectName, dsConfig.ProjectID, dsConfig.FolderName, dsConfig.FolderID)
+		h := sha256.New()
+		h.Write([]byte(state))
+		return base64.URLEncoding.EncodeToString(h.Sum(nil)), nil
+	}()
+	stateMap[key] = result
+	return result.state, result.err
 }
 
 func (r *PersesDashboardReconciler) deleteExternalDashboard(ctx context.Context, obj *openvizapi.PersesDashboard) error {
@@ -234,8 +268,7 @@ func (r *PersesDashboardReconciler) setDashboard(ctx context.Context, obj *openv
 		return r.handleSetDashboardError(ctx, obj, err)
 	}
 
-	// Grafana state == Perses state
-	state, err := GrafanaState(ab)
+	state, err := PersesState(ab)
 	if err != nil {
 		return r.handleSetDashboardError(ctx, obj, err)
 	}
