@@ -250,8 +250,8 @@ func (r *Storage) getDashboardLink(
 		if ns == "" {
 			return nil, fmt.Errorf("missing namespace for Dashboard")
 		}
-		err := r.kc.Get(ctx, client.ObjectKey{Namespace: ns, Name: req.Name}, &d)
-		if err != nil {
+		err := r.kc.Get(ctx, client.ObjectKey{Namespace: ns, Name: req.Name}, &persesDashboard)
+		if err != nil && !apierrors.IsNotFound(err) {
 			return nil, err
 		}
 	} else if req.Title != "" {
@@ -362,15 +362,17 @@ func (r *Storage) getDashboardLink(
 	}
 
 	var pDashboard v1.Dashboard
-	err = json.Unmarshal(persesDashboard.Spec.Model.Raw, &pDashboard)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal model for PersesDashboard %s/%s, reason: %v", d.Namespace, d.Name, err)
+	if persesDashboard.Spec.Model != nil {
+		if err := json.Unmarshal(persesDashboard.Spec.Model.Raw, &pDashboard); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal model for PersesDashboard %s/%s, reason: %v", persesDashboard.Namespace, persesDashboard.Name, err)
+		}
 	}
 
 	var persesConfig openvizapi.PersesConfiguration
-	err = json.Unmarshal(ps.Spec.Parameters.Raw, &persesConfig)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal PersesConfiguration %s/%s, reason: %v", d.Namespace, d.Name, err)
+	if ps.Spec.Parameters != nil {
+		if err := json.Unmarshal(ps.Spec.Parameters.Raw, &persesConfig); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal PersesConfiguration %s/%s, reason: %v", ps.Namespace, ps.Name, err)
+		}
 	}
 
 	resp := &uiapi.DashboardResponse{
