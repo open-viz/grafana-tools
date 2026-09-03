@@ -101,6 +101,9 @@ func (r *Storage) Create(ctx context.Context, obj runtime.Object, _ rest.Validat
 	}
 
 	if ready, err := r.d.Ready(); !ready {
+		if err == nil {
+			return nil, apierrors.NewServiceUnavailable("prometheus is not ready")
+		}
 		return nil, apierrors.NewInternalError(err)
 	}
 
