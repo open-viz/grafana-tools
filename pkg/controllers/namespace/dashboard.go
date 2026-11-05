@@ -17,9 +17,9 @@ limitations under the License.
 package namespace
 
 import (
-	"bytes"
 	"context"
 	"fmt"
+	"maps"
 	"strings"
 
 	openvizapi "go.openviz.dev/apimachinery/apis/openviz/v1alpha1"
@@ -28,8 +28,8 @@ import (
 	v1 "github.com/perses/perses/pkg/model/api/v1"
 	core "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/json"
 	kutil "kmodules.xyz/client-go"
@@ -98,41 +98,35 @@ func (r *ClientOrgReconciler) copyGrafanaDashboards(ctx context.Context, ns, mon
 			return nil, err
 		}
 
-		copiedDashboard := &openvizapi.GrafanaDashboard{}
-		err = r.kc.Get(context.TODO(), types.NamespacedName{
-			Namespace: monNamespace.Name,
-			Name:      dashboard.Name,
-		}, copiedDashboard)
-		if err != nil {
-			if !apierrors.IsNotFound(err) {
-				return nil, err
-			}
-			copiedDashboard = dashboard.DeepCopy()
-			copiedDashboard.Namespace = monNamespace.Name
-		} else {
-			copiedDashboard.Spec = *dashboard.Spec.DeepCopy()
+		copiedDashboard := &openvizapi.GrafanaDashboard{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      dashboard.Name,
+				Namespace: monNamespace.Name,
+			},
 		}
-
 		opresult, err := cu.CreateOrPatch(ctx, r.kc, copiedDashboard, func(obj client.Object, createOp bool) client.Object {
+			in := obj.(*openvizapi.GrafanaDashboard)
 			if createOp {
-				copiedDashboard.ResourceVersion = ""
+				in.Labels = maps.Clone(dashboard.Labels)
+				in.Annotations = maps.Clone(dashboard.Annotations)
 			}
 
-			if copiedDashboard.Annotations == nil {
-				copiedDashboard.Annotations = map[string]string{}
+			if in.Annotations == nil {
+				in.Annotations = map[string]string{}
 			}
-			copiedDashboard.Annotations[srcRefKey] = client.ObjectKeyFromObject(&dashboard).String()
-			copiedDashboard.Annotations[srcHashKey] = meta.ObjectHash(&dashboard)
+			in.Annotations[srcRefKey] = client.ObjectKeyFromObject(&dashboard).String()
+			in.Annotations[srcHashKey] = meta.ObjectHash(&dashboard)
 
-			copiedDashboard.Spec.GrafanaRef = &kmapi.ObjectReference{
+			in.Spec = *dashboard.Spec.DeepCopy()
+			in.Spec.GrafanaRef = &kmapi.ObjectReference{
 				Namespace: monNamespace.Name,
 				Name:      abClientOrgGrafana,
 			}
-			copiedDashboard.Spec.Model = &runtime.RawExtension{
+			in.Spec.Model = &runtime.RawExtension{
 				Raw: boardBytes,
 			}
 
-			return copiedDashboard
+			return in
 		})
 		if err != nil {
 			errList = append(errList, err)
@@ -157,6 +151,9 @@ func (r *ClientOrgReconciler) copyPersesDashboards(ctx context.Context, monNames
 
 	var errList []error
 	for _, dashboard := range persesDashboardList.Items {
+		if _, isCopy := dashboard.Annotations[srcRefKey]; isCopy || strings.HasSuffix(dashboard.Namespace, "-monitoring") {
+			continue
+		}
 		if dashboard.Spec.Model == nil {
 			return nil, apierrors.NewBadRequest(fmt.Sprintf("PersesDashboard %s/%s is missing a model", dashboard.Namespace, dashboard.Name))
 		}
@@ -172,45 +169,35 @@ func (r *ClientOrgReconciler) copyPersesDashboards(ctx context.Context, monNames
 			return nil, err
 		}
 
-		if _, found := dashboard.Annotations[srcRefKey]; found && bytes.Equal(dashboard.Spec.Model.Raw, boardBytes) {
-			continue
+		copiedDashboard := &openvizapi.PersesDashboard{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      dashboard.Name,
+				Namespace: monNamespace.Name,
+			},
 		}
-
-		copiedDashboard := &openvizapi.PersesDashboard{}
-		err = r.kc.Get(context.TODO(), types.NamespacedName{
-			Namespace: monNamespace.Name,
-			Name:      dashboard.Name,
-		}, copiedDashboard)
-		if err != nil {
-			if !apierrors.IsNotFound(err) {
-				return nil, err
-			}
-			copiedDashboard = dashboard.DeepCopy()
-			copiedDashboard.Namespace = monNamespace.Name
-		} else {
-			copiedDashboard.Spec = *dashboard.Spec.DeepCopy()
-		}
-
 		opresult, err := cu.CreateOrPatch(ctx, r.kc, copiedDashboard, func(obj client.Object, createOp bool) client.Object {
+			in := obj.(*openvizapi.PersesDashboard)
 			if createOp {
-				copiedDashboard.ResourceVersion = ""
+				in.Labels = maps.Clone(dashboard.Labels)
+				in.Annotations = maps.Clone(dashboard.Annotations)
 			}
 
-			if copiedDashboard.Annotations == nil {
-				copiedDashboard.Annotations = map[string]string{}
+			if in.Annotations == nil {
+				in.Annotations = map[string]string{}
 			}
-			copiedDashboard.Annotations[srcRefKey] = client.ObjectKeyFromObject(&dashboard).String()
-			copiedDashboard.Annotations[srcHashKey] = meta.ObjectHash(&dashboard)
+			in.Annotations[srcRefKey] = client.ObjectKeyFromObject(&dashboard).String()
+			in.Annotations[srcHashKey] = meta.ObjectHash(&dashboard)
 
-			copiedDashboard.Spec.PersesRef = &kmapi.ObjectReference{
+			in.Spec = *dashboard.Spec.DeepCopy()
+			in.Spec.PersesRef = &kmapi.ObjectReference{
 				Namespace: monNamespace.Name,
 				Name:      abClientOrgPerses,
 			}
-			copiedDashboard.Spec.Model = &runtime.RawExtension{
+			in.Spec.Model = &runtime.RawExtension{
 				Raw: boardBytes,
 			}
 
-			return copiedDashboard
+			return in
 		})
 		if err != nil {
 			errList = append(errList, err)

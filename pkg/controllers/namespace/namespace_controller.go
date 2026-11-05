@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"go.openviz.dev/grafana-tools/pkg/controllers/prometheus"
 	"go.openviz.dev/grafana-tools/pkg/detector"
@@ -34,6 +35,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -86,8 +88,10 @@ func (r *ClientOrgReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return ctrl.Result{}, nil
 	}
 
-	if ready, err := r.d.Ready(); err != nil || !ready {
+	if ready, err := r.d.Ready(); err != nil {
 		return ctrl.Result{}, err
+	} else if !ready {
+		return ctrl.Result{RequeueAfter: 30 * time.Second}, nil
 	}
 	if r.d.RancherManaged() && r.d.Federated() {
 		return ctrl.Result{}, fmt.Errorf("client organization mode is not supported when federated Prometheus is used in a Rancher managed cluster")
@@ -206,5 +210,6 @@ func (r *ClientOrgReconciler) SetupWithManager(mgr ctrl.Manager) error {
 				obj.GetLabels()[prometheus.RegisteredKey] != ""
 		}))).
 		Named("namespace").
+		WithOptions(controller.Options{MaxConcurrentReconciles: 2}).
 		Complete(r)
 }
